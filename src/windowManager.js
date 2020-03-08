@@ -215,7 +215,7 @@ export class WindowManager {
         this.setupCallbacks(w);
         this.selectWindow(w, w.dialog);
         if (this.add_window_callback) {
-          this.add_window_callback(w).then(() => {
+          Promise.resolve(this.add_window_callback(w)).then(() => {
             this.event_bus.emit("add_window", w);
             resolve(w.id);
           });
