@@ -27,8 +27,16 @@ describe("ImJoy Core", async () => {
     imjoy = new imjoyCore.ImJoy({
       imjoy_api: {},
       show_message_callback: console.log,
-      jailed_asset_url: "/static/jailed/",
+      jailed_asset_url: `${location.protocol}//${location.hostname}${
+        location.port ? ":" + location.port : ""
+      }/static/jailed/`,
     });
+    console.log(
+      "==========",
+      `${location.protocol}//${location.hostname}${
+        location.port ? ":" + location.port : ""
+      }/static/jailed/`
+    );
     wm = imjoy.wm; //window_manager
     pm = imjoy.pm; //plugin_manager
     imjoy.start({ workspace: "default" }).then(done);
