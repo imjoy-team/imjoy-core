@@ -30,13 +30,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
       - run: npm ci
-        working-directory: ./
       - run: npm run check-format
-        working-directory: ./
       - run: npm run test
-        working-directory: ./
       - run: npm run build
-        working-directory: ./
       - name: Save build output
         uses: actions/upload-artifact@v1
         with:
