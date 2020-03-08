@@ -54,7 +54,7 @@ jobs:
       - name: Deploy imjoy-core to https://lib.imjoy.io
         uses: peaceiris/actions-gh-pages@v3.5.0
         with:
-          deploy_key: ${{ secrets.ACTION_DEPLOY_KEY }}
+          deploy_key: ${{ secrets.ACTION_DEPLOY_KEY_FOR_LIB }}
           external_repository: imjoy-team/lib.imjoy.io
           publish_branch: master
           publish_dir: ./dist
