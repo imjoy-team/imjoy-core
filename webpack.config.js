@@ -40,7 +40,7 @@ module.exports = {
         new CreateFileWebpack(version_file),
         new CreateFileWebpack(nojekyll_file),
         new CnameWebpackPlugin({
-            domain: 'core.imjoy.io',
+            domain: 'lib.imjoy.io',
         }),
         new CopyWebpackPlugin([ {
                 from: path.join(__dirname, "src/plugin-service-worker.js"),

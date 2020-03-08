@@ -44,12 +44,12 @@ export class ImJoy {
     this.update_ui_callback = update_ui_callback || function() {};
     this.show_message_callback =
       show_message_callback ||
-      function(msg) {
+      async function(msg) {
         console.log("show message: ", msg);
       };
     this.add_window_callback =
       add_window_callback ||
-      function(w) {
+      async function(w) {
         console.log("add window: ", w);
       };
 

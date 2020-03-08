@@ -51,25 +51,12 @@ jobs:
         with:
           name: built-output
           path: ./dist
-      - name: Prepare imjoy.lib deploy
-        run: |
-          # Copy dirs and files and that we want to update in imjoy.lib.
-          mkdir imjoy-core && \
-          cp -Rf ./dist/* ./imjoy-core && \
-          rm -rf ./imjoy-core/static/* && \
-          rm -rf ./imjoy-core/docs && \
-          rm -rf ./imjoy-core/CNAME && \
-          rm -rf ./imjoy-core/index.html && \
-          rm -rf ./imjoy-core/service-worker.js && \
-          cp -Rf ./dist/static/icons ./imjoy-core/static/icons && \
-          cp -Rf ./dist/static/iconfont ./imjoy-core/static/iconfont && \
-          cp -Rf ./dist/static/jailed ./imjoy-core/static/jailed
       - name: Deploy imjoy-core to https://lib.imjoy.io
         uses: peaceiris/actions-gh-pages@v3.5.0
         with:
-          deploy_key: ${{ secrets.ACTION_DEPLOY_KEY }}
+          deploy_key: ${{ secrets.ACTION_DEPLOY_KEY_FOR_LIB }}
           external_repository: imjoy-team/lib.imjoy.io
           publish_branch: master
-          publish_dir: ./imjoy-core
+          publish_dir: ./dist
           commit_message: Deployed from
           cname: 'lib.imjoy.io'
