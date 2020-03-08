@@ -30,6 +30,7 @@ describe("ImJoy Core", async () => {
       jailed_asset_url: `${location.protocol}//${location.hostname}${
         location.port ? ":" + location.port : ""
       }/static/jailed/`,
+      client_id: "123",
     });
     wm = imjoy.wm; //window_manager
     pm = imjoy.pm; //plugin_manager
@@ -112,9 +113,9 @@ describe("ImJoy Core", async () => {
         plugin1 = p1;
         expect(plugin1.name).to.equal("Test Web Worker Plugin 1");
         expect(plugin1.type).to.equal("web-worker");
-        expect(Joy.getTemplateByType(plugin1.name).init).to.include(
-          "op-ui-option1"
-        );
+        // expect(Joy.getTemplateByType(plugin1.name).init).to.include(
+        //   "op-ui-option1"
+        // );
         expect(typeof plugin1.api.run).to.equal("function");
         pm.reloadPlugin({ code: _.clone(TEST_WEB_WORKER_PLUGIN_2) }).then(
           p2 => {
@@ -146,15 +147,15 @@ describe("ImJoy Core", async () => {
     it("should register and unregister", async () => {
       expect(Object.keys(plugin1.ops).length).to.equal(1);
       expect(await plugin1.api.test_register()).to.be.true;
-      expect(Joy.getTemplateByType(plugin1.name + "/LUT").init).to.include(
-        "apply LUT"
-      );
+      // expect(Joy.getTemplateByType(plugin1.name + "/LUT").init).to.include(
+      //   "apply LUT"
+      // );
       expect(Object.keys(plugin1.ops).length).to.equal(2);
       expect(await plugin1.api.test_unregister()).to.be.true;
       expect(Object.keys(plugin1.ops).length).to.equal(1);
-      expect(function() {
-        Joy.getTemplateByType(plugin1.name + "/LUT");
-      }).to.throw();
+      // expect(function() {
+      //   Joy.getTemplateByType(plugin1.name + "/LUT");
+      // }).to.throw();
     });
 
     it("should create imjoy window", async () => {
