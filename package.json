@@ -1,0 +1,108 @@
+{
+  "name": "imjoy",
+  "version": "0.10.27",
+  "private": false,
+  "description": "ImJoy -- deep learning made easy.",
+  "author": "imjoy-team <imjoy.team@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/imjoy-team/ImJoy.git"
+  },
+  "keywords": [
+    "ImJoy",
+    "PWA",
+    "Deep Learning"
+  ],
+  "bugs": {
+    "url": "https://github.com/imjoy-team/ImJoy/issues"
+  },
+  "homepage": "https://imjoy.io",
+  "scripts": {
+    "build": "rm -rf dist && npm run build-umd && npm run build-module",
+    "build-umd": "webpack --config webpack.library.js --mode development --filename imjoy-core.js && webpack --config webpack.library.js --mode production --filename imjoy-core.min.js",
+    "build-module": "webpack --config webpack.library.js --mode development --libraryTarget commonjs2 --filename index.js",
+    "check-format": "prettier --check \"{src,tests}/**/**\"",
+    "format": "prettier --write \"{src,tests}/**/**\"",
+    "check": "prettier --check \"{src,tests}/**/**\" && vue-cli-service lint && vue-cli-service test:unit"
+  },
+  "dependencies": {
+    "ajv": "^6.6.1",
+    "axios": "^0.18.0",
+    "dompurify": "^1.0.11",
+    "file-saver": "^1.3.3",
+    "glfx": "0.0.4",
+    "html-webpack-plugin": "^2.30.1",
+    "js-yaml": "^3.13.1",
+    "lodash": "^4.17.10",
+    "marked": "^0.6.3",
+    "minibus": "^3.1.0",
+    "module": "^1.2.5",
+    "pouchdb-browser": "^7.0.0",
+    "register-service-worker": "^1.6.2",
+    "spark-md5": "^3.0.0"
+  },
+  "devDependencies": {
+    "autoprefixer": "^7.1.2",
+    "chai": "^4.1.2",
+    "chalk": "^2.4.1",
+    "chromedriver": "^2.38.2",
+    "cname-webpack-plugin": "^1.0.3",
+    "copy-webpack-plugin": "^4.6.0",
+    "create-file-webpack": "^1.0.2",
+    "cross-env": "^5.0.1",
+    "cross-spawn": "^5.0.1",
+    "css-loader": "^2.1.1",
+    "eslint": "^5.8.0",
+    "eslint-config-prettier": "^4.2.0",
+    "gh-pages": "^2.0.1",
+    "mocha": "^5.0.5",
+    "mocha-webpack": "^2.0.0-beta.0",
+    "postcss-import": "^11.0.0",
+    "postcss-loader": "^2.0.8",
+    "postcss-url": "^7.2.1",
+    "prettier": "1.17.0",
+    "raw-loader": "^1.0.0",
+    "resize-observer-polyfill": "^1.5.1",
+    "rimraf": "^2.6.2",
+    "uglify-es": "github:mishoo/UglifyJS2#harmony",
+    "uglify-js": "^2.8.29",
+    "url-loader": "^1.1.2",
+    "webpack": "^4.0.0-beta.2",
+    "webpack-cli": "^3.3.6"
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true
+    },
+    "extends": [
+      "eslint:recommended"
+    ],
+    "rules": {
+      "no-console": "off",
+      "no-empty": [
+        "error",
+        {
+          "allowEmptyCatch": true
+        }
+      ]
+    },
+    "parserOptions": {
+      "parser": "babel-eslint"
+    }
+  },
+  "prettier": {
+    "trailingComma": "es5"
+  },
+  "postcss": {
+    "plugins": {
+      "autoprefixer": {}
+    }
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not ie <= 8"
+  ]
+}
