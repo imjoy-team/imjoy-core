@@ -31,12 +31,6 @@ describe("ImJoy Core", async () => {
         location.port ? ":" + location.port : ""
       }/static/jailed/`,
     });
-    console.log(
-      "==========",
-      `${location.protocol}//${location.hostname}${
-        location.port ? ":" + location.port : ""
-      }/static/jailed/`
-    );
     wm = imjoy.wm; //window_manager
     pm = imjoy.pm; //plugin_manager
     imjoy.start({ workspace: "default" }).then(done);
