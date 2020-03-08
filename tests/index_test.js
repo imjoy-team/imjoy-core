@@ -147,9 +147,9 @@ describe("ImJoy Core", async () => {
     it("should register and unregister", async () => {
       expect(Object.keys(plugin1.ops).length).to.equal(1);
       expect(await plugin1.api.test_register()).to.be.true;
-      expect(imjoyCore.Joy.getTemplateByType(plugin1.name + "/LUT").init).to.include(
-        "apply LUT"
-      );
+      expect(
+        imjoyCore.Joy.getTemplateByType(plugin1.name + "/LUT").init
+      ).to.include("apply LUT");
       expect(Object.keys(plugin1.ops).length).to.equal(2);
       expect(await plugin1.api.test_unregister()).to.be.true;
       expect(Object.keys(plugin1.ops).length).to.equal(1);
