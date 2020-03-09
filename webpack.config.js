@@ -42,16 +42,7 @@ module.exports = {
         new CnameWebpackPlugin({
             domain: 'lib.imjoy.io',
         }),
-        new CopyWebpackPlugin([ {
-                from: path.join(__dirname, "src/plugin-service-worker.js"),
-                to: path.join(__dirname, "dist/plugin-service-worker.js"),
-                toType: "file"
-            },
-            {
-                from: path.join(__dirname, "src/manifest.json"),
-                to: path.join(__dirname, "dist/manifest.json"),
-                toType: "file"
-            },
+        new CopyWebpackPlugin([
             {
                 from: path.join(__dirname, "src/jailed"),
                 to: path.join(__dirname, "dist/static/jailed"),
