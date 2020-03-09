@@ -71,8 +71,17 @@ jobs:
         with:
           node-version: 13.3.0
           registry-url: https://registry.npmjs.org/
-      - run: npm ci
+      - run: npm install
       - run: npm build
-      - name: Try to publish to npm
-        run: npm publish --access public
+      - name: Publish if version has been updated
+        uses: oeway/npm-publish-action
+        with:
+          tag_name: "v%s"
+          tag_message: "v%s"
+          commit_pattern: "^Release (\\S+)"
+          commit_user: oeway
+          publish_with: npm
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         continue-on-error: true
