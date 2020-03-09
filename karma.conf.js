@@ -20,10 +20,12 @@ module.exports = function (config) {
             // and require all tests in there
             'tests/index_test.js',
             { pattern: 'src/jailed/*', watched: false, included: false, served: true, nocache: false },
+            { pattern: 'src/*.js', watched: false, included: false, served: true, nocache: false },
         ],
 
         proxies: {
-            "/static/jailed/": "/base/src/jailed/"
+            "/static/jailed/": "/base/src/jailed/",
+            "/plugin-service-worker.js": "/base/src/plugin-service-worker.js"
         },
 
 
