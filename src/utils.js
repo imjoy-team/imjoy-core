@@ -758,7 +758,6 @@ export function randId() {
     .substr(2, 10);
 }
 
-
 // Deep clone
 export function _clone(aObject) {
   if (!aObject) {
