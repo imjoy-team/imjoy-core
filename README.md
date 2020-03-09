@@ -26,11 +26,11 @@ imjoy.start({workspace: 'default'}).then(async ()=>{
 ## Examples
 
 To get started, please take a look at:
- * [ImJoy-Lite](https://github.com/imjoy-team/ImJoy/blob/master/web/public/lite.html)
- * [BioImage Model Zoo](https://github.com/bioimage-io/bioimage.io)
+ * [ImJoy-Lite](https://github.com/imjoy-team/ImJoy/blob/master/web/public/lite.html) ([live demo](https://imjoy.io/lite))
+ * [BioImage Model Zoo](https://github.com/bioimage-io/bioimage.io) ([live demo](https://bioimage.io))
 
 
-A more complete example is the [ImJoy](https://github.com/imjoy-team/ImJoy) App.
+A more complete example is the [ImJoy Application](https://github.com/imjoy-team/ImJoy) ([live demo](https://imjoy.io)).
  
 ## License
 
