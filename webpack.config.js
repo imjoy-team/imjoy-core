@@ -48,6 +48,11 @@ module.exports = {
                 toType: "file"
             },
             {
+                from: path.join(__dirname, "src/manifest.json"),
+                to: path.join(__dirname, "dist/manifest.json"),
+                toType: "file"
+            },
+            {
                 from: path.join(__dirname, "src/jailed"),
                 to: path.join(__dirname, "dist/static/jailed"),
                 toType: "dir"
