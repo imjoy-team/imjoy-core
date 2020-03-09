@@ -66,13 +66,15 @@ jobs:
     needs: build
     if: github.ref == 'refs/heads/master'
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
           node-version: 13.3.0
-          registry-url: https://registry.npmjs.org/
-      - run: npm install
-      - run: npm build
+      - name: Load saved build output
+        uses: actions/download-artifact@v1
+        with:
+          name: built-output
+          path: ./dist
       - name: Publish if version has been updated
         uses: oeway/npm-publish-action@97c098d
         with:
