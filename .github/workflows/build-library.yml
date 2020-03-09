@@ -43,7 +43,7 @@ jobs:
 
   deploy-imjoy-core:
     runs-on: ubuntu-latest
-    needs: build
+    needs: test-and-build
     if: github.ref == 'refs/heads/master'
     steps:
       - name: Load saved build output
@@ -63,7 +63,7 @@ jobs:
 
   publish-to-npm:
     runs-on: ubuntu-latest
-    needs: build
+    needs: test-and-build
     if: github.ref == 'refs/heads/master'
     steps:
       - uses: actions/checkout@v2
