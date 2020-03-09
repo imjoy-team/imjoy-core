@@ -13,8 +13,6 @@ import Minibus from "minibus";
 
 export { Joy } from "./joy";
 
-export { parseComponent } from "./pluginParser.js";
-
 import * as _utils from "./utils.js";
 export const utils = _utils;
 
