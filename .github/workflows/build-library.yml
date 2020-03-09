@@ -74,7 +74,7 @@ jobs:
       - run: npm install
       - run: npm build
       - name: Publish if version has been updated
-        uses: oeway/npm-publish-action
+        uses: oeway/npm-publish-action@97c098d
         with:
           tag_name: "v%s"
           tag_message: "v%s"
