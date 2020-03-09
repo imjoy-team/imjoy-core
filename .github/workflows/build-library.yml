@@ -78,7 +78,7 @@ jobs:
           name: built-output
           path: ./dist
       - name: Publish if version has been updated
-        uses: oeway/npm-publish-action@4a4d25a
+        uses: oeway/npm-publish-action@1.1.1
         with:
           tag_name: "v%s"
           tag_message: "v%s"
