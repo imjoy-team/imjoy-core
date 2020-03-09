@@ -48,9 +48,9 @@ module.exports = {
                 to: path.join(__dirname, "dist/static/jailed"),
                 toType: "dir"
             },{
-                    from: path.join(__dirname, "src/joy.css"),
-                    to: path.join(__dirname, "dist/joy.css"),
-                    toType: "file"
+                from: path.join(__dirname, "src/joy.css"),
+                to: path.join(__dirname, "dist/static/joy.css"),
+                toType: "file"
             }
         ]),
         
