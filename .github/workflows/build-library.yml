@@ -75,8 +75,9 @@ jobs:
         with:
           name: built-output
           path: ./dist
+      - run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
       - name: Publish if version has been updated
-        uses: oeway/npm-publish-action@c3d0ceb
+        uses: oeway/npm-publish-action@1e0cba6
         with:
           tag_name: "v%s"
           tag_message: "v%s"
@@ -86,4 +87,3 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        continue-on-error: true
