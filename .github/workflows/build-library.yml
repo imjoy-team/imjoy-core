@@ -71,20 +71,20 @@ jobs:
         with:
           node-version: 13.3.0
           registry-url: 'https://registry.npmjs.org'
-      - run: npm install
+      - run: yarn
       - name: Load saved build output
         uses: actions/download-artifact@v1
         with:
           name: built-output
           path: ./dist
       - name: Publish if version has been updated
-        uses: oeway/npm-publish-action@0186e24
+        uses: oeway/npm-publish-action@4a4d25a
         with:
           tag_name: "v%s"
           tag_message: "v%s"
           commit_pattern: "^Release (\\S+)"
           commit_user: oeway
-          publish_with: npm
+          publish_with: yarn
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
