@@ -66,18 +66,23 @@ jobs:
     needs: build
     if: github.ref == 'refs/heads/master'
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
           node-version: 13.3.0
-          registry-url: https://registry.npmjs.org/
-      - run: npm install
+      - name: Load saved build output
+        uses: actions/download-artifact@v1
+        with:
+          name: built-output
+          path: ./dist
       - name: Publish if version has been updated
-        uses: pascalgn/npm-publish-action@1.1.0
+        uses: oeway/npm-publish-action@743f789
         with:
           tag_name: "v%s"
           tag_message: "v%s"
           commit_pattern: "^Release (\\S+)"
+          commit_user: oeway
+          publish_with: npm
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
