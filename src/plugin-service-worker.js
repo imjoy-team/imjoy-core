@@ -1,5 +1,4 @@
 /* eslint-disable */
-
 if (typeof workbox !== "undefined") {
   console.log("Workbox is loaded (plugin service worker)");
   /**
@@ -35,14 +34,14 @@ if (typeof workbox !== "undefined") {
   var plugin_requirements = new Set();
   function matchCb(request) {
     return plugin_requirements.has(request.url.href);
-  };
+  }
 
   workbox.routing.registerRoute(
     matchCb,
     new workbox.strategies.StaleWhileRevalidate()
   );
 
-  caches.open(workbox.core.cacheNames.runtime).then(function (cache) {
+  caches.open(workbox.core.cacheNames.runtime).then(function(cache) {
     cache.keys().then(function(requests) {
       var urls = requests.map(function(request) {
         return request.url;
@@ -111,8 +110,8 @@ if (typeof workbox !== "undefined") {
               !hostname ||
               hostname === "localhost" ||
               hostname === "127.0.0.1"
-            ){
-              console.log('Skip caching local file ' + event.data.url);
+            ) {
+              console.log("Skip caching local file " + event.data.url);
               return;
             }
 
