@@ -25,6 +25,7 @@
     "check-format": "prettier --check \"{src,tests}/**/**\"",
     "format": "prettier --write \"{src,tests}/**/**\"",
     "check": "prettier --check \"{src,tests}/**/**\"",
+    "lint": "eslint \"{src,tests}/**/**\"",
     "test": "karma start --single-run --browsers ChromeHeadless,FirefoxHeadless karma.conf.js",
     "deploy": "npm run build && node deploy-site.js"
   },
@@ -90,6 +91,8 @@
     },
     "parserOptions": {
       "parser": "babel-eslint",
+      "ecmaVersion": 6,
+      "sourceType": "module",
       "ecmaFeatures": {
         "modules": true
       }
