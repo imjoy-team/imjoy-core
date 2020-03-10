@@ -7,14 +7,13 @@ if (typeof workbox !== "undefined") {
    * See https://goo.gl/S9QRab
    */
 
-  // workbox.setConfig({
-  //   debug: true,
-  // });
+  workbox.setConfig({
+    debug: true,
+  });
 
   workbox.core.setCacheNameDetails({ prefix: "lib.imjoy.io" });
   self.__precacheManifest = self.__precacheManifest || [];
 
-  workbox.precaching.suppressWarnings();
   workbox.precaching.precacheAndRoute(self.__precacheManifest, {
     // Ignore all URL parameters.
     ignoreUrlParametersMatching: [/.*/],
