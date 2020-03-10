@@ -24,8 +24,8 @@
     "build-module": "webpack --config webpack.library.js --mode development --libraryTarget commonjs2 --filename imjoy-core.module.js",
     "check-format": "prettier --check \"{src,tests}/**/**\"",
     "format": "prettier --write \"{src,tests}/**/**\"",
-    "check": "prettier --check \"{src,tests}/**/**\"",
     "lint": "eslint \"{src,tests}/**/**\"",
+    "check": "eslint \"{src,tests}/**/**\" && prettier --check \"{src,tests}/**/**\"",
     "test": "karma start --single-run --browsers ChromeHeadless,FirefoxHeadless karma.conf.js",
     "deploy": "npm run build && node deploy-site.js"
   },
