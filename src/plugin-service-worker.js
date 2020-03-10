@@ -1,7 +1,7 @@
 /* eslint-disable */
 
 if (typeof workbox !== "undefined") {
-  console.log(`Workbox is loaded (plugin service worker)`);
+  console.log("Workbox is loaded (plugin service worker)");
   /**
    * The workboxSW.precacheAndRoute() method efficiently caches and responds to
    * requests for URLs in the manifest.
@@ -32,9 +32,9 @@ if (typeof workbox !== "undefined") {
     new workbox.strategies.StaleWhileRevalidate()
   );
 
-  let plugin_requirements = new Set();
-  const matchCb = ({ url, event }) => {
-    return plugin_requirements.has(url.href);
+  var plugin_requirements = new Set();
+  function matchCb(req) {
+    return plugin_requirements.has(req.url.href);
   };
 
   workbox.routing.registerRoute(
@@ -42,9 +42,9 @@ if (typeof workbox !== "undefined") {
     new workbox.strategies.StaleWhileRevalidate()
   );
 
-  caches.open(workbox.core.cacheNames.runtime).then(cache => {
+  caches.open(workbox.core.cacheNames.runtime).then(function (cache) {
     cache.keys().then(function(requests) {
-      const urls = requests.map(function(request) {
+      var urls = requests.map(function(request) {
         return request.url;
       });
       plugin_requirements = new Set(urls);
@@ -70,12 +70,12 @@ if (typeof workbox !== "undefined") {
     );
   }
 
-  self.addEventListener("message", event => {
+  self.addEventListener("message", function(event) {
     if (event.data.action == "skipWaiting") self.skipWaiting();
     if (event.data && event.data.command) {
       // Use the Cache Storage API directly,
       // and add to the default runtime cache:
-      caches.open(workbox.core.cacheNames.runtime).then(cache => {
+      caches.open(workbox.core.cacheNames.runtime).then(function(cache) {
         switch (event.data.command) {
           // This command returns a list of the URLs corresponding to the Request objects
           // that serve as keys for the current cache.
@@ -106,13 +106,15 @@ if (typeof workbox !== "undefined") {
             // by the outer .catch().
 
             // do not cache localhost requests
-            const hostname = parseURL(event.data.url).hostname;
+            var hostname = parseURL(event.data.url).hostname;
             if (
               !hostname ||
               hostname === "localhost" ||
               hostname === "127.0.0.1"
-            )
+            ){
+              console.log('Skip caching local file ' + event.data.url);
               return;
+            }
 
             var request = new Request(event.data.url);
             return fetch(request)
@@ -121,9 +123,9 @@ if (typeof workbox !== "undefined") {
                 // console.log("Caching requirement: " + event.data.url);
                 return cache.put(event.data.url, response);
               })
-              .then(function() {
+              .catch(function(e) {
                 event.ports[0].postMessage({
-                  error: null,
+                  error: e,
                 });
               });
 
@@ -144,5 +146,5 @@ if (typeof workbox !== "undefined") {
     }
   });
 } else {
-  console.log(`Workbox didn't load (plugin service worker)`);
+  console.log("Workbox didn't load (plugin service worker)");
 }
