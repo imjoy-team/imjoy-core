@@ -15,7 +15,7 @@ module.exports = (env, argv) => {
             new InjectManifest({
                 swDest: 'plugin-service-worker.js',
                 swSrc: path.join(__dirname, 'src/plugin-service-worker.js'),
-                exclude: [new RegExp('^[\.].*')]
+                exclude: [new RegExp('^[.].*'), new RegExp('.*[.]map$')]
             })
         )
     }

@@ -309,19 +309,33 @@ export class PluginManager {
       config.asset_url = this.jailed_asset_url;
     }
 
-    for (let pn in this.internal_plugins) {
-      this.normalizePluginUrl(this.internal_plugins[pn].uri).then(obj => {
-        if (obj.uri) {
-          cacheUrlInServiceWorker(obj.uri)
-            .then(() => {
-              console.log("cached internal plugin ", obj.uri);
-            })
-            .catch(e => {
-              console.error(e);
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.ready
+      .then(() => {
+
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          console.log('Service worker is active and the controller is available, caching internal plugins...');
+          for (let pn in this.internal_plugins) {
+            this.normalizePluginUrl(this.internal_plugins[pn].uri).then(obj => {
+              if (obj.uri) {
+                cacheUrlInServiceWorker(obj.uri)
+                  .then(() => {
+                    console.log("Internal plugin cached in the service worker", obj.uri);
+                  })
+                  .catch(e => {
+                    console.error(e);
+                  });
+              }
             });
-        }
+          }
+        });
+        
       });
+    } else {
+      console.log('Service workers are not supported.');
     }
+
+    
 
     await initializeJailed(config);
 
