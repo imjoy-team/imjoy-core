@@ -1,8 +1,8 @@
-import { randId } from "./utils.js";
+import { cacheUrlInServiceWorker } from "./utils.js";
 import axios from "axios";
 
 async function _importScript(url, scope) {
-  const response = await axios.get(url + "?" + randId());
+  const response = await axios.get(url);
   if (response && response.status == 200 && response.data) {
     const code = response.data;
     evalInScope(code, scope);
@@ -106,6 +106,24 @@ function promisify_functions(obj) {
   }
 }
 
+async function cacheRequirements(requirements) {
+  if (requirements && requirements.length > 0) {
+    for (let req of requirements) {
+      //remove prefix
+      if (req.startsWith("js:")) req = req.slice(3);
+      if (req.startsWith("css:")) req = req.slice(4);
+      if (req.startsWith("cache:")) req = req.slice(6);
+      if (!req.startsWith("http")) continue;
+
+      try {
+        await cacheUrlInServiceWorker(req);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  }
+}
+
 export const evil_engine = {
   type: "engine",
   pluginType: "evil",
@@ -170,6 +188,7 @@ export const evil_engine = {
             api_interface
           );
         }
+        await cacheRequirements(config.requirements);
       } catch (e) {
         reject(e);
       }

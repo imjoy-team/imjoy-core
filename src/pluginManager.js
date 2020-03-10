@@ -15,6 +15,7 @@ import {
   githubUrlRaw,
   assert,
   compareVersions,
+  cacheUrlInServiceWorker,
 } from "./utils.js";
 
 import { parseComponent } from "./pluginParser.js";
@@ -307,6 +308,21 @@ export class PluginManager {
     if (this.jailed_asset_url) {
       config.asset_url = this.jailed_asset_url;
     }
+
+    for (let pn in this.internal_plugins) {
+      this.normalizePluginUrl(this.internal_plugins[pn].uri).then(obj => {
+        if (obj.uri) {
+          cacheUrlInServiceWorker(obj.uri)
+            .then(() => {
+              console.log("cached internal plugin ", obj.uri);
+            })
+            .catch(e => {
+              console.error(e);
+            });
+        }
+      });
+    }
+
     await initializeJailed(config);
 
     this.plugins = {};
@@ -840,9 +856,9 @@ export class PluginManager {
     }
   }
 
-  async getPluginFromUrl(uri, scoped_plugins) {
-    scoped_plugins = scoped_plugins || this.available_plugins;
+  async normalizePluginUrl(uri, scoped_plugins) {
     let selected_tag;
+    scoped_plugins = scoped_plugins || this.available_plugins;
     if (
       (uri.includes("github.com") && uri.includes("/blob/")) ||
       uri.includes("gist.github.com")
@@ -895,6 +911,15 @@ export class PluginManager {
     if (!uri.split("?")[0].endsWith(".imjoy.html")) {
       throw 'Plugin url must be ends with ".imjoy.html"';
     }
+    return { uri, scoped_plugins, selected_tag };
+  }
+
+  async getPluginFromUrl(uri, scoped_plugins) {
+    const obj = await this.normalizePluginUrl(uri, scoped_plugins);
+    uri = obj.uri;
+    scoped_plugins = obj.scoped_plugins;
+    const selected_tag = obj.selected_tag;
+
     // If the url has no query parameter, then add random query string to avoid browser caching
     if (uri.indexOf("?") === -1) {
       uri = uri + "?" + randId();

@@ -1,6 +1,6 @@
 {
   "name": "imjoy-core",
-  "version": "0.11.7",
+  "version": "0.11.8",
   "private": false,
   "description": "The core library for ImJoy -- a sandboxed plugin framework for computational web applications.",
   "author": "imjoy-team <imjoy.team@gmail.com>",
@@ -24,8 +24,10 @@
     "build-module": "webpack --config webpack.library.js --mode development --libraryTarget commonjs2 --filename imjoy-core.module.js",
     "check-format": "prettier --check \"{src,tests}/**/**\"",
     "format": "prettier --write \"{src,tests}/**/**\"",
-    "check": "prettier --check \"{src,tests}/**/**\"",
-    "test": "karma start --single-run --browsers ChromeHeadless,FirefoxHeadless karma.conf.js"
+    "lint": "eslint \"{src,tests}/**/**\"",
+    "check": "eslint \"{src,tests}/**/**\" && prettier --check \"{src,tests}/**/**\"",
+    "test": "karma start --single-run --browsers ChromeHeadless,FirefoxHeadless karma.conf.js",
+    "deploy": "npm run build && node deploy-site.js"
   },
   "dependencies": {
     "ajv": "^6.9.1",
@@ -67,12 +69,13 @@
     "url-loader": "^1.1.2",
     "webpack": "^4.42.0",
     "webpack-cli": "^3.3.6",
-    "workbox-webpack-plugin": "^3.6.3"
+    "workbox-webpack-plugin": "^4.3.1"
   },
   "eslintConfig": {
     "root": true,
     "env": {
-      "node": true
+      "node": true,
+      "es6": true
     },
     "extends": [
       "eslint:recommended"
@@ -87,7 +90,12 @@
       ]
     },
     "parserOptions": {
-      "parser": "babel-eslint"
+      "parser": "babel-eslint",
+      "ecmaVersion": 6,
+      "sourceType": "module",
+      "ecmaFeatures": {
+        "modules": true
+      }
     }
   },
   "prettier": {

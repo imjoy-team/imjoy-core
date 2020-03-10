@@ -20,6 +20,8 @@ import TEST_WINDOW_PLUGIN_1 from "./testWindowPlugin1.imjoy.html";
 
 import * as imjoyCore from "../src/imjoyCore.js";
 
+console.log("ImJoy Core version: " + imjoyCore.version);
+
 describe("ImJoy Core", async () => {
   let imjoy, wm, pm;
   before(function(done) {
