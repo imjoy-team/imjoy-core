@@ -22,6 +22,23 @@ const nojekyll_file = {
     content: ""
 };
 
+const index_file = {
+    // path to folder in which the file will be created
+    path: path.join(__dirname, "dist"),
+    // file name
+    fileName: 'index.js',
+    // content of the file
+    content: "module.exports = require('./imjoy-core.module.js');"
+};
+
+const readme_file = {
+    // path to folder in which the file will be created
+    path: path.join(__dirname, "dist"),
+    // file name
+    fileName: 'README.md',
+    // content of the file
+    content: "# Core Library for [ImJoy](https://imjoy.io)\n\nFiles in this repo are automatically generated from the [`ImJoy-Core` repo](https://github.com/imjoy-team/ImJoy-core) and served in `https://lib.imjoy.io`.\n"
+};
 
 module.exports = {
     entry: path.resolve(__dirname, 'src', 'imjoyCore.js'),
@@ -40,6 +57,8 @@ module.exports = {
     plugins: [
         new CreateFileWebpack(version_file),
         new CreateFileWebpack(nojekyll_file),
+        new CreateFileWebpack(index_file),
+        new CreateFileWebpack(readme_file),
         new CnameWebpackPlugin({
             domain: 'lib.imjoy.io',
         }),
@@ -52,7 +71,15 @@ module.exports = {
                 from: path.join(__dirname, "src/joy.css"),
                 to: path.join(__dirname, "dist/static/joy.css"),
                 toType: "file"
-            }
+            },{
+                from: path.join(__dirname, "package.json"),
+                to: path.join(__dirname, "dist/package.json"),
+                toType: "file"
+            },{
+                from: path.join(__dirname, "package-lock.json"),
+                to: path.join(__dirname, "dist/package-lock.json"),
+                toType: "file"
+            },
         ]),
         
     ]
