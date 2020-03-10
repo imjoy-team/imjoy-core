@@ -33,8 +33,8 @@ if (typeof workbox !== "undefined") {
   );
 
   var plugin_requirements = new Set();
-  function matchCb(req) {
-    return plugin_requirements.has(req.url.href);
+  function matchCb(request) {
+    return plugin_requirements.has(request.url.href);
   };
 
   workbox.routing.registerRoute(
