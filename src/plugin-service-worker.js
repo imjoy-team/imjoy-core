@@ -8,7 +8,7 @@ if (typeof workbox !== "undefined") {
    */
 
   workbox.setConfig({
-    debug: true,
+    debug: false,
   });
 
   workbox.core.setCacheNameDetails({ prefix: "lib.imjoy.io" });
