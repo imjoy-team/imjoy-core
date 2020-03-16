@@ -40,8 +40,6 @@ if (typeof workbox !== "undefined") {
     new workbox.strategies.StaleWhileRevalidate()
   );
 
-  workbox.routing.setDefaultHandler(new workbox.strategies.NetworkOnly());
-
   caches.open(workbox.core.cacheNames.runtime).then(function(cache) {
     cache.keys().then(function(requests) {
       var urls = requests.map(function(request) {
