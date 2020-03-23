@@ -234,10 +234,13 @@ export class WindowManager {
   }
 
   selectWindow(w, is_dialog) {
+    if (!w) return;
     if (!is_dialog) {
       for (let i = 0; i < this.active_windows.length; i++) {
-        this.active_windows[i].selected = false;
-        if (this.active_windows[i]) this.active_windows[i].refresh();
+        if (this.active_windows[i]) {
+          this.active_windows[i].selected = false;
+          this.active_windows[i].refresh();
+        }
       }
       if (this.window_mode === "single" || w.standalone) {
         this.selected_window = w;
