@@ -239,7 +239,7 @@ export class WindowManager {
       for (let i = 0; i < this.active_windows.length; i++) {
         if (this.active_windows[i]) {
           this.active_windows[i].selected = false;
-          if (this.active_windows[i]) this.active_windows[i].refresh();
+          this.active_windows[i].refresh();
         }
       }
       if (this.window_mode === "single" || w.standalone) {
