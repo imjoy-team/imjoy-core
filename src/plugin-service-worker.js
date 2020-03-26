@@ -30,6 +30,11 @@ if (typeof workbox !== "undefined") {
     new workbox.strategies.StaleWhileRevalidate()
   );
 
+  workbox.routing.registerRoute(
+    new RegExp("(http|https)://lib.imjoy.io/.*"),
+    new workbox.strategies.StaleWhileRevalidate()
+  );
+
   var cached_keys = new Set();
   function matchCb(request) {
     return cached_keys.has(request.url.href);
