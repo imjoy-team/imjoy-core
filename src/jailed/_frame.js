@@ -8,6 +8,14 @@
  * same thread)
  */
 
+function inIframe() {
+  try {
+    return window.self !== window.top;
+  } catch (e) {
+    return true;
+  }
+}
+
 var scripts = document.getElementsByTagName("script");
 var thisScript = scripts[scripts.length - 1];
 var parentNode = thisScript.parentNode;
@@ -32,8 +40,8 @@ var getParamValue = function(paramName) {
   }
 };
 
-var plugin_name = getParamValue("name");
-var plugin_mode = getParamValue("type");
+var plugin_name = getParamValue("_plugin_name");
+var plugin_mode = getParamValue("_plugin_type");
 
 function cacheUrlInServiceWorker(url) {
   return new Promise(function(resolve, reject) {
@@ -257,55 +265,58 @@ var initIframePlugin = function() {
   );
 };
 
-if (plugin_mode === "web-worker") {
-  try {
-    initWebworkerPlugin();
-  } catch (e) {
-    // fallback to iframe
+if (inIframe()) {
+  plugin_mode = plugin_mode || "window";
+  if (plugin_mode === "web-worker") {
+    try {
+      initWebworkerPlugin();
+    } catch (e) {
+      // fallback to iframe
+      initIframePlugin();
+    }
+  } else if (
+    plugin_mode === "web-python" ||
+    plugin_mode === "web-python-window"
+  ) {
+    initWebPythonIframePlugin();
+  } else if (plugin_mode === "iframe" || plugin_mode === "window") {
     initIframePlugin();
+  } else {
+    console.error("Unsupported plugin type: " + plugin_mode);
+    throw "Unsupported plugin type: " + plugin_mode;
   }
-} else if (
-  plugin_mode === "web-python" ||
-  plugin_mode === "web-python-window"
-) {
-  initWebPythonIframePlugin();
-} else if (plugin_mode === "iframe" || plugin_mode === "window") {
-  initIframePlugin();
-} else {
-  console.error("Unsupported plugin type: " + plugin_mode);
-  throw "Unsupported plugin type: " + plugin_mode;
-}
 
-// register service worker for offline access
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", function() {
-    navigator.serviceWorker.register("/plugin-service-worker.js").then(
-      function(registration) {
-        // Registration was successful
-        console.log(
-          "ServiceWorker registration successful with scope: ",
-          registration.scope,
-          plugin_name
-        );
-      },
-      function(err) {
-        // registration failed :(
-        console.log("ServiceWorker registration failed: ", err);
+  // register service worker for offline access
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function() {
+      navigator.serviceWorker.register("/plugin-service-worker.js").then(
+        function(registration) {
+          // Registration was successful
+          console.log(
+            "ServiceWorker registration successful with scope: ",
+            registration.scope,
+            plugin_name
+          );
+        },
+        function(err) {
+          // registration failed :(
+          console.log("ServiceWorker registration failed: ", err);
+        }
+      );
+    });
+  }
+
+  // event listener for the plugin message
+  window.addEventListener("message", function(e) {
+    var m = e.data && e.data.data;
+    if (m && m.type === "execute") {
+      const code = m.code;
+      if (code.type == "requirements") {
+        if (!Array.isArray(code.requirements)) {
+          code.requirements = [code.requirements];
+        }
+        cacheRequirements(code.requirements);
       }
-    );
+    }
   });
 }
-
-// event listener for the plugin message
-window.addEventListener("message", function(e) {
-  var m = e.data && e.data.data;
-  if (m && m.type === "execute") {
-    const code = m.code;
-    if (code.type == "requirements") {
-      if (!Array.isArray(code.requirements)) {
-        code.requirements = [code.requirements];
-      }
-      cacheRequirements(code.requirements);
-    }
-  }
-});

@@ -15,7 +15,6 @@
  *  _frame.js         sandboxed frame code (web)
  *  _pluginWebWorker.js  platform-dependent plugin routines (web / worker)
  *  _pluginWebIframe.js  platform-dependent plugin routines (web / iframe)
- *  _pluginNode.js    platform-dependent plugin routines (Node.js)
  *  _pluginCore.js    common plugin site protocol implementation
  */
 
@@ -269,7 +268,7 @@ class BasicConnection {
     var iframe_container = config.iframe_container;
     var sample = document.createElement("iframe");
     this._loggingHandler = () => {};
-    sample.src = JailedConfig.asset_url + "_frame.html";
+    sample.src = config.base_frame || JailedConfig.asset_url + "_frame.html";
     sample.sandbox = "";
     sample.frameBorder = "0";
     sample.style.width = "100%";
@@ -328,11 +327,12 @@ class BasicConnection {
     me._frame.allow = allows;
     me._frame.src =
       me._frame.src +
-      "?type=" +
+      (me._frame.src.includes("?") ? "&" : "?") +
+      "_plugin_type=" +
       type +
-      "&name=" +
+      "&_plugin_name=" +
       config.name +
-      "&workspace=" +
+      "&_plugin_workspace=" +
       config.workspace;
     me._frame.id = "iframe_" + id;
     if (type == "iframe" || type == "window" || type == "web-python-window") {

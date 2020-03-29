@@ -2335,6 +2335,10 @@ export class PluginManager {
         } else {
           this.wm.addWindow(pconfig).then(() => {
             pconfig.loading = true;
+            const loadingTimer = setTimeout(() => {
+              pconfig.loading = false;
+              console.error(`Failed to load window "${pconfig.name}" in 10s.`);
+            }, 10000);
             setTimeout(() => {
               pconfig.refresh();
               this.renderWindow(pconfig)
@@ -2343,11 +2347,13 @@ export class PluginManager {
                     this.event_bus.emit("closing_window_plugin", wplugin);
                     await wplugin.terminate();
                   });
+                  clearTimeout(loadingTimer);
                   pconfig.loading = false;
                   pconfig.refresh();
                   resolve(wplugin.api);
                 })
                 .catch(e => {
+                  clearTimeout(loadingTimer);
                   pconfig.loading = false;
                   pconfig.refresh();
                   reject(e);
