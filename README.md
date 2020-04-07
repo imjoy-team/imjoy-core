@@ -21,7 +21,7 @@ Or, you can inject the ImJoy runtime into your web application, such that it can
 
 #### Option 1: Load the ImJoy Core into your HTML file
 ```js
-<script src="https://lib.imjoy.io/imjoyLoader.js"></script>
+<script src="https://lib.imjoy.io/imjoy-loader.js"></script>
 
 <script>
 loadImJoyCore().then((imjoyCore)=>{
@@ -68,7 +68,7 @@ For example, if you have a web app for visualizing data which made to be used as
 
 #### Option 1: Load the ImJoy plugin API in your HTML file
 ```js
-<script src="https://lib.imjoy.io/imjoyLoader.js"></script>
+<script src="https://lib.imjoy.io/imjoy-loader.js"></script>
 
 <script>
 loadImJoyPluginAPI().then((api)=>{

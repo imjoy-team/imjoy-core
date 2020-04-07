@@ -72,8 +72,8 @@ module.exports = {
                 to: path.join(__dirname, "dist/static/joy.css"),
                 toType: "file"
             },{
-                from: path.join(__dirname, "src/imjoyLoader.js"),
-                to: path.join(__dirname, "dist/imjoyLoader.js"),
+                from: path.join(__dirname, "src/imjoy-loader.js"),
+                to: path.join(__dirname, "dist/imjoy-loader.js"),
                 toType: "file"
             },{
                 from: path.join(__dirname, "src/core-example.html"),
