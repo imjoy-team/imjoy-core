@@ -2291,7 +2291,7 @@ export class PluginManager {
             wconfig
           );
           window_config.type = "window";
-          window_config.id = randId();
+          window_config.id = 'external_'+randId();
           delete window_config.data;
           delete window_config.config;
         } else {
