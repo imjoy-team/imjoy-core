@@ -25,11 +25,11 @@ Or, you can inject the ImJoy runtime into your web application, such that it can
 
 <script>
 loadImJoyCore().then((imjoyCore)=>{
-    console.log(imjoyCore)
     const imjoy = new imjoyCore.ImJoy({
-        //imjoy core config
+        imjoy_api: {},
+        //imjoy config
     })
-    imjoy.start().then(()=>{
+    imjoy.start({workspace: 'default'}).then(()=>{
         alert('ImJoy Core started successfully!')
     })
 })
@@ -51,6 +51,7 @@ import * as imjoyCore from 'imjoy-core'
 
 const imjoy = new imjoyCore.ImJoy({
     imjoy_api: {},
+    //imjoy config
 });
 
 imjoy.start({workspace: 'default'}).then(async ()=>{
@@ -60,7 +61,7 @@ imjoy.start({workspace: 'default'}).then(async ()=>{
 ```
 
 
-### Run your web application an ImJoy window plugin
+### Run your web application as an ImJoy window plugin
 
 If you want to support loading your web app as an ImJoy `window` plugin, you can easily support by the following options.
 
