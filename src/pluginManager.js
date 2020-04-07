@@ -2239,7 +2239,6 @@ export class PluginManager {
       this.unregisterOp(plugin, config);
     }
   }
-
   createWindow(_plugin, wconfig) {
     return new Promise((resolve, reject) => {
       wconfig.data = wconfig.data || null;
@@ -2277,7 +2276,24 @@ export class PluginManager {
           })
           .catch(reject);
       } else {
-        const window_config = this.registered.windows[wconfig.type];
+        let window_config;
+        if (wconfig.type === "external") {
+          if (!wconfig.src) {
+            reject("You must specify the `src` for the external window.");
+            return;
+          }
+          window_config = Object.assign(
+            {
+              base_frame: wconfig.src,
+            },
+            wconfig
+          );
+          window_config.type = "window";
+          delete window_config.data;
+          delete window_config.config;
+        } else {
+          window_config = this.registered.windows[wconfig.type];
+        }
         if (!window_config) {
           console.error(
             "No plugin registered for window type: " + wconfig.type,
@@ -2315,22 +2331,27 @@ export class PluginManager {
         if (pconfig.window_container) {
           this.wm.setupCallbacks(pconfig);
           setTimeout(() => {
-            this.renderWindow(pconfig)
-              .then(wplugin => {
-                if (pconfig.$el) {
-                  wplugin.api.emit(
-                    "window_size_changed",
-                    pconfig.$el.getBoundingClientRect()
-                  );
-                }
-                wplugin.api.refresh();
-                wplugin.api.on("close", async () => {
-                  this.event_bus.emit("closing_window_plugin", wplugin);
-                  await wplugin.terminate();
-                });
-                resolve(wplugin.api);
-              })
-              .catch(reject);
+            const p = this.renderWindow(pconfig);
+            if (pconfig.passive) {
+              clearTimeout(loadingTimer);
+              pconfig.loading = false;
+              resolve({ setup: () => {}, on: () => {} });
+              return;
+            }
+            p.then(wplugin => {
+              if (pconfig.$el) {
+                wplugin.api.emit(
+                  "window_size_changed",
+                  pconfig.$el.getBoundingClientRect()
+                );
+              }
+              wplugin.api.refresh();
+              wplugin.api.on("close", async () => {
+                this.event_bus.emit("closing_window_plugin", wplugin);
+                await wplugin.terminate();
+              });
+              resolve(wplugin.api);
+            }).catch(reject);
           }, 0);
         } else {
           this.wm.addWindow(pconfig).then(() => {
@@ -2341,23 +2362,28 @@ export class PluginManager {
             }, 10000);
             setTimeout(() => {
               pconfig.refresh();
-              this.renderWindow(pconfig)
-                .then(wplugin => {
-                  pconfig.api.on("close", async () => {
-                    this.event_bus.emit("closing_window_plugin", wplugin);
-                    await wplugin.terminate();
-                  });
-                  clearTimeout(loadingTimer);
-                  pconfig.loading = false;
-                  pconfig.refresh();
-                  resolve(wplugin.api);
-                })
-                .catch(e => {
-                  clearTimeout(loadingTimer);
-                  pconfig.loading = false;
-                  pconfig.refresh();
-                  reject(e);
+              const p = this.renderWindow(pconfig);
+              if (pconfig.passive) {
+                clearTimeout(loadingTimer);
+                pconfig.loading = false;
+                resolve({ setup: () => {}, on: () => {} });
+                return;
+              }
+              p.then(wplugin => {
+                pconfig.api.on("close", async () => {
+                  this.event_bus.emit("closing_window_plugin", wplugin);
+                  await wplugin.terminate();
                 });
+                clearTimeout(loadingTimer);
+                pconfig.loading = false;
+                pconfig.refresh();
+                resolve(wplugin.api);
+              }).catch(e => {
+                clearTimeout(loadingTimer);
+                pconfig.loading = false;
+                pconfig.refresh();
+                reject(e);
+              });
             }, 0);
           });
         }
