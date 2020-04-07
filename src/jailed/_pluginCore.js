@@ -32,6 +32,15 @@
     api.export = application.setInterface;
     api.onLoad = application.whenConnected;
     api.dispose = application.disconnect;
+    if (
+      !(
+        typeof WorkerGlobalScope !== "undefined" &&
+        self instanceof WorkerGlobalScope
+      ) &&
+      typeof window
+    ) {
+      window.dispatchEvent(new CustomEvent("imjoy_api_ready", { detail: api }));
+    }
   });
 
   /**

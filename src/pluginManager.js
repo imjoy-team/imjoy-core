@@ -2248,7 +2248,7 @@ export class PluginManager {
         console.error("Error occured during creating window ", wconfig, error);
         throw error;
       }
-      wconfig.name = wconfig.name || "untitled window";
+      wconfig.name = wconfig.name || wconfig.type;
       if (wconfig.type && wconfig.type.startsWith("imjoy/")) {
         wconfig.id = "imjoy_" + randId();
         wconfig.window_type = wconfig.type;
@@ -2278,6 +2278,8 @@ export class PluginManager {
       } else {
         let window_config;
         if (wconfig.type === "external") {
+          if (wconfig.name === wconfig.type)
+            wconfig.name = wconfig.src.split("?")[0];
           if (!wconfig.src) {
             reject("You must specify the `src` for the external window.");
             return;
@@ -2289,6 +2291,7 @@ export class PluginManager {
             wconfig
           );
           window_config.type = "window";
+          window_config.id = "external_" + randId();
           delete window_config.data;
           delete window_config.config;
         } else {

@@ -1,4 +1,6 @@
 (function() {
+  var _parts = document.currentScript.src.split("/");
+  var scriptBaseUrl = _parts.slice(0, _parts.length - 1).join("/") + "/";
   function _inIframe() {
     try {
       return window.self !== window.top;
@@ -9,7 +11,6 @@
   function _injectScript(src) {
     return new Promise((resolve, reject) => {
       const script = document.createElement("script");
-      script.async = true;
       script.src = src;
       script.addEventListener("load", resolve);
       script.addEventListener("error", () => {
@@ -19,19 +20,6 @@
       script.addEventListener("abort", () => reject("Script loading aborted."));
       document.head.appendChild(script);
     });
-  }
-
-  function _getScriptUrl() {
-    var scripts = document.getElementsByTagName("script");
-    var thisScript = scripts[scripts.length - 1];
-    var parentNode = thisScript.parentNode;
-    var asset_url =
-      thisScript.src
-        .split("?")[0]
-        .split("/")
-        .slice(0, -1)
-        .join("/") + "/";
-    return asset_url;
   }
 
   // Load the imjoy core script
@@ -48,7 +36,7 @@
         config.version
       }/dist/`;
     } else {
-      baseUrl = _getScriptUrl();
+      baseUrl = scriptBaseUrl;
     }
     if (config.debug) {
       await _injectScript(baseUrl + "imjoy-core.js");
@@ -63,20 +51,30 @@
   // it support the following options:
   // 1) version, you can specify a specific version of the core,
   // for example `version: "0.11.13"` or `version: "latest"`
-  window.loadImJoyPluginAPI = async function(config) {
-    if (_inIframe()) {
-      var baseUrl;
-      if (config && config.version) {
-        baseUrl = `https://cdn.jsdelivr.net/npm/imjoy-core@${
-          config.version
-        }/dist/`;
+  window.loadImJoyPluginAPI = function(config) {
+    return new Promise((resolve, reject) => {
+      if (_inIframe()) {
+        var baseUrl;
+        if (config && config.version) {
+          baseUrl = `https://cdn.jsdelivr.net/npm/imjoy-core@${
+            config.version
+          }/dist/`;
+        } else {
+          baseUrl = scriptBaseUrl;
+        }
+        _injectScript(baseUrl + "static/jailed/_frame.js")
+          .then(() => {
+            window.addEventListener("imjoy_api_ready", e => {
+              // imjoy plugin api
+              resolve(e.detail);
+            });
+          })
+          .catch(reject);
       } else {
-        baseUrl = _getScriptUrl();
+        reject(
+          new Error("The plugins script can only be used inside an iframe.")
+        );
       }
-      await _injectScript(baseUrl + "static/jailed/_frame.js");
-    } else {
-      throw new Error("The plugins script can only be used inside an iframe.");
-    }
-    return window.api;
+    });
   };
 })();
