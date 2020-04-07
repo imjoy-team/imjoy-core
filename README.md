@@ -60,7 +60,6 @@ imjoy.start({workspace: 'default'}).then(async ()=>{
 
 ```
 
-
 ### Run your web application as an ImJoy window plugin
 
 If you want to support loading your web app as an ImJoy `window` plugin, you can easily support by the following options.
@@ -76,7 +75,7 @@ loadImJoyPluginAPI().then((api)=>{
     function setup(){
         api.alert('ImJoy plugin initialized.')
     }
-    // define your plugin api which can be called by other plugin in ImJoy
+    // define your plugin api which can be called by other plugins in ImJoy
     function my_api_func(){
 
     }
@@ -103,19 +102,11 @@ Then you can load the ImJoy plugin API, a global `api` object will also be injec
 import { loadImJoyPluginAPI } from 'imjoy-core'
 
 loadImJoyPluginAPI().then((api)=>{
-    function setup(){
-        api.alert('ImJoy plugin initialized.')
-    }
-    // define your plugin api which can be called by other plugin in ImJoy
-    function my_api_func(){
-
-    }
-    // Importantly, you need to call `api.export(...)` in order to expose the api for your web application
-    api.export({'setup': setup, 'my_api_func': my_api_func});
+ // call api.export to expose your plugin api
 })
 ```
 
-Note that, this will only work if your app is started from within ImJoy as a window plugin (iframe). 
+Note: This will only work if your app is started from within ImJoy as a window plugin (iframe). 
 
 You can then serve your web application on any hosting service, e.g. on Github pages. Assuming the url is `https://my-awesome-app.com/` (add query string if necessary).
 
@@ -123,10 +114,20 @@ In any other ImJoy plugin, you can then use your web app by:
 ```js
 
 // as a new window
-const win = await api.createWindow({type:'external', name: 'my awesome app', src: 'https://my-awesome-app.com/', data: { }})
+const win = await api.createWindow({
+    type:'external',
+    name: 'my awesome app',
+    src: 'https://my-awesome-app.com/',
+    data: { }
+})
 
 // or, as a dialog
-const win = await api.showDialog({type:'external', name: 'my awesome app', src: 'https://my-awesome-app.com/', data: { }})
+const win = await api.showDialog({
+    type:'external',
+    name: 'my awesome app',
+    src: 'https://my-awesome-app.com/',
+    data: { }
+})
 
 // further interaction can be performed via `win` object
 ```
