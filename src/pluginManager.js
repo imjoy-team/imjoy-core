@@ -2239,7 +2239,6 @@ export class PluginManager {
       this.unregisterOp(plugin, config);
     }
   }
-
   createWindow(_plugin, wconfig) {
     return new Promise((resolve, reject) => {
       wconfig.data = wconfig.data || null;
@@ -2277,7 +2276,22 @@ export class PluginManager {
           })
           .catch(reject);
       } else {
-        const window_config = this.registered.windows[wconfig.type];
+        let window_config;
+        if (wconfig.type === "external") {
+          if (!wconfig.src) {
+            reject("You must specify the `src` for the external window.");
+            return;
+          }
+          window_config = Object.assign(
+            {
+              base_frame: wconfig.src,
+            },
+            wconfig
+          );
+          window_config.type = "window";
+        } else {
+          window_config = this.registered.windows[wconfig.type];
+        }
         if (!window_config) {
           console.error(
             "No plugin registered for window type: " + wconfig.type,

@@ -65,6 +65,8 @@ imjoy.start({workspace: 'default'}).then(async ()=>{
 
 If you want to support loading your web app as an ImJoy `window` plugin, you can easily support by the following options.
 
+For example, if you have a web app for visualizing data which made to be used as a standalone app, it is easy make it work as an ImJoy window plugin. 
+
 #### Option 1: Load the ImJoy plugin API in your HTML file
 ```js
 <script src="https://lib.imjoy.io/imjoyLoader.js"></script>
@@ -115,7 +117,19 @@ loadImJoyPluginAPI().then((api)=>{
 
 Note that, this will only work if your app is started from within ImJoy as a window plugin (iframe). 
 
-<!-- TODO: how to show the showDialog/createWindow from a remote URL. -->
+You can then serve your web application on any hosting service, e.g. on Github pages. Assuming the url is `https://my-awesome-app.com/` (add query string if necessary).
+
+In any other ImJoy plugin, you can then use your web app by:
+```js
+
+// as a new window
+const win = await api.createWindow({type:'external', name: 'my awesome app', src: 'https://my-awesome-app.com/', data: { }})
+
+// or, as a dialog
+const win = await api.showDialog({type:'external', name: 'my awesome app', src: 'https://my-awesome-app.com/', data: { }})
+
+// further interaction can be performed via `win` object
+```
 
 ## Examples for using the ImJoy Core
 
