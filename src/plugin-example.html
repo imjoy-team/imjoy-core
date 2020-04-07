@@ -1,0 +1,22 @@
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>ImJoy Plugin Example</title>
+  </head>
+
+  <body>
+    <h1>ImJoy Plugin Example</h1>
+    <script src="https://lib.imjoy.io/imjoyLoader.js"></script>
+    <script>
+      loadImJoyPluginAPI().then(api => {
+        function setup() {
+          api.alert("ImJoy plugin initialized.");
+        }
+        // define your plugin api which can be called by other plugin in ImJoy
+        function my_api_func() {}
+        // Importantly, you need to call `api.export(...)` in order to expose the api for your web application
+        api.export({ setup: setup, my_api_func: my_api_func });
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,23 @@
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>ImJoy Core Example</title>
+  </head>
+
+  <body>
+    <h1>ImJoy Core Example</h1>
+    <script src="https://lib.imjoy.io/imjoyLoader.js"></script>
+    <script>
+      loadImJoyCore().then(imjoyCore => {
+        console.log(imjoyCore);
+        const imjoy = new imjoyCore.ImJoy({
+          imjoy_api: {},
+          //imjoy core config
+        });
+        imjoy.start({ workspace: null }).then(() => {
+          alert("ImJoy Core started successfully!");
+        });
+      });
+    </script>
+  </body>
+</html>

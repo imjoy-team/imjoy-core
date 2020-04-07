@@ -11,14 +11,40 @@ The [ImJoy](https://imjoy.io) core library -- a sandboxed plugin framework for b
 <a href="https://imjoy.io" target="_blank" ><img src="https://raw.githubusercontent.com/imjoy-team/ImJoy/master/web/public/static/img/imjoy-logo-black.svg?sanitize=true" width="380"></img>
 </a>
 
+## Usage
 
-## Installation
+You can load the ImJoy core into your website or web application, such that you can call another ImJoy plugins.
 
+Or, you can inject the ImJoy runtime into your web application, such that it can be loaded as an ImJoy window plugin.
+
+### Load ImJoy Core to your website or web application
+
+#### Option 1: Load the ImJoy Core into your HTML file
+```js
+<script src="https://lib.imjoy.io/imjoyLoader.js"></script>
+
+<script>
+loadImJoyCore().then((imjoyCore)=>{
+    console.log(imjoyCore)
+    const imjoy = new imjoyCore.ImJoy({
+        //imjoy core config
+    })
+    imjoy.start().then(()=>{
+        alert('ImJoy Core started successfully!')
+    })
+})
+</script>
 ```
+A full example html file can be found [here](/src/core-example.html).
+
+#### Option 2: Use the npm module
+
+You can install `imjoy-core` via npm: 
+```bash
 npm install imjoy-core
 ```
 
-## Usage
+To load and start the ImJoy core in your application:
 
 ```js
 import * as imjoyCore from 'imjoy-core'
@@ -33,7 +59,64 @@ imjoy.start({workspace: 'default'}).then(async ()=>{
 
 ```
 
-## Examples
+
+### Run your web application an ImJoy window plugin
+
+If you want to support loading your web app as an ImJoy `window` plugin, you can easily support by the following options.
+
+#### Option 1: Load the ImJoy plugin API in your HTML file
+```js
+<script src="https://lib.imjoy.io/imjoyLoader.js"></script>
+
+<script>
+loadImJoyPluginAPI().then((api)=>{
+    function setup(){
+        api.alert('ImJoy plugin initialized.')
+    }
+    // define your plugin api which can be called by other plugin in ImJoy
+    function my_api_func(){
+
+    }
+    // Importantly, you need to call `api.export(...)` in order to expose the api for your web application
+    api.export({'setup': setup, 'my_api_func': my_api_func});
+})
+</script>
+```
+
+Note: you can use the returned `api` object, and also a global `api` object will also be injected (as `window.api`).
+
+A full example html file can be found [here](/src/plugin-example.html).
+#### Option 2: Load the ImJoy plugin API from the npm module
+
+Install the core via npm:
+
+```bash
+npm install imjoy-core
+```
+
+Then you can load the ImJoy plugin API, a global `api` object will also be injected (as `window.api`).
+
+```js
+import { loadImJoyPluginAPI } from 'imjoy-core'
+
+loadImJoyPluginAPI().then((api)=>{
+    function setup(){
+        api.alert('ImJoy plugin initialized.')
+    }
+    // define your plugin api which can be called by other plugin in ImJoy
+    function my_api_func(){
+
+    }
+    // Importantly, you need to call `api.export(...)` in order to expose the api for your web application
+    api.export({'setup': setup, 'my_api_func': my_api_func});
+})
+```
+
+Note that, this will only work if your app is started from within ImJoy as a window plugin (iframe). 
+
+<!-- TODO: how to show the showDialog/createWindow from a remote URL. -->
+
+## Examples for using the ImJoy Core
 
 To get started, please take a look at:
  * [ImJoy-Lite](https://github.com/imjoy-team/ImJoy/blob/master/web/public/lite.html) ([live demo](https://imjoy.io/lite))
