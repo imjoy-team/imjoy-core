@@ -28,7 +28,6 @@
     }
   };
 
-  var plugin_name = getParamValue("_plugin_name");
   var plugin_mode = getParamValue("_plugin_type");
 
   function cacheUrlInServiceWorker(url) {

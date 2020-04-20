@@ -325,18 +325,22 @@ class BasicConnection {
     }
     me._frame.sandbox = perm.join(" ");
     me._frame.allow = allows;
-    me._frame.src =
-      me._frame.src +
-      (me._frame.src.includes("?") ? "&" : "?") +
-      "_plugin_type=" +
-      type +
-      "&_plugin_name=" +
-      config.name +
-      "&_plugin_workspace=" +
-      config.workspace;
+
+    if (type !== "window") {
+      me._frame.src =
+        me._frame.src +
+        (me._frame.src.includes("?") ? "&" : "?") +
+        "_plugin_type=" +
+        type;
+    }
+
     me._frame.id = "iframe_" + id;
-    if (type == "iframe" || type == "window" || type == "web-python-window") {
-      if (typeof iframe_container == "string") {
+    if (
+      type === "iframe" ||
+      type === "window" ||
+      type === "web-python-window"
+    ) {
+      if (typeof iframe_container === "string") {
         iframe_container = document.getElementById(iframe_container);
       }
       if (iframe_container) {
