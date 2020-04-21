@@ -97,7 +97,7 @@
     var blobUrl = window.URL.createObjectURL(new Blob([blobCode]));
 
     var worker = new Worker(blobUrl, {
-      name: plugin_name || "plugin_webworker",
+      name: "plugin_webworker",
     });
 
     // telling worker to load _pluginWebWorker.js (see blob code above)
@@ -111,7 +111,7 @@
     var fallbackTimeout = setTimeout(function() {
       worker.terminate();
       console.warn(
-        `Plugin ${plugin_name} failed to start as a web-worker, running in an iframe instead.`
+        `Plugin failed to start as a web-worker, running in an iframe instead.`
       );
       initIframePlugin();
     }, 2000);
@@ -283,8 +283,7 @@
             // Registration was successful
             console.log(
               "ServiceWorker registration successful with scope: ",
-              registration.scope,
-              plugin_name
+              registration.scope
             );
           },
           function(err) {
