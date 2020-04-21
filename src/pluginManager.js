@@ -34,13 +34,11 @@ import {
   PLUGIN_SCHEMA,
   CONFIGURABLE_FIELDS,
   upgradePluginAPI,
+  ajv,
 } from "./api.js";
 
 import { Joy } from "./joy";
 import { saveAs } from "file-saver";
-
-import Ajv from "ajv";
-const ajv = new Ajv();
 
 export class PluginManager {
   constructor({

@@ -1,7 +1,176 @@
 import { compareVersions } from "./utils.js";
 
 import Ajv from "ajv";
-const ajv = new Ajv();
+export const ajv = new Ajv();
+
+ajv.addKeyword("file", {
+  compile: function(config) {
+    if (config && !config.mime && !config.ext && !(typeof config === "string"))
+      throw new Error("Invalid config for keyword: file");
+    if (config && config.maxSize) {
+      if (typeof config.maxSize !== "number")
+        throw new Error("maxSize must be a number");
+    }
+    if (config && config.minSize) {
+      if (typeof config.minSize !== "number")
+        throw new Error("minSize must be a number");
+    }
+    if (config && config.size) {
+      if (typeof config.size !== "number" && !Array.isArray(config.size))
+        throw new Error("size must be a number");
+    }
+    return function(data) {
+      if (!(data instanceof File)) return false;
+      if (!config) return true;
+      for (let k in config) {
+        if (k === "mime") {
+          const mime = config[k];
+          let _ok = false;
+          if (typeof mime === "string") {
+            _ok = data.type.match(mime);
+          } else if (Array.isArray(mime)) {
+            for (let m of mime) {
+              if (data.type.match(m)) {
+                _ok = true;
+              }
+            }
+          }
+          if (!_ok) return false;
+        }
+        if (k === "ext") {
+          const ext = config[k];
+          let _ok = false;
+          if (typeof ext === "string") {
+            _ok = data.name.endsWith(ext);
+          } else if (Array.isArray(ext)) {
+            for (let e of ext) {
+              if (data.name.endsWith(e)) {
+                _ok = true;
+              }
+            }
+          }
+          if (!_ok) return false;
+        }
+        if (k === "maxSize") {
+          if (data.size > config[k]) return false;
+        }
+        if (k === "minSize") {
+          if (data.size < config[k]) return false;
+        }
+        if (k === "size") {
+          if (Array.isArray(config[k]) && !config[k].includes(data.size))
+            return false;
+          if (data.size !== config[k]) return false;
+        }
+      }
+      return true;
+    };
+  },
+});
+
+const ArrayBufferView = Object.getPrototypeOf(
+  Object.getPrototypeOf(new Uint8Array())
+).constructor;
+
+const _typedarray2dtype = {
+  Int8Array: "int8",
+  Int16Array: "int16",
+  Int32Array: "int32",
+  Uint8Array: "uint8",
+  Uint16Array: "uint16",
+  Uint32Array: "uint32",
+  Float32Array: "float32",
+  Float64Array: "float64",
+  Array: "array",
+};
+
+const _dtypes = Object.values(_typedarray2dtype);
+
+ajv.addKeyword("ndarray", {
+  compile: function(config) {
+    if (config && config.ndim) {
+      if (typeof config.ndim !== "number" && !Array.isArray(config.ndim)) {
+        throw new Error("ndim must be a number");
+      }
+    }
+    if (config && config.shape) {
+      if (!Array.isArray(config.shape)) {
+        throw new Error("shape must be an array");
+      }
+      if (config.ndim) {
+        if (
+          typeof config.ndim !== "number" ||
+          config.shape.length !== config.ndim
+        )
+          throw new Error("mismatch between shape and ndim");
+      }
+    }
+
+    if (config && config.dtype) {
+      if (typeof config.dtype !== "string" && !Array.isArray(config.dtype))
+        throw new Error("Invalid dtype format");
+      let dtypes;
+      if (typeof config.dtype === "string") dtypes = [config.dtype];
+      else dtypes = config.dtype;
+      for (let dt of dtypes) {
+        if (typeof dt !== "string" || !_dtypes.includes(dt)) {
+          throw new Error(
+            "Invalid dtype: " + dt + ", valid types: " + _dtypes.join(",")
+          );
+        }
+      }
+    }
+    return function(data) {
+      const isndarray =
+        data.__jailed_type__ === "ndarray" &&
+        data.__value__ &&
+        data.__value__ instanceof ArrayBufferView &&
+        data.__shape__ &&
+        Array.isArray(data.__shape__) &&
+        data.__dtype__ &&
+        _dtypes.includes(data.__dtype__);
+      if (!isndarray) return false;
+      if (!config) return true;
+      for (let k in config) {
+        if (k === "shape") {
+          const shape = config[k];
+          if (data.__shape__.length !== shape.length) return false;
+          for (let i = 0; i < data.__shape__.length; i++) {
+            if (
+              typeof shape[i] === "number" &&
+              data.__shape__[i] !== shape[i]
+            ) {
+              return false;
+            }
+          }
+        }
+
+        if (k === "dtype") {
+          const dtype = config[k];
+          let _ok = false;
+          if (typeof dtype === "string") {
+            _ok = data.__dtype__ === config[k];
+          } else if (Array.isArray(dtype)) {
+            _ok = dtype.includes(data.__dtype__);
+          }
+          if (!_ok) return false;
+        }
+
+        if (k === "ndim") {
+          const ndim = config[k];
+          let _ok = false;
+          if (typeof ndim === "number") {
+            _ok = data.__shape__.length === ndim;
+          } else if (Array.isArray(ndim)) {
+            _ok = ndim.includes(data.__shape__.length);
+          }
+          if (!_ok) return false;
+        }
+      }
+      return true;
+    };
+  },
+});
 
 ajv.addKeyword("instanceof", {
   compile: function(Class) {
