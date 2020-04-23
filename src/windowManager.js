@@ -201,7 +201,6 @@ export class WindowManager {
     return new Promise((resolve, reject) => {
       try {
         w.id = w.id || w.name + randId();
-        w.loaders = {}; // this.getDataLoaders(w.data);
         if (!w.dialog) this.generateGridPosition(w);
         if (w.standalone) {
           w.h = 0;
