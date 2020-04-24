@@ -77,7 +77,7 @@ export class WindowManager {
           try {
             const loader_key = this.registered_inputs[k].loader_key;
             if (this.registered_loaders[loader_key]) {
-              loaders[loader_key] = loader_key;
+              loaders[loader_key] = this.registered_loaders[loader_key];
             }
           } catch (e) {
             console.error("Failed to get loaders.", e);
@@ -201,7 +201,6 @@ export class WindowManager {
     return new Promise((resolve, reject) => {
       try {
         w.id = w.id || w.name + randId();
-        w.loaders = this.getDataLoaders(w.data);
         if (!w.dialog) this.generateGridPosition(w);
         if (w.standalone) {
           w.h = 0;

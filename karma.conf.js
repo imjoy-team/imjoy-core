@@ -18,7 +18,7 @@ module.exports = function (config) {
         files: [
             // only specify one entry point
             // and require all tests in there
-            'tests/index_test.js',
+            'tests/*_test.js',
             { pattern: 'src/jailed/*', watched: false, included: false, served: true, nocache: false },
             { pattern: 'src/*.js', watched: false, included: false, served: true, nocache: false },
         ],
@@ -38,7 +38,7 @@ module.exports = function (config) {
         // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
         preprocessors: {
         // add webpack as preprocessor
-        'tests/index_test.js': ['webpack']
+        'tests/*_test.js': ['webpack']
         },
 
         webpack: webpackConfig,

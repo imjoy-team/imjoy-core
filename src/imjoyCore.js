@@ -12,6 +12,7 @@ import { randId } from "./utils.js";
 import Minibus from "minibus";
 
 export { Joy } from "./joy";
+export { ajv } from "./api";
 
 import * as _utils from "./utils.js";
 export const utils = _utils;
