@@ -81,9 +81,17 @@
           .catch(reject);
       } else {
         reject(
-          new Error("The plugins script can only be used inside an iframe.")
+          new Error("ImJoy plugin api can only be used inside an iframe.")
         );
       }
     });
+  };
+
+  window.loadImJoyAuto = async function(config) {
+    if (_inIframe()) {
+      return { mode: "plugin", api: await window.loadImJoyPluginAPI(config) };
+    } else {
+      return { mode: "core", core: await window.loadImJoyCore(config) };
+    }
   };
 })();
