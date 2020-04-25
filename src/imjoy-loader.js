@@ -28,22 +28,31 @@
   // for example `version: "0.11.13"` or `version: "latest"`
   // 2) debug, by default, the minified version will be used,
   // if debug==true, the full version will be served
-  window.loadImJoyCore = async function(config) {
-    var baseUrl;
-    config = config || {};
-    if (config.version) {
-      baseUrl = `https://cdn.jsdelivr.net/npm/imjoy-core@${
-        config.version
-      }/dist/`;
-    } else {
-      baseUrl = scriptBaseUrl;
-    }
-    if (config.debug) {
-      await _injectScript(baseUrl + "imjoy-core.js");
-    } else {
-      await _injectScript(baseUrl + "imjoy-core.min.js");
-    }
-    return window.imjoyCore;
+  window.loadImJoyCore = function(config) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        var baseUrl;
+        config = config || {};
+        if (config.version) {
+          baseUrl = `https://cdn.jsdelivr.net/npm/imjoy-core@${
+            config.version
+          }/dist/`;
+        } else {
+          baseUrl = scriptBaseUrl;
+        }
+        if (config.debug) {
+          await _injectScript(baseUrl + "imjoy-core.js");
+        } else {
+          await _injectScript(baseUrl + "imjoy-core.min.js");
+        }
+        if (typeof define === "function" && define.amd)
+          require(["imjoyCore"], resolve);
+        else if (window["imjoyCore"]) resolve(window["imjoyCore"]);
+        else reject("Failed to import imjoy-core.");
+      } catch (e) {
+        reject(e);
+      }
+    });
   };
 
   // Load the script for a plugin to communicate with a parent frame
