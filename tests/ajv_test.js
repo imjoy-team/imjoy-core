@@ -13,22 +13,6 @@ describe("ajv", async () => {
     myfile: new File(["foo"], "foo.txt", {
       type: "text/plain",
     }),
-    remotefileurl: {
-      __jailed_type__: "file",
-      __url__: "https://imjoy.io/index.js",
-      __mime__: "text/javascript",
-    },
-    remotefilepath: {
-      __jailed_type__: "file",
-      __path__: "/usr/hello/index.js",
-      __mime__: "text/javascript",
-    },
-    remotearray: {
-      __jailed_type__: "ndarray",
-      __url__: "http://localhost:8000/dummy_dataset.zarr",
-      __shape__: [10, 10],
-      __dtype__: "uint8",
-    },
   };
   it("should validate ndarray", async () => {
     // correct shape
