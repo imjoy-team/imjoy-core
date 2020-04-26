@@ -132,6 +132,36 @@ const win = await api.showDialog({
 // further interaction can be performed via `win` object
 ```
 
+### Automatically switching between plugin and core mode
+For web applications which support loading as a plugin and use the imjoy core,
+we provide a function to enable automatic swithching between the two modes by detecting whether the current webpage is loaded inside an iframe:
+```js
+const imjoyAuto = await window.loadImJoyAuto()
+if(imjoyAuto.mode === 'plugin'){
+    const api = imjoyAuto.api;
+    function setup(){
+        api.alert('ImJoy plugin initialized.')
+    }
+    //...export your plugin api
+    api.export({ setup })
+}
+else if(imjoy.mode === 'core'){
+    const imjoy = new imjoyAuto.core.ImJoy({
+        imjoy_api: {},
+        //imjoy config
+    });
+
+    imjoy.start({workspace: 'default'}).then(async ()=>{
+        console.log('ImJoy started');
+    })
+}
+```
+
+### API options
+For all three api function (`loadImJoyPluginAPI`, `loadImJoyCore` and `loadImJoyAuto`), you can optinally pass a `config` object contains the following options:
+ * `version`: specify the imjoy-core library version
+ * `debug`: load the full imjoy-core version instead of a minified version, useful for debugging
+
 ## Examples for using the ImJoy Core
 
 To get started, please take a look at:

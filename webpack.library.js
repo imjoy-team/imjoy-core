@@ -8,7 +8,8 @@ module.exports = (env, argv) => {
         path: path.resolve(__dirname, 'dist'),
         filename: argv.filename || 'imjoy-core.js',
         library: 'imjoyCore',
-        libraryTarget: argv.libraryTarget ? argv.libraryTarget : 'umd'
+        libraryTarget: argv.libraryTarget ? argv.libraryTarget : 'umd',
+        umdNamedDefine: true
     }
     if(argv.generate_service_worker){
         options.plugins.push(
