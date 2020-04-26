@@ -335,7 +335,7 @@ export class PluginManager {
       console.log("Service workers are not supported.");
     }
 
-    await initializeJailed(config);
+    initializeJailed(config);
 
     this.plugins = {};
     this.plugin_names = {};
