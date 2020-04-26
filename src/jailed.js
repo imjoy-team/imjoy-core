@@ -18,8 +18,9 @@
  *  _pluginCore.js    common plugin site protocol implementation
  */
 
-import { randId, Whenable } from "../utils.js";
-import { getBackendByType } from "../api.js";
+import { randId, Whenable } from "./utils.js";
+import { getBackendByType } from "./api.js";
+import { JailedSite } from "imjoy-rpc";
 
 import DOMPurify from "dompurify";
 
@@ -30,49 +31,16 @@ var JailedConfig = { asset_url: "https://lib.imjoy.io/static/jailed/" };
  */
 var platform_initialized = false;
 var initializeJailed = function(config) {
-  return new Promise((resolve, reject) => {
-    if (config) {
-      for (let k in config) {
-        JailedConfig[k] = config[k];
-      }
+  if (config) {
+    for (let k in config) {
+      JailedConfig[k] = config[k];
     }
-    // normalize asset_url
-    if (!JailedConfig.asset_url.endsWith("/")) {
-      JailedConfig.asset_url = JailedConfig.asset_url + "/";
-    }
-    // loads additional script to the application environment
-    var script = document.createElement("script");
-    script.src = JailedConfig.asset_url + "_JailedSite.js";
-
-    var clear = function() {
-      script.onload = null;
-      script.onerror = null;
-      script.onreadystatechange = null;
-      script.parentNode.removeChild(script);
-    };
-
-    var success = function() {
-      clear();
-      platform_initialized = true;
-      resolve();
-    };
-
-    var fail = function() {
-      clear();
-      reject("Failed to load JailedSite script for jailed module.");
-    };
-
-    script.onerror = fail;
-    script.onload = success;
-    script.onreadystatechange = function() {
-      var state = script.readyState;
-      if (state === "loaded" || state === "complete") {
-        success();
-      }
-    };
-
-    document.body.appendChild(script);
-  });
+  }
+  // normalize asset_url
+  if (!JailedConfig.asset_url.endsWith("/")) {
+    JailedConfig.asset_url = JailedConfig.asset_url + "/";
+  }
+  platform_initialized = true;
 };
 
 /**
@@ -268,7 +236,7 @@ class BasicConnection {
     var iframe_container = config.iframe_container;
     var sample = document.createElement("iframe");
     this._loggingHandler = () => {};
-    sample.src = config.base_frame || JailedConfig.asset_url + "_frame.html";
+    sample.src = config.base_frame || "/base_frame.html";
     sample.sandbox = "";
     sample.frameBorder = "0";
     sample.style.width = "100%";
@@ -677,34 +645,10 @@ DynamicPlugin.prototype._init = function() {
   /*global JailedSite*/
   this._site = new JailedSite(this._connection, this.id, lang);
 
-  var me = this;
   this.registerSiteEvents(this._site);
 
   this.getRemoteCallStack = this._site.getRemoteCallStack;
-  var sCb = function() {
-    me._loadCore();
-  };
-  this._connection.importScript(
-    JailedConfig.asset_url + "_JailedSite.js",
-    sCb,
-    this._fCb
-  );
-};
-
-/**
- * Loads the core scirpt into the plugin
- */
-DynamicPlugin.prototype._loadCore = function() {
-  var me = this;
-  var sCb = function() {
-    me._sendInterface();
-  };
-
-  this._connection.importScript(
-    JailedConfig.asset_url + "_pluginCore.js",
-    sCb,
-    this._fCb
-  );
+  this._sendInterface();
 };
 
 /**
