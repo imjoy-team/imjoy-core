@@ -1,21 +1,11 @@
 /**
  * @fileoverview Jailed - safe yet flexible sandbox
- * @version 0.3.1
+ *
+ * @license MIT, see http://github.com/imjoy-team/imjoy-core
+ * Copyright (c) 2020 asvd <imjoy.team@gmail.com>
  *
  * @license MIT, see http://github.com/asvd/jailed
  * Copyright (c) 2014 asvd <heliosframework@gmail.com>
- *
- * Main library script, the only one to be loaded by a developer into
- * the application. Other scrips shipped along will be loaded by the
- * library either here (application site), or into the plugin site
- * (Worker/child process):
- *
- *  _JailedSite.js    loaded into both applicaiton and plugin sites
- *  _frame.html       sandboxed frame (web)
- *  _frame.js         sandboxed frame code (web)
- *  _pluginWebWorker.js  platform-dependent plugin routines (web / worker)
- *  _pluginWebIframe.js  platform-dependent plugin routines (web / iframe)
- *  _pluginCore.js    common plugin site protocol implementation
  */
 
 import { randId, Whenable } from "./utils.js";

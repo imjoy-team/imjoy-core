@@ -122,7 +122,7 @@ export async function loadImJoyPluginAPI(config) {
     } else {
       baseUrl = _getScriptUrl();
     }
-    await _injectScript(baseUrl + "static/jailed/_frame.js");
+    await _injectScript(baseUrl + "imjoy-rpc.min.js");
   } else {
     throw new Error("The plugins script can only be used inside an iframe.");
   }

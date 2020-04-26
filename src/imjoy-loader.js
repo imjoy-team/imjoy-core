@@ -65,13 +65,17 @@
       if (_inIframe()) {
         var baseUrl;
         if (config && config.version) {
-          baseUrl = `https://cdn.jsdelivr.net/npm/imjoy-core@${
+          baseUrl = `https://cdn.jsdelivr.net/npm/imjoy-rpc@${
             config.version
           }/dist/`;
         } else {
           baseUrl = scriptBaseUrl;
         }
-        _injectScript(baseUrl + "static/jailed/_frame.js")
+        let rpc_url = baseUrl + "imjoy-rpc.min.js";
+        if (config.debug) {
+          rpc_url = baseUrl + "imjoy-rpc.js";
+        }
+        _injectScript(rpc_url)
           .then(() => {
             window.addEventListener("imjoy_api_ready", e => {
               // imjoy plugin api
