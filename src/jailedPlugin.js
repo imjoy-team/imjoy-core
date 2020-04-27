@@ -14,7 +14,12 @@ import { ImJoyRPC } from "imjoy-rpc";
 
 import DOMPurify from "dompurify";
 
-var JailedConfig = { asset_url: "https://lib.imjoy.io/" };
+const JailedConfig = {};
+if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
+  JailedConfig.asset_url = "/";
+} else {
+  JailedConfig.asset_url = "https://lib.imjoy.io/";
+}
 /**
  * Initializes the library site for web environment
  */
