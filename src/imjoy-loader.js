@@ -75,10 +75,21 @@
         if (config.debug) {
           rpc_url = baseUrl + "imjoy-rpc.js";
         }
+
         _injectScript(rpc_url)
           .then(() => {
-            try {
+            if (typeof define === "function" && define.amd)
+              require(["imjoyRPC"], imjoyRPC => {
+                imjoyRPC.initRPC(config);
+              });
+            else if (window["imjoyRPC"]) {
               window.imjoyRPC.initRPC(config);
+            } else {
+              reject("Failed to import imjoy-rpc.");
+              return;
+            }
+
+            try {
               window.addEventListener("imjoy_api_ready", e => {
                 // imjoy plugin api
                 resolve(e.detail);
