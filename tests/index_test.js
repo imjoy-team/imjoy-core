@@ -31,7 +31,7 @@ describe("ImJoy Core", async () => {
       show_message_callback: console.log,
       jailed_asset_url: `${location.protocol}//${location.hostname}${
         location.port ? ":" + location.port : ""
-      }/static/jailed/`,
+      }/`,
       client_id: "123",
     });
     wm = imjoy.wm; //window_manager

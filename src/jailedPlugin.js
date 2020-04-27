@@ -10,14 +10,13 @@
 
 import { randId, Whenable } from "./utils.js";
 import { getBackendByType } from "./api.js";
-import { JailedSite } from "imjoy-rpc";
+import { ImJoyRPC } from "imjoy-rpc";
 
 import DOMPurify from "dompurify";
 
-var JailedConfig = { asset_url: "https://lib.imjoy.io/static/jailed/" };
+var JailedConfig = { asset_url: "https://lib.imjoy.io/" };
 /**
- * Initializes the library site for web environment (loads
- * _JailedSite.js)
+ * Initializes the library site for web environment
  */
 var platform_initialized = false;
 var initializeJailed = function(config) {
@@ -226,7 +225,8 @@ class BasicConnection {
     var iframe_container = config.iframe_container;
     var sample = document.createElement("iframe");
     this._loggingHandler = () => {};
-    sample.src = config.base_frame || "/base_frame.html";
+    sample.src =
+      config.base_frame || JailedConfig.asset_url + "base_frame.html";
     sample.sandbox = "";
     sample.frameBorder = "0";
     sample.style.width = "100%";
@@ -626,12 +626,10 @@ DynamicPlugin.prototype.registerSiteEvents = function(_site) {
 };
 
 /**
- * Creates the Site object for the plugin, and then loads the
- * common routines (_JailedSite.js)
+ * Creates the Site object for the plugin
  */
 DynamicPlugin.prototype._init = function() {
-  /*global JailedSite*/
-  this._site = new JailedSite(this._connection);
+  this._site = new ImJoyRPC(this._connection);
 
   this.registerSiteEvents(this._site);
 

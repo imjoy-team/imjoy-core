@@ -77,11 +77,15 @@
         }
         _injectScript(rpc_url)
           .then(() => {
-            window.initializeRPC(config);
-            window.addEventListener("imjoy_api_ready", e => {
-              // imjoy plugin api
-              resolve(e.detail);
-            });
+            try {
+              window.initializeRPC(config);
+              window.addEventListener("imjoy_api_ready", e => {
+                // imjoy plugin api
+                resolve(e.detail);
+              });
+            } catch (e) {
+              reject(e);
+            }
           })
           .catch(reject);
       } else {
