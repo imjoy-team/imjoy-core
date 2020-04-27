@@ -630,10 +630,8 @@ DynamicPlugin.prototype.registerSiteEvents = function(_site) {
  * common routines (_JailedSite.js)
  */
 DynamicPlugin.prototype._init = function() {
-  var lang = this.backend.lang;
-
   /*global JailedSite*/
-  this._site = new JailedSite(this._connection, this.id, lang);
+  this._site = new JailedSite(this._connection);
 
   this.registerSiteEvents(this._site);
 

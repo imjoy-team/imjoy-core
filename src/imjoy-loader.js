@@ -77,6 +77,7 @@
         }
         _injectScript(rpc_url)
           .then(() => {
+            window.initializeRPC();
             window.addEventListener("imjoy_api_ready", e => {
               // imjoy plugin api
               resolve(e.detail);
