@@ -19,6 +19,9 @@ export const utils = _utils;
 
 export { version } from "../package.json";
 
+import * as imjoyRPC from "imjoy-rpc";
+export { imjoyRPC };
+
 export class ImJoy {
   constructor({
     imjoy_api = null,
@@ -110,21 +113,4 @@ export class ImJoy {
     this.pm.destroy();
     this.em.destroy();
   }
-}
-
-export async function loadImJoyPluginAPI(config) {
-  if (_inIframe()) {
-    var baseUrl;
-    if (config && config.version) {
-      baseUrl = `https://cdn.jsdelivr.net/npm/imjoy-core@${
-        config.version
-      }/dist/`;
-    } else {
-      baseUrl = _getScriptUrl();
-    }
-    await _injectScript(baseUrl + "imjoy-rpc.min.js");
-  } else {
-    throw new Error("The plugins script can only be used inside an iframe.");
-  }
-  return window.api;
 }

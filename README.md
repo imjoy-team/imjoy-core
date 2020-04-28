@@ -60,20 +60,21 @@ imjoy.start({workspace: 'default'}).then(async ()=>{
 
 ```
 
-### Run your web application as an ImJoy window plugin
+### Use your web application inside ImJoy
 
-If you want to support loading your web app as an ImJoy `window` plugin, you can easily support by the following options.
+If you want to support loading your web app as an ImJoy `window` plugin, and that will allow users use your web app from within ImJoy and being able to make a workflow out of it. For example, if you have a web app for visualizing data which made to be used as a standalone app, it is easy make it work as an ImJoy window plugin. 
 
-For example, if you have a web app for visualizing data which made to be used as a standalone app, it is easy make it work as an ImJoy window plugin. 
+You can easily support by loading the ImJoy Remote Procedure Call(RPC) runtime, which will load and give you an `api` object from the ImJoy core. Later on you can use the `api` functions to register your own api functions (e.g. a `imshow` function for a image viewer app).
 
-#### Option 1: Load the ImJoy plugin API in your HTML file
+#### Option 1: Load the ImJoy RPC library in your HTML file
 ```js
 <script src="https://lib.imjoy.io/imjoy-loader.js"></script>
 
 <script>
-loadImJoyPluginAPI().then((api)=>{
+loadImJoyRPC().then(async (imjoyRPC)=>{
+    const api = await imjoyRPC.setupRPC();
     function setup(){
-        api.alert('ImJoy plugin initialized.')
+        api.alert('ImJoy RPC initialized.')
     }
     // define your plugin api which can be called by other plugins in ImJoy
     function my_api_func(){
@@ -88,7 +89,7 @@ loadImJoyPluginAPI().then((api)=>{
 Note: you can use the returned `api` object, and also a global `api` object will also be injected (as `window.api`).
 
 A full example html file can be found [here](/src/plugin-example.html).
-#### Option 2: Load the ImJoy plugin API from the npm module
+#### Option 2: Import the ImJoy RPC library from imjoy-core npm module
 
 Install the core via npm:
 
@@ -96,12 +97,12 @@ Install the core via npm:
 npm install imjoy-core
 ```
 
-Then you can load the ImJoy plugin API, a global `api` object will also be injected (as `window.api`).
+Then you can load the ImJoy RPC runtime and setup the RPC, an `api` object can then be used to interact with the ImJoy core.
 
 ```js
-import { loadImJoyPluginAPI } from 'imjoy-core'
+import { imjoyRPC } from 'imjoy-core';
 
-loadImJoyPluginAPI().then((api)=>{
+imjoyRPC.setupRPC().then((api)=>{
  // call api.export to expose your plugin api
 })
 ```
@@ -158,7 +159,7 @@ else if(imjoy.mode === 'core'){
 ```
 
 ### API options
-For all three api function (`loadImJoyPluginAPI`, `loadImJoyCore` and `loadImJoyAuto`), you can optinally pass a `config` object contains the following options:
+For all three api function (`loadImJoyRPC`, `loadImJoyCore` and `loadImJoyAuto`), you can optinally pass a `config` object contains the following options:
  * `version`: specify the imjoy-core library version
  * `debug`: load the full imjoy-core version instead of a minified version, useful for debugging
 

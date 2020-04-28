@@ -60,7 +60,7 @@
   // it support the following options:
   // 1) version, you can specify a specific version of the core,
   // for example `version: "0.11.13"` or `version: "latest"`
-  window.loadImJoyPluginAPI = function(config) {
+  window.loadImJoyRPC = function(config) {
     return new Promise((resolve, reject) => {
       if (_inIframe()) {
         var baseUrl;
@@ -79,23 +79,12 @@
         _injectScript(rpc_url)
           .then(() => {
             if (typeof define === "function" && define.amd)
-              require(["imjoyRPC"], imjoyRPC => {
-                imjoyRPC.initRPC(config);
-              });
+              require(["imjoyRPC"], resolve);
             else if (window["imjoyRPC"]) {
-              window.imjoyRPC.initRPC(config);
+              resolve(window.imjoyRPC);
             } else {
               reject("Failed to import imjoy-rpc.");
               return;
-            }
-
-            try {
-              window.addEventListener("imjoy_api_ready", e => {
-                // imjoy plugin api
-                resolve(e.detail);
-              });
-            } catch (e) {
-              reject(e);
             }
           })
           .catch(reject);
@@ -109,7 +98,7 @@
 
   window.loadImJoyAuto = async function(config) {
     if (_inIframe()) {
-      return { mode: "plugin", api: await window.loadImJoyPluginAPI(config) };
+      return { mode: "plugin", api: await window.loadImJoyRPC(config) };
     } else {
       return { mode: "core", core: await window.loadImJoyCore(config) };
     }

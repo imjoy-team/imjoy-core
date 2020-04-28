@@ -10,7 +10,7 @@
 
 import { randId, Whenable } from "./utils.js";
 import { getBackendByType } from "./api.js";
-import { ImJoyRPC } from "imjoy-rpc";
+import { RPC } from "imjoy-rpc";
 
 import DOMPurify from "dompurify";
 
@@ -634,7 +634,7 @@ DynamicPlugin.prototype.registerSiteEvents = function(_site) {
  * Creates the Site object for the plugin
  */
 DynamicPlugin.prototype._init = function() {
-  this._site = new ImJoyRPC(this._connection);
+  this._site = new RPC(this._connection);
 
   this.registerSiteEvents(this._site);
 
