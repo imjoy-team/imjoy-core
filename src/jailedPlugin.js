@@ -23,8 +23,8 @@ if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
 /**
  * Initializes the library site for web environment
  */
-var platform_initialized = false;
-var initializeJailed = function(config) {
+let _initialized = false;
+const initializeJailed = function(config) {
   if (config) {
     for (let k in config) {
       JailedConfig[k] = config[k];
@@ -34,7 +34,7 @@ var initializeJailed = function(config) {
   if (!JailedConfig.asset_url.endsWith("/")) {
     JailedConfig.asset_url = JailedConfig.asset_url + "/";
   }
-  platform_initialized = true;
+  _initialized = true;
 };
 
 /**
@@ -45,7 +45,7 @@ var initializeJailed = function(config) {
  * @param {Object} _interface to provide to the plugin
  */
 var DynamicPlugin = function(config, _interface, engine, is_proxy, allow_evil) {
-  if (!platform_initialized)
+  if (!_initialized)
     throw "Please call `initializeJailed()` before using Jailed.";
   this.config = config;
   this.id = config.id || randId();
@@ -90,13 +90,13 @@ DynamicPlugin.prototype._bindInterface = function(_interface) {
   this._initialInterface = { __as_interface__: true };
   // bind this plugin to api functions
   for (var k in _interface) {
-    if (_interface.hasOwnProperty(k)) {
+    if (Object.prototype.hasOwnProperty.call(_interface, k)) {
       if (typeof _interface[k] === "function") {
         this._initialInterface[k] = _interface[k].bind(null, this);
       } else if (typeof _interface[k] === "object") {
         var utils = {};
         for (var u in _interface[k]) {
-          if (_interface[k].hasOwnProperty(u)) {
+          if (Object.prototype.hasOwnProperty.call(_interface[k], u)) {
             if (typeof _interface[k][u] === "function") {
               utils[u] = _interface[k][u].bind(null, this);
             }
@@ -191,21 +191,9 @@ DynamicPlugin.prototype._connect = function() {
         me.error(e);
         me._set_disconnected();
       });
-
-    // me._connection._platformConnection.onLogging(function(details) {
-    //   if (details.type === "error") {
-    //     me.error(details.value);
-    //   } else if (details.type === "progress") {
-    //     me.progress(details.value);
-    //   } else if (details.type === "info") {
-    //     me.log(details.value);
-    //   } else {
-    //     console.log(details.value);
-    //   }
-    // });
   } else {
     if (!getBackendByType(me.type)) {
-      throw `Unsupported backend type (${type})`;
+      throw `Unsupported backend type (${me.type})`;
     }
     if (!me.config.base_frame) {
       me.config.base_frame = JailedConfig.asset_url + "base_frame.html";
@@ -228,14 +216,12 @@ DynamicPlugin.prototype._connect = function() {
           me.error(details.message);
         }
       }
-      if (me._connection._platformConnection._frame) {
-        var iframe_container = document.getElementById(
-          me._connection._platformConnection._frame.id
-        );
-        iframe_container.parentNode.removeChild(iframe_container);
-      }
       me._set_disconnected();
       // me.terminate()
+      if (me.config.type === "window" && me.config.iframe_container) {
+        const container = document.getElementById(me.config.iframe_container);
+        container.parentNode.removeChild(container);
+      }
     });
   }
 };
@@ -525,13 +511,15 @@ DynamicPlugin.prototype.off = function(name, handler) {
   }
 };
 DynamicPlugin.prototype.emit = function(name, data) {
-  return new Promise(async (resolve, reject) => {
+  return new Promise((resolve, reject) => {
     const errors = [];
     try {
       if (this._callbacks[name]) {
         for (let cb of this._callbacks[name]) {
           try {
-            await cb(data !== undefined ? data : undefined);
+            cb(data !== undefined ? data : undefined)
+              .then(resolve)
+              .catch(reject);
           } catch (e) {
             errors.push(e);
             console.error(e);
