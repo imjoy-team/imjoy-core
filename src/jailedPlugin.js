@@ -511,14 +511,16 @@ DynamicPlugin.prototype.off = function(name, handler) {
   }
 };
 DynamicPlugin.prototype.emit = function(name, data) {
+  // eslint-disable-next-line no-async-promise-executor
   return new Promise(async (resolve, reject) => {
-    // eslint-disable-line no-async-promise-executor
     const errors = [];
     try {
       if (this._callbacks[name]) {
         for (let cb of this._callbacks[name]) {
           try {
-            await cb(data !== undefined ? data : undefined);
+            cb(data !== undefined ? data : undefined)
+              .then(resolve)
+              .catch(reject);
           } catch (e) {
             errors.push(e);
             console.error(e);
