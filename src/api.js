@@ -200,7 +200,20 @@ export const CONFIGURABLE_FIELDS = [
   "type",
   "flags",
   "cover",
+  "base_frame",
 ];
+
+export const PLUGIN_CONFIG_FIELDS = CONFIGURABLE_FIELDS.concat([
+  "name",
+  "type",
+  "tags",
+  "version",
+  "api_version",
+  "defaults",
+  "inputs",
+  "outputs",
+  "permissions",
+]);
 
 const _backends = {
   "web-worker": {

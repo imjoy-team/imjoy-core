@@ -33,6 +33,7 @@ import {
   WINDOW_SCHEMA,
   PLUGIN_SCHEMA,
   CONFIGURABLE_FIELDS,
+  PLUGIN_CONFIG_FIELDS,
   upgradePluginAPI,
   ajv,
 } from "./api.js";
@@ -2275,6 +2276,10 @@ export class PluginManager {
           .catch(reject);
       } else {
         let window_config;
+        // set type to external if src is present
+        if (wconfig.src && !wconfig.type) {
+          wconfig.type = "external";
+        }
         if (wconfig.type === "external") {
           if (wconfig.name === wconfig.type)
             wconfig.name = wconfig.src.split("?")[0];
@@ -2282,16 +2287,20 @@ export class PluginManager {
             reject("You must specify the `src` for the external window.");
             return;
           }
-          window_config = Object.assign(
-            {
-              base_frame: wconfig.src,
-            },
-            wconfig
-          );
-          window_config.type = "window";
-          window_config.id = "external_" + randId();
+          window_config = Object.assign({}, wconfig);
           delete window_config.data;
           delete window_config.config;
+          // copy valid config options as external window plugin <config> block
+          if (typeof wconfig.config === "object") {
+            for (let k of PLUGIN_CONFIG_FIELDS) {
+              if (wconfig.config[k]) {
+                window_config[k] = wconfig.config[k];
+              }
+            }
+          }
+          window_config.base_frame = wconfig.src;
+          window_config.type = "window";
+          window_config.id = "external_" + randId();
         } else {
           window_config = this.registered.windows[wconfig.type];
         }
