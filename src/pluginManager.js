@@ -2334,7 +2334,7 @@ export class PluginManager {
         pconfig.loading = true;
         const loadingTimer = setTimeout(() => {
           pconfig.loading = false;
-          console.error(`Failed to load window "${pconfig.name}" in 10s.`);
+          console.warn(`Failed to load window "${pconfig.name}" in 10s.`);
         }, 10000);
         if (pconfig.window_container) {
           this.wm.setupCallbacks(pconfig);
