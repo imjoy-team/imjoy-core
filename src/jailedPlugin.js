@@ -201,8 +201,8 @@ DynamicPlugin.prototype._connect = function() {
     me._connection = new Connection(me.id, me.type, me.config);
     me.initializing = true;
     me._updateUI();
-    me._connection.whenInit(function() {
-      me._init();
+    me._connection.whenInit(function(platformSpec) {
+      me._init(platformSpec);
     });
     me._connection.whenFailed(function(e) {
       me._fail.emit(e);
