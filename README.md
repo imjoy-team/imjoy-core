@@ -137,23 +137,15 @@ const win = await api.showDialog({
 For web applications which support loading as a plugin and use the imjoy core,
 we provide a function to enable automatic swithching between the two modes by detecting whether the current webpage is loaded inside an iframe:
 ```js
-const imjoyAuto = await window.loadImJoyAuto()
-if(imjoyAuto.mode === 'plugin'){
-    const api = imjoyAuto.api;
-    function setup(){
-        api.alert('ImJoy plugin initialized.')
-    }
-    //...export your plugin api
-    api.export({ setup })
+// check if it's inside an iframe
+if(window.self !== window.top){
+    loadImJoyRPC().then((imjoyRPC)=>{
+        
+    })
 }
-else if(imjoy.mode === 'core'){
-    const imjoy = new imjoyAuto.core.ImJoy({
-        imjoy_api: {},
-        //imjoy config
-    });
+else {
+    loadImJoyCore().then((imjoyCore)=>{
 
-    imjoy.start({workspace: 'default'}).then(async ()=>{
-        console.log('ImJoy started');
     })
 }
 ```

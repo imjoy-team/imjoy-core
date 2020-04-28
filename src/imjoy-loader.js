@@ -29,10 +29,10 @@
   // 2) debug, by default, the minified version will be used,
   // if debug==true, the full version will be served
   window.loadImJoyCore = function(config) {
+    config = config || {};
     return new Promise(async (resolve, reject) => {
       try {
         var baseUrl;
-        config = config || {};
         if (config.version) {
           baseUrl = `https://cdn.jsdelivr.net/npm/imjoy-core@${
             config.version
@@ -61,10 +61,11 @@
   // 1) version, you can specify a specific version of the core,
   // for example `version: "0.11.13"` or `version: "latest"`
   window.loadImJoyRPC = function(config) {
+    config = config || {};
     return new Promise((resolve, reject) => {
       if (_inIframe()) {
         var baseUrl;
-        if (config && config.version) {
+        if (config.version) {
           baseUrl = `https://cdn.jsdelivr.net/npm/imjoy-rpc@${
             config.version
           }/dist/`;
@@ -94,13 +95,5 @@
         );
       }
     });
-  };
-
-  window.loadImJoyAuto = async function(config) {
-    if (_inIframe()) {
-      return { mode: "plugin", api: await window.loadImJoyRPC(config) };
-    } else {
-      return { mode: "core", core: await window.loadImJoyCore(config) };
-    }
   };
 })();
