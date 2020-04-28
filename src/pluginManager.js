@@ -191,35 +191,31 @@ export class PluginManager {
     window.api = this.imjoy_api;
     this.event_bus.on("engine_connected", async engine => {
       for (let k in this.plugins) {
-        if (this.plugins.hasOwnProperty(k)) {
-          const plugin = this.plugins[k];
-          try {
-            if (plugin.engine === engine) {
-              await this.reloadPlugin(plugin);
-            }
-            if (
-              plugin.config.engine_mode === "auto" &&
-              (plugin._disconnected || plugin.terminating)
-            ) {
-              await this.reloadPlugin(plugin);
-            }
-
-            if (plugin.config.engine_mode === engine.name) {
-              await this.reloadPlugin(plugin);
-            }
-          } catch (e) {
-            this.showMessage(e);
+        const plugin = this.plugins[k];
+        try {
+          if (plugin.engine === engine) {
+            await this.reloadPlugin(plugin);
           }
+          if (
+            plugin.config.engine_mode === "auto" &&
+            (plugin._disconnected || plugin.terminating)
+          ) {
+            await this.reloadPlugin(plugin);
+          }
+
+          if (plugin.config.engine_mode === engine.name) {
+            await this.reloadPlugin(plugin);
+          }
+        } catch (e) {
+          this.showMessage(e);
         }
       }
     });
     this.event_bus.on("engine_disconnected", async engine => {
       for (let k in this.plugins) {
-        if (this.plugins.hasOwnProperty(k)) {
-          const plugin = this.plugins[k];
-          if (plugin.engine === engine) {
-            this.unloadPlugin(plugin);
-          }
+        const plugin = this.plugins[k];
+        if (plugin.engine === engine) {
+          this.unloadPlugin(plugin);
         }
       }
     });
@@ -781,67 +777,68 @@ export class PluginManager {
   }
 
   reloadPlugins() {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
       if (this.plugins) {
         for (let k in this.plugins) {
-          if (this.plugins.hasOwnProperty(k)) {
-            const plugin = this.plugins[k];
-            if (typeof plugin.terminate === "function") {
-              try {
-                plugin.terminate().then(() => {
-                  this.update_ui_callback();
-                });
-              } catch (e) {
-                console.error(e);
-              }
+          const plugin = this.plugins[k];
+          if (typeof plugin.terminate === "function") {
+            try {
+              plugin.terminate().then(() => {
+                this.update_ui_callback();
+              });
+            } catch (e) {
+              console.error(e);
             }
-            this.plugins[k] = null;
-            this.plugin_names[plugin.name] = null;
           }
+          this.plugins[k] = null;
+          this.plugin_names[plugin.name] = null;
         }
       }
-      await this.init();
-      this.reloadDB().then(() => {
-        this.db
-          .allDocs({
-            include_docs: true,
-            attachments: true,
-            sort: "name",
-          })
-          .then(result => {
-            this.workflow_list = [];
-            this.installed_plugins = [];
-            for (let i = 0; i < result.total_rows; i++) {
-              const config = result.rows[i].doc;
-              if (config.workflow) {
-                this.workflow_list.push(config);
-              } else {
-                //verify hash
-                if (config.hash) {
-                  if (SparkMD5.hash(config.code) !== config.hash) {
-                    console.error(
-                      "Plugin source code signature mismatch, skip loading plugin",
-                      config
-                    );
-                    continue;
+      this.init()
+        .then(() => {
+          this.reloadDB().then(() => {
+            this.db
+              .allDocs({
+                include_docs: true,
+                attachments: true,
+                sort: "name",
+              })
+              .then(result => {
+                this.workflow_list = [];
+                this.installed_plugins = [];
+                for (let i = 0; i < result.total_rows; i++) {
+                  const config = result.rows[i].doc;
+                  if (config.workflow) {
+                    this.workflow_list.push(config);
+                  } else {
+                    //verify hash
+                    if (config.hash) {
+                      if (SparkMD5.hash(config.code) !== config.hash) {
+                        console.error(
+                          "Plugin source code signature mismatch, skip loading plugin",
+                          config
+                        );
+                        continue;
+                      }
+                    }
+                    config.installed = true;
+                    this.installed_plugins.push(config);
+                    this.reloadPlugin(config).catch(e => {
+                      console.error(config, e);
+                      this.showMessage(`<${config.name}>: ${e}`);
+                    });
                   }
                 }
-                config.installed = true;
-                this.installed_plugins.push(config);
-                this.reloadPlugin(config).catch(e => {
-                  console.error(config, e);
-                  this.showMessage(`<${config.name}>: ${e}`);
-                });
-              }
-            }
-            this.reloadInternalPlugins(true);
-            resolve();
-          })
-          .catch(err => {
-            console.error(err);
-            reject();
+                this.reloadInternalPlugins(true);
+                resolve();
+              })
+              .catch(err => {
+                console.error(err);
+                reject();
+              });
           });
-      });
+        })
+        .catch(reject);
     });
   }
 
@@ -1210,25 +1207,23 @@ export class PluginManager {
   unloadPlugin(_plugin, temp_remove) {
     const name = _plugin.name;
     for (let k in this.plugins) {
-      if (this.plugins.hasOwnProperty(k)) {
-        const plugin = this.plugins[k];
-        if (plugin.name === name) {
-          try {
-            if (temp_remove) {
-              delete this.plugins[k];
-              delete this.plugin_names[name];
-            }
-            plugin._unloaded = true;
-            this.unregister(plugin);
-            if (typeof plugin.terminate === "function") {
-              plugin.terminate().then(() => {
-                this.update_ui_callback();
-              });
-            }
-            this.update_ui_callback();
-          } catch (e) {
-            console.error(e);
+      const plugin = this.plugins[k];
+      if (plugin.name === name) {
+        try {
+          if (temp_remove) {
+            delete this.plugins[k];
+            delete this.plugin_names[name];
           }
+          plugin._unloaded = true;
+          this.unregister(plugin);
+          if (typeof plugin.terminate === "function") {
+            plugin.terminate().then(() => {
+              this.update_ui_callback();
+            });
+          }
+          this.update_ui_callback();
+        } catch (e) {
+          console.error(e);
         }
       }
     }
@@ -1409,7 +1404,7 @@ export class PluginManager {
         if (obj && typeof obj === "object" && !(obj instanceof Array)) {
           if (config.tag) {
             config[CONFIGURABLE_FIELDS[i]] = obj[config.tag];
-            if (!obj.hasOwnProperty(config.tag)) {
+            if (!Object.prototype.hasOwnProperty.call(obj, config.tag)) {
               console.log(
                 "WARNING: " +
                   CONFIGURABLE_FIELDS[i] +
@@ -1703,7 +1698,7 @@ export class PluginManager {
 
       // copy window api functions to the plugin instance
       for (let k in pconfig.api) {
-        if (pconfig.api.hasOwnProperty(k)) {
+        if (Object.prototype.hasOwnProperty.call(pconfig.api, k)) {
           imjoy_api[k] = function() {
             var args = Array.prototype.slice.call(arguments, 1);
             pconfig.api[k].apply(pconfig, args);
@@ -1926,12 +1921,10 @@ export class PluginManager {
 
   destroy() {
     for (let k in this.plugins) {
-      if (this.plugins.hasOwnProperty(k)) {
-        const plugin = this.plugins[k];
-        try {
-          if (typeof plugin.terminate === "function") plugin.terminate();
-        } catch (e) {}
-      }
+      const plugin = this.plugins[k];
+      try {
+        if (typeof plugin.terminate === "function") plugin.terminate();
+      } catch (e) {}
     }
   }
 
@@ -2338,6 +2331,11 @@ export class PluginManager {
           );
           throw error;
         }
+        pconfig.loading = true;
+        const loadingTimer = setTimeout(() => {
+          pconfig.loading = false;
+          console.error(`Failed to load window "${pconfig.name}" in 10s.`);
+        }, 10000);
         if (pconfig.window_container) {
           this.wm.setupCallbacks(pconfig);
           setTimeout(() => {
@@ -2361,15 +2359,15 @@ export class PluginManager {
                 await wplugin.terminate();
               });
               resolve(wplugin.api);
-            }).catch(reject);
+            })
+              .catch(reject)
+              .finally(() => {
+                clearTimeout(loadingTimer);
+                pconfig.loading = false;
+              });
           }, 0);
         } else {
           this.wm.addWindow(pconfig).then(() => {
-            pconfig.loading = true;
-            const loadingTimer = setTimeout(() => {
-              pconfig.loading = false;
-              console.error(`Failed to load window "${pconfig.name}" in 10s.`);
-            }, 10000);
             setTimeout(() => {
               pconfig.refresh();
               const p = this.renderWindow(pconfig);
@@ -2384,16 +2382,17 @@ export class PluginManager {
                   this.event_bus.emit("closing_window_plugin", wplugin);
                   await wplugin.terminate();
                 });
-                clearTimeout(loadingTimer);
-                pconfig.loading = false;
                 pconfig.refresh();
                 resolve(wplugin.api);
-              }).catch(e => {
-                clearTimeout(loadingTimer);
-                pconfig.loading = false;
-                pconfig.refresh();
-                reject(e);
-              });
+              })
+                .catch(e => {
+                  pconfig.refresh();
+                  reject(e);
+                })
+                .finally(() => {
+                  clearTimeout(loadingTimer);
+                  pconfig.loading = false;
+                });
             }, 0);
           });
         }
@@ -2419,14 +2418,12 @@ export class PluginManager {
   async getPlugins(_plugin) {
     const ps = [];
     for (let k in this.plugins) {
-      if (this.plugins.hasOwnProperty(k)) {
-        // if (this.plugins[k] === _plugin) continue;
-        ps.push({
-          name: this.plugins[k].name,
-          config: this.plugins[k].config,
-          api: this.plugins[k].api,
-        });
-      }
+      // if (this.plugins[k] === _plugin) continue;
+      ps.push({
+        name: this.plugins[k].name,
+        config: this.plugins[k].config,
+        api: this.plugins[k].api,
+      });
     }
     console.log(ps);
     return ps;
@@ -2494,7 +2491,7 @@ export class PluginManager {
 
   setPluginConfig(plugin, name, value) {
     if (!plugin) throw "setConfig Error: Plugin not found.";
-    if (name.startsWith("_") && plugin.config.hasOwnProperty(name.slice(1))) {
+    if (name.startsWith("_") && plugin.config[name.slice(1)]) {
       throw `'${name.slice(
         1
       )}' is a readonly field defined in <config> block, please avoid using it`;
@@ -2508,7 +2505,7 @@ export class PluginManager {
 
   getPluginConfig(plugin, name) {
     if (!plugin) throw "getConfig Error: Plugin not found.";
-    if (name.startsWith("_") && plugin.config.hasOwnProperty(name.slice(1))) {
+    if (name.startsWith("_") && plugin.config[name.slice(1)]) {
       return plugin.config[name.slice(1)];
     } else {
       return localStorage.getItem("config_" + plugin.name + "_" + name);
@@ -2554,18 +2551,16 @@ export class PluginManager {
   }
   checkUpdates() {
     for (let k in this.plugins) {
-      if (this.plugins.hasOwnProperty(k)) {
-        const plugin = this.plugins[k];
-        if (plugin.config.origin) {
+      const plugin = this.plugins[k];
+      if (plugin.config.origin) {
+        this.checkPluginUpdate(plugin);
+      } else {
+        const pc = this.available_plugins.find(p => {
+          return plugin.name === p.name;
+        });
+        if (pc) {
+          plugin.config.origin = pc.uri;
           this.checkPluginUpdate(plugin);
-        } else {
-          const pc = this.available_plugins.find(p => {
-            return plugin.name === p.name;
-          });
-          if (pc) {
-            plugin.config.origin = pc.uri;
-            this.checkPluginUpdate(plugin);
-          }
         }
       }
     }
