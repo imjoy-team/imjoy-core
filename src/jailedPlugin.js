@@ -518,9 +518,7 @@ DynamicPlugin.prototype.emit = function(name, data) {
       if (this._callbacks[name]) {
         for (let cb of this._callbacks[name]) {
           try {
-            cb(data !== undefined ? data : undefined)
-              .then(resolve)
-              .catch(reject);
+            await cb(data !== undefined ? data : undefined)
           } catch (e) {
             errors.push(e);
             console.error(e);
