@@ -2,7 +2,7 @@
  * @fileoverview Jailed - safe yet flexible sandbox
  *
  * @license MIT, see http://github.com/imjoy-team/imjoy-core
- * Copyright (c) 2020 asvd <imjoy.team@gmail.com>
+ * Copyright (c) 2020 ImJoy Team <imjoy.team@gmail.com>
  *
  * @license MIT, see http://github.com/asvd/jailed
  * Copyright (c) 2014 asvd <heliosframework@gmail.com>
