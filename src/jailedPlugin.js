@@ -259,11 +259,11 @@ DynamicPlugin.prototype.registerSiteEvents = function(_site) {
  * Creates the Site object for the plugin
  */
 DynamicPlugin.prototype._init = function() {
-  this._site = new RPC(this._connection);
-
-  this.registerSiteEvents(this._site);
-
-  this.getRemoteCallStack = this._site.getRemoteCallStack;
+  if (!this._site) {
+    this._site = new RPC(this._connection);
+    this.registerSiteEvents(this._site);
+    this.getRemoteCallStack = this._site.getRemoteCallStack;
+  }
   this._sendInterface();
 };
 
@@ -274,11 +274,8 @@ DynamicPlugin.prototype._init = function() {
 DynamicPlugin.prototype._sendInterface = function() {
   var me = this;
   this._site.onInterfaceSetAsRemote(function() {
-    if (me._disconnected) {
-      me._loadPlugin();
-    }
+    me._loadPlugin();
   });
-
   this._site.setInterface(this._initialInterface);
 };
 
@@ -518,7 +515,7 @@ DynamicPlugin.prototype.emit = function(name, data) {
       if (this._callbacks[name]) {
         for (let cb of this._callbacks[name]) {
           try {
-            await cb(data !== undefined ? data : undefined)
+            await cb(data !== undefined ? data : undefined);
           } catch (e) {
             errors.push(e);
             console.error(e);
