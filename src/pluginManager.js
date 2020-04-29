@@ -1593,7 +1593,7 @@ export class PluginManager {
           console.warn(`Plugin ${plugin.name} failed to load in 180s.`);
         }, 180000);
 
-        plugin.whenConnected(() => {
+        plugin.onConnected(() => {
           clearTimeout(plugin_loading_timer);
           if (!plugin.api) {
             console.error("Error occured when loading plugin.");
@@ -1663,7 +1663,7 @@ export class PluginManager {
             resolve(plugin);
           }
         });
-        plugin.whenFailed(e => {
+        plugin.onFailed(e => {
           clearTimeout(plugin_loading_timer);
           plugin.error(e);
           if (e) {
@@ -1712,7 +1712,7 @@ export class PluginManager {
       try {
         const plugin = new DynamicPlugin(tconfig, _interface);
 
-        plugin.whenConnected(() => {
+        plugin.onConnected(() => {
           if (!pconfig.standalone && pconfig.focus) pconfig.focus();
           if (!plugin.api) {
             console.error("the window plugin seems not ready.");
@@ -1772,7 +1772,7 @@ export class PluginManager {
               reject(e);
             });
         });
-        plugin.whenFailed(e => {
+        plugin.onFailed(e => {
           if (!pconfig.standalone && pconfig.focus) pconfig.focus();
           plugin.error(`Error occured when loading ${pconfig.name}: ${e}.`);
           plugin.terminate().then(() => {
