@@ -116,9 +116,9 @@ DynamicPlugin.prototype._connect = function() {
   this.remote = null;
   this.api = null;
 
-  this._connected = new Whenable();
-  this._fail = new Whenable();
-  this._disconnect = new Whenable();
+  this._connected = new Whenable(true);
+  this._fail = new Whenable(true);
+  this._disconnect = new Whenable(true);
 
   var me = this;
 
