@@ -1261,7 +1261,7 @@ export class PluginManager {
           template.type === "window" ||
           template.type === "web-python-window"
         ) {
-          p = this.preLoadPlugin(template);
+          p = this.loadProxyPlugin(template);
         } else {
           if (allow_evil === "eval is evil") {
             this._allowed_evil_plugin[template.name] = template.code;
@@ -1456,7 +1456,7 @@ export class PluginManager {
     }
   }
 
-  preLoadPlugin(template, rplugin) {
+  loadProxyPlugin(template, rplugin) {
     const config = {
       _id: template._id,
       name: template.name,
@@ -1523,17 +1523,6 @@ export class PluginManager {
       }
     });
   }
-
-  // registerExtension(exts, plugin) {
-  //   for (let i = 0; i < exts.length; i++) {
-  //     exts[i] = exts[i].replace(".", "");
-  //     if (this.registered.extensions[exts[i]]) {
-  //       this.registered.extensions[exts[i]].push(plugin);
-  //     } else {
-  //       this.registered.extensions[exts[i]] = [plugin];
-  //     }
-  //   }
-  // }
 
   loadPlugin(template, rplugin, allow_evil) {
     template = _clone(template);
@@ -1722,6 +1711,7 @@ export class PluginManager {
           plugin.api
             .setup()
             .then(() => {
+              this.event_bus.emit("plugin_loaded", plugin);
               //asuming the data._op is passed from last op
               pconfig.data = pconfig.data || {};
               pconfig.data._source_op = pconfig.data && pconfig.data._op;
@@ -1739,6 +1729,7 @@ export class PluginManager {
                 plugin.error(error_text);
                 return;
               }
+
               if (plugin.api.run) {
                 plugin.api
                   .run(this.filter4plugin(pconfig))
