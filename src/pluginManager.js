@@ -1719,13 +1719,11 @@ export class PluginManager {
               pconfig.plugin = plugin;
               pconfig.update = plugin.api.run;
               if (plugin.config.runnable && !plugin.api.run) {
-                const error_text =
-                  "You must define a `run` function for " +
+                const warn_text =
+                  "You should define a `run` function for " +
                   plugin.name +
                   " or set its `runnable` field to false.";
-                reject(error_text);
-                plugin.error(error_text);
-                return;
+                console.warn(warn_text);
               }
 
               if (plugin.api.run) {
@@ -2332,7 +2330,11 @@ export class PluginManager {
             if (pconfig.passive) {
               clearTimeout(loadingTimer);
               pconfig.loading = false;
-              resolve({ setup: () => {}, on: () => {} });
+              resolve({
+                __as_interface__: true,
+                setup: () => {},
+                on: () => {},
+              });
               return;
             }
             p.then(wplugin => {
@@ -2360,10 +2362,14 @@ export class PluginManager {
             setTimeout(() => {
               pconfig.refresh();
               const p = this.renderWindow(pconfig);
-              if (pconfig.passive) {
+              if (pconfig.passive || window_config.passive) {
                 clearTimeout(loadingTimer);
                 pconfig.loading = false;
-                resolve({ setup: () => {}, on: () => {} });
+                resolve({
+                  __as_interface__: true,
+                  setup: () => {},
+                  on: () => {},
+                });
                 return;
               }
               p.then(wplugin => {
@@ -2414,7 +2420,6 @@ export class PluginManager {
         api: this.plugins[k].api,
       });
     }
-    console.log(ps);
     return ps;
   }
 
