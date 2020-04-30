@@ -1,28 +1,29 @@
 /*eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_plugin$" }]*/
 import PouchDB from "pouchdb-browser";
 import SparkMD5 from "spark-md5";
-import axios from "axios";
 import _ from "lodash";
+import axios from "axios";
 import yaml from "js-yaml";
+import { Joy } from "./joy.js";
+import { saveAs } from "file-saver";
 
 import {
   _clone,
-  randId,
+  assert,
+  cacheUrlInServiceWorker,
+  compareVersions,
   debounce,
-  url_regex,
   githubImJoyManifest,
   githubRepo,
   githubUrlRaw,
-  assert,
-  compareVersions,
-  cacheUrlInServiceWorker,
+  randId,
+  url_regex,
 } from "./utils.js";
 
-import { parseComponent } from "./pluginParser.js";
-
+import INTERNAL_PLUGINS from "./internalPlugins.json";
 import { DynamicPlugin, initializeJailed } from "./jailedPlugin.js";
 import { getBackendByType } from "./api.js";
-import INTERNAL_PLUGINS from "./internalPlugins.json";
+import { parseComponent } from "./pluginParser.js";
 
 import {
   OP_SCHEMA,
@@ -37,9 +38,6 @@ import {
   upgradePluginAPI,
   ajv,
 } from "./api.js";
-
-import { Joy } from "./joy";
-import { saveAs } from "file-saver";
 
 export class PluginManager {
   constructor({
