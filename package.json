@@ -18,6 +18,7 @@
     "url": "https://github.com/imjoy-team/ImJoy/issues"
   },
   "homepage": "https://imjoy.io",
+  "module": "index.js",
   "scripts": {
     "serve": "webpack-dev-server --config webpack.library.js",
     "build": "rm -rf dist && npm run build-umd && npm run build-module",
@@ -38,6 +39,7 @@
     "imjoy-rpc": "^0.1.7",
     "js-yaml": "^3.13.1",
     "lodash": "^4.17.15",
+    "lz-string": "^1.4.4",
     "minibus": "^3.1.0",
     "pouchdb-browser": "^7.0.0",
     "spark-md5": "^3.0.0"
