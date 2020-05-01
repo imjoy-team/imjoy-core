@@ -1,6 +1,6 @@
 {
   "name": "imjoy-core",
-  "version": "0.11.20",
+  "version": "0.12.0",
   "private": false,
   "description": "The core library for ImJoy -- a sandboxed plugin framework for computational web applications.",
   "author": "imjoy-team <imjoy.team@gmail.com>",
