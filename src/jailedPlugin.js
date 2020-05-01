@@ -277,10 +277,10 @@ class DynamicPlugin {
     this.initializing = true;
     this._updateUI();
     this._connection.onInit(() => {
-      if (!this._site) {
-        this._site = new RPC(this._connection);
-        this.registerSiteEvents(this._site);
-        this.getRemoteCallStack = this._site.getRemoteCallStack;
+      if (!this._rpc) {
+        this._rpc = new RPC(this._connection);
+        this.registerSiteEvents(this._rpc);
+        this.getRemoteCallStack = this._rpc.getRemoteCallStack;
       }
       this._sendInterface();
     });
@@ -337,8 +337,8 @@ class DynamicPlugin {
     }
   }
 
-  registerSiteEvents(_site) {
-    _site.onDisconnect(details => {
+  registerSiteEvents(_rpc) {
+    _rpc.onDisconnect(details => {
       this._disconnect.emit();
       if (details) {
         if (details.success) {
@@ -350,14 +350,14 @@ class DynamicPlugin {
       this._set_disconnected();
     });
 
-    _site.onRemoteReady(() => {
+    _rpc.onRemoteReady(() => {
       if (this.running) {
         this.running = false;
         this._updateUI();
       }
     });
 
-    _site.onRemoteBusy(() => {
+    _rpc.onRemoteBusy(() => {
       if (!this._disconnected && !this.running) {
         this.running = true;
         this._updateUI();
@@ -370,10 +370,10 @@ class DynamicPlugin {
    * upon the Plugin creation
    */
   _sendInterface() {
-    this._site.onInterfaceSetAsRemote(() => {
+    this._rpc.onInterfaceSetAsRemote(() => {
       this._loadPlugin();
     });
-    this._site.setInterface(this._initialInterface);
+    this._rpc.setInterface(this._initialInterface);
   }
 
   /**
@@ -455,8 +455,8 @@ class DynamicPlugin {
    * interfaces provided to each other)
    */
   _requestRemote() {
-    this._site.onRemoteUpdate(() => {
-      this.remote = this._site.getRemote();
+    this._rpc.onRemoteUpdate(() => {
+      this.remote = this._rpc.getRemote();
       this.api = this.remote;
       this.api.__as_interface__ = true;
       this.api.__id__ = this.id;
@@ -466,7 +466,7 @@ class DynamicPlugin {
       this._connected.emit();
     });
 
-    this._site.requestRemote();
+    this._rpc.requestRemote();
   }
 
   /**
@@ -525,9 +525,9 @@ class DynamicPlugin {
       if (this.engine && this.engine.killPlugin)
         this.engine.killPlugin({ id: this.config.id, name: this.config.name });
       this._set_disconnected();
-      if (this._site) {
-        this._site.disconnect();
-        this._site = null;
+      if (this._rpc) {
+        this._rpc.disconnect();
+        this._rpc = null;
       }
       if (this._connection) {
         this._connection.disconnect();

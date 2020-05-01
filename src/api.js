@@ -199,6 +199,7 @@ export const CONFIGURABLE_FIELDS = [
   "ui",
   "type",
   "flags",
+  "labels",
   "cover",
   "base_frame",
 ];
