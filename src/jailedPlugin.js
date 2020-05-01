@@ -230,8 +230,7 @@ class DynamicPlugin {
             });
           return;
         }
-        this.remote = remote;
-        this.api = this.remote;
+        this.api = remote;
         this.api.__as_interface__ = true;
         this.api.__id__ = this.id;
         this._disconnected = false;
@@ -276,13 +275,19 @@ class DynamicPlugin {
     this._connection = new BasicConnection(_frame);
     this.initializing = true;
     this._updateUI();
-    this._connection.onInit(() => {
-      if (!this._rpc) {
-        this._rpc = new RPC(this._connection);
-        this.registerSiteEvents(this._rpc);
-        this.getRemoteCallStack = this._rpc.getRemoteCallStack;
-      }
-      this._sendInterface();
+    this._connection.onInit(async () => {
+      this._rpc = new RPC(this._connection);
+      this._registerSiteEvents(this._rpc);
+      this._rpc.setInterface(this._initialInterface);
+      await this._rpc.sendInterface();
+      await this._executePlugin();
+      this.api = await this._requestRemote();
+      this.api.__as_interface__ = true;
+      this.api.__id__ = this.id;
+      this._disconnected = false;
+      this.initializing = false;
+      this._updateUI();
+      this._connected.emit();
     });
     this._connection.onFailed(e => {
       this._fail.emit(e);
@@ -308,7 +313,6 @@ class DynamicPlugin {
    * Creates the connection to the plugin site
    */
   _connect() {
-    this.remote = null;
     this.api = null;
 
     this._connected = new Whenable(true);
@@ -337,7 +341,7 @@ class DynamicPlugin {
     }
   }
 
-  registerSiteEvents(_rpc) {
+  _registerSiteEvents(_rpc) {
     _rpc.onDisconnect(details => {
       this._disconnect.emit();
       if (details) {
@@ -366,21 +370,10 @@ class DynamicPlugin {
   }
 
   /**
-   * Sends to the remote site a signature of the interface provided
-   * upon the Plugin creation
-   */
-  _sendInterface() {
-    this._rpc.onInterfaceSetAsRemote(() => {
-      this._loadPlugin();
-    });
-    this._rpc.setInterface(this._initialInterface);
-  }
-
-  /**
    * Loads the plugin body (executes the code in case of the
    * DynamicPlugin)
    */
-  async _loadPlugin() {
+  async _executePlugin() {
     try {
       if (this.config.requirements) {
         await this._connection.execute({
@@ -391,9 +384,7 @@ class DynamicPlugin {
         });
       }
       if (
-        this.config.type === "iframe" ||
-        this.config.type === "window" ||
-        this.config.type === "web-python-window"
+        ["iframe", "window", "web-python-window"].includes(this.config.type)
       ) {
         if (this.config.styles) {
           for (let i = 0; i < this.config.styles.length; i++) {
@@ -437,8 +428,6 @@ class DynamicPlugin {
           });
         }
       }
-
-      this._requestRemote();
     } catch (e) {
       this._fCb(
         ("Error in loading plugin: " + e && e.toString()) ||
@@ -455,18 +444,12 @@ class DynamicPlugin {
    * interfaces provided to each other)
    */
   _requestRemote() {
-    this._rpc.onRemoteUpdate(() => {
-      this.remote = this._rpc.getRemote();
-      this.api = this.remote;
-      this.api.__as_interface__ = true;
-      this.api.__id__ = this.id;
-      this._disconnected = false;
-      this.initializing = false;
-      this._updateUI();
-      this._connected.emit();
+    return new Promise(resolve => {
+      this._rpc.onRemoteUpdate(() => {
+        resolve(this._rpc.getRemote());
+      });
+      this._rpc.requestRemote();
     });
-
-    this._rpc.requestRemote();
   }
 
   /**

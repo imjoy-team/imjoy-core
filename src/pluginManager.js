@@ -1702,12 +1702,11 @@ export class PluginManager {
         plugin.onConnected(() => {
           if (!pconfig.standalone && pconfig.focus) pconfig.focus();
           if (!plugin.api) {
-            console.error("the window plugin seems not ready.");
-            reject("the window plugin seems not ready.");
+            console.error("the window plugin has no api exported.");
+            reject("the window plugin has no api exported.");
             return;
           }
-          plugin.api
-            .setup()
+          (plugin.api.setup || async function() {})()
             .then(() => {
               this.event_bus.emit("plugin_loaded", plugin);
               //asuming the data._op is passed from last op
