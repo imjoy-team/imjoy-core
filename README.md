@@ -89,18 +89,18 @@ loadImJoyRPC().then(async (imjoyRPC)=>{
 Note: you can use the returned `api` object, and also a global `api` object will also be injected (as `window.api`).
 
 A full example html file can be found [here](/src/plugin-example.html).
-#### Option 2: Import the ImJoy RPC library from imjoy-core npm module
+#### Option 2: Import the ImJoy RPC library from the npm module
 
-Install the core via npm:
+Install the imjoy-rpc via npm:
 
 ```bash
-npm install imjoy-core
+npm install imjoy-rpc
 ```
 
 Then you can load the ImJoy RPC runtime and setup the RPC, an `api` object can then be used to interact with the ImJoy core.
 
 ```js
-import { imjoyRPC } from 'imjoy-core';
+import * as imjoyRPC from 'imjoy-rpc';
 
 imjoyRPC.setupRPC().then((api)=>{
  // call api.export to expose your plugin api
