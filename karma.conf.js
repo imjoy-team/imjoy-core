@@ -19,12 +19,14 @@ module.exports = function (config) {
             // only specify one entry point
             // and require all tests in there
             'tests/*_test.js',
-            { pattern: 'src/jailed/*', watched: false, included: false, served: true, nocache: false },
+            'src/base_frame.html',
+            { pattern: 'node_modules/imjoy-rpc/dist/*', watched: false, included: false, served: true, nocache: false },
             { pattern: 'src/*.js', watched: false, included: false, served: true, nocache: false },
         ],
 
         proxies: {
-            "/static/jailed/": "/base/src/jailed/",
+            "/base_frame.html": '/base/src/base_frame.html',
+            "/imjoy-rpc.js": '/base/node_modules/imjoy-rpc/dist/imjoy-rpc.js',
             "/plugin-service-worker.js": "/base/src/plugin-service-worker.js"
         },
 

@@ -1,9 +1,3 @@
-// require all modules ending in "_test" from the
-// current directory and all subdirectories
-const testsContext = require.context(".", true, /_test$/);
-
-// testsContext.keys().forEach(testsContext);
-
 import { expect } from "chai";
 
 import _ from "lodash";
@@ -31,7 +25,7 @@ describe("ImJoy Core", async () => {
       show_message_callback: console.log,
       jailed_asset_url: `${location.protocol}//${location.hostname}${
         location.port ? ":" + location.port : ""
-      }/static/jailed/`,
+      }/`,
       client_id: "123",
     });
     wm = imjoy.wm; //window_manager

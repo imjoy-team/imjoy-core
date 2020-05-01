@@ -1,4 +1,4 @@
-![License](https://img.shields.io/github/license/imjoy-team/imjoy-engine.svg)
+![License](https://img.shields.io/github/license/imjoy-team/imjoy-core.svg)
 [![Build ImJoy Core](https://github.com/imjoy-team/imjoy-core/workflows/Build%20ImJoy%20Core/badge.svg)](https://github.com/imjoy-team/imjoy-core/actions)
 [![Join the chat at https://gitter.im/imjoy-dev/community](https://badges.gitter.im/imjoy-dev/community.svg)](https://gitter.im/imjoy-dev/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![image.sc forum](https://img.shields.io/badge/dynamic/json.svg?label=forum&url=https%3A%2F%2Fforum.image.sc%2Ftags%2Fimjoy.json&query=%24.topic_list.tags.0.topic_count&colorB=brightgreen&suffix=%20topics&logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAAfSC3RAAABPklEQVR42m3SyyqFURTA8Y2BER0TDyExZ+aSPIKUlPIITFzKeQWXwhBlQrmFgUzMMFLKZeguBu5y+//17dP3nc5vuPdee6299gohUYYaDGOyyACq4JmQVoFujOMR77hNfOAGM+hBOQqB9TjHD36xhAa04RCuuXeKOvwHVWIKL9jCK2bRiV284QgL8MwEjAneeo9VNOEaBhzALGtoRy02cIcWhE34jj5YxgW+E5Z4iTPkMYpPLCNY3hdOYEfNbKYdmNngZ1jyEzw7h7AIb3fRTQ95OAZ6yQpGYHMMtOTgouktYwxuXsHgWLLl+4x++Kx1FJrjLTagA77bTPvYgw1rRqY56e+w7GNYsqX6JfPwi7aR+Y5SA+BXtKIRfkfJAYgj14tpOF6+I46c4/cAM3UhM3JxyKsxiOIhH0IO6SH/A1Kb1WBeUjbkAAAAAElFTkSuQmCC)](https://forum.image.sc/tags/imjoy)
@@ -60,20 +60,21 @@ imjoy.start({workspace: 'default'}).then(async ()=>{
 
 ```
 
-### Run your web application as an ImJoy window plugin
+### Use your web application inside ImJoy
 
-If you want to support loading your web app as an ImJoy `window` plugin, you can easily support by the following options.
+If you want to support loading your web app as an ImJoy `window` plugin, and that will allow users use your web app from within ImJoy and being able to make a workflow out of it. For example, if you have a web app for visualizing data which made to be used as a standalone app, it is easy make it work as an ImJoy window plugin. 
 
-For example, if you have a web app for visualizing data which made to be used as a standalone app, it is easy make it work as an ImJoy window plugin. 
+You can easily support by loading the ImJoy Remote Procedure Call(RPC) runtime, which will load and give you an `api` object from the ImJoy core. Later on you can use the `api` functions to register your own api functions (e.g. a `imshow` function for a image viewer app).
 
-#### Option 1: Load the ImJoy plugin API in your HTML file
+#### Option 1: Load the ImJoy RPC library in your HTML file
 ```js
 <script src="https://lib.imjoy.io/imjoy-loader.js"></script>
 
 <script>
-loadImJoyPluginAPI().then((api)=>{
+loadImJoyRPC().then(async (imjoyRPC)=>{
+    const api = await imjoyRPC.setupRPC();
     function setup(){
-        api.alert('ImJoy plugin initialized.')
+        api.alert('ImJoy RPC initialized.')
     }
     // define your plugin api which can be called by other plugins in ImJoy
     function my_api_func(){
@@ -88,20 +89,20 @@ loadImJoyPluginAPI().then((api)=>{
 Note: you can use the returned `api` object, and also a global `api` object will also be injected (as `window.api`).
 
 A full example html file can be found [here](/src/plugin-example.html).
-#### Option 2: Load the ImJoy plugin API from the npm module
+#### Option 2: Import the ImJoy RPC library from the npm module
 
-Install the core via npm:
+Install the imjoy-rpc via npm:
 
 ```bash
-npm install imjoy-core
+npm install imjoy-rpc
 ```
 
-Then you can load the ImJoy plugin API, a global `api` object will also be injected (as `window.api`).
+Then you can load the ImJoy RPC runtime and setup the RPC, an `api` object can then be used to interact with the ImJoy core.
 
 ```js
-import { loadImJoyPluginAPI } from 'imjoy-core'
+import * as imjoyRPC from 'imjoy-rpc';
 
-loadImJoyPluginAPI().then((api)=>{
+imjoyRPC.setupRPC().then((api)=>{
  // call api.export to expose your plugin api
 })
 ```
@@ -136,29 +137,21 @@ const win = await api.showDialog({
 For web applications which support loading as a plugin and use the imjoy core,
 we provide a function to enable automatic swithching between the two modes by detecting whether the current webpage is loaded inside an iframe:
 ```js
-const imjoyAuto = await window.loadImJoyAuto()
-if(imjoyAuto.mode === 'plugin'){
-    const api = imjoyAuto.api;
-    function setup(){
-        api.alert('ImJoy plugin initialized.')
-    }
-    //...export your plugin api
-    api.export({ setup })
+// check if it's inside an iframe
+if(window.self !== window.top){
+    loadImJoyRPC().then((imjoyRPC)=>{
+        
+    })
 }
-else if(imjoy.mode === 'core'){
-    const imjoy = new imjoyAuto.core.ImJoy({
-        imjoy_api: {},
-        //imjoy config
-    });
+else {
+    loadImJoyCore().then((imjoyCore)=>{
 
-    imjoy.start({workspace: 'default'}).then(async ()=>{
-        console.log('ImJoy started');
     })
 }
 ```
 
 ### API options
-For all three api function (`loadImJoyPluginAPI`, `loadImJoyCore` and `loadImJoyAuto`), you can optinally pass a `config` object contains the following options:
+For all three api function (`loadImJoyRPC`, `loadImJoyCore` and `loadImJoyAuto`), you can optinally pass a `config` object contains the following options:
  * `version`: specify the imjoy-core library version
  * `debug`: load the full imjoy-core version instead of a minified version, useful for debugging
 

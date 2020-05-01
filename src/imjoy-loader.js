@@ -29,10 +29,10 @@
   // 2) debug, by default, the minified version will be used,
   // if debug==true, the full version will be served
   window.loadImJoyCore = function(config) {
+    config = config || {};
     return new Promise(async (resolve, reject) => {
       try {
         var baseUrl;
-        config = config || {};
         if (config.version) {
           baseUrl = `https://cdn.jsdelivr.net/npm/imjoy-core@${
             config.version
@@ -60,23 +60,33 @@
   // it support the following options:
   // 1) version, you can specify a specific version of the core,
   // for example `version: "0.11.13"` or `version: "latest"`
-  window.loadImJoyPluginAPI = function(config) {
+  window.loadImJoyRPC = function(config) {
+    config = config || {};
     return new Promise((resolve, reject) => {
       if (_inIframe()) {
         var baseUrl;
-        if (config && config.version) {
-          baseUrl = `https://cdn.jsdelivr.net/npm/imjoy-core@${
+        if (config.version) {
+          baseUrl = `https://cdn.jsdelivr.net/npm/imjoy-rpc@${
             config.version
           }/dist/`;
         } else {
           baseUrl = scriptBaseUrl;
         }
-        _injectScript(baseUrl + "static/jailed/_frame.js")
+        let rpc_url = baseUrl + "imjoy-rpc.min.js";
+        if (config.debug) {
+          rpc_url = baseUrl + "imjoy-rpc.js";
+        }
+
+        _injectScript(rpc_url)
           .then(() => {
-            window.addEventListener("imjoy_api_ready", e => {
-              // imjoy plugin api
-              resolve(e.detail);
-            });
+            if (typeof define === "function" && define.amd)
+              require(["imjoyRPC"], resolve);
+            else if (window["imjoyRPC"]) {
+              resolve(window.imjoyRPC);
+            } else {
+              reject("Failed to import imjoy-rpc.");
+              return;
+            }
           })
           .catch(reject);
       } else {
@@ -85,13 +95,5 @@
         );
       }
     });
-  };
-
-  window.loadImJoyAuto = async function(config) {
-    if (_inIframe()) {
-      return { mode: "plugin", api: await window.loadImJoyPluginAPI(config) };
-    } else {
-      return { mode: "core", core: await window.loadImJoyCore(config) };
-    }
   };
 })();
