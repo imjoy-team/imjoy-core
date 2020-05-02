@@ -19,9 +19,6 @@ export const utils = _utils;
 
 export { version } from "../package.json";
 
-import * as imjoyRPC from "imjoy-rpc";
-export { imjoyRPC };
-
 export class ImJoy {
   constructor({
     imjoy_api = null,
