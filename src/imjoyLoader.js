@@ -21,6 +21,7 @@ function _injectScript(src) {
 // 3) base_url, the url for loading the core library
 export function loadImJoyCore(config) {
   config = config || {};
+  // eslint-disable-next-line no-async-promise-executor
   return new Promise(async (resolve, reject) => {
     try {
       var baseUrl = config.base_url;
@@ -30,7 +31,7 @@ export function loadImJoyCore(config) {
             config.version
           }/dist/`;
         } else {
-          baseUrl = "/";
+          baseUrl = "https://lib.imjoy.io/";
         }
       }
       if (config.debug) {
@@ -38,6 +39,7 @@ export function loadImJoyCore(config) {
       } else {
         await _injectScript(baseUrl + "imjoy-core.min.js");
       }
+      // eslint-disable-next-line no-undef
       if (typeof define === "function" && define.amd)
         eval("require")(["imjoyCore"], resolve);
       else if (window["imjoyCore"]) resolve(window["imjoyCore"]);
@@ -49,7 +51,7 @@ export function loadImJoyCore(config) {
 }
 const _rpc_registry = {};
 const _rpc_api_versions = {
-  "0.2.0": { from: "0.1.10", to: "0.1.10", skips: [] },
+  "0.2.0": { from: "0.1.10", to: "latest", skips: [] },
 };
 
 // specify an api version and this function will return the actual imjoy-rpc version
@@ -111,7 +113,7 @@ export function loadImJoyRPC(config) {
             return;
           }
         } else {
-          baseUrl = "/";
+          baseUrl = "https://lib.imjoy.io/";
           version = null;
           console.info(`Using imjoy-rpc library from ${baseUrl}.`);
         }
@@ -129,7 +131,7 @@ export function loadImJoyRPC(config) {
       rpc_url = baseUrl + "imjoy-rpc.js";
     }
     function checkAndCacheLib(imjoyRPC) {
-      if (version && version !== imjoyRPC.VERSION) {
+      if (version && version !== "latest" && version !== imjoyRPC.VERSION) {
         throw new Error(
           `imjoy-rpc version mismatch ${version} != ${imjoyRPC.VERSION}`
         );
@@ -145,6 +147,7 @@ export function loadImJoyRPC(config) {
     }
     _injectScript(rpc_url)
       .then(() => {
+        // eslint-disable-next-line no-undef
         if (typeof define === "function" && define.amd)
           eval("require")(["imjoyRPC"], imjoyRPC => {
             try {
