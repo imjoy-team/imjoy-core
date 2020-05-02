@@ -89,6 +89,8 @@ loadImJoyRPC().then(async (imjoyRPC)=>{
 ```
 Note: To improve reproducibility in production, you should specify the `api_version` (or pin to a specific `version`) by calling for example `loadImJoyRPC({api_version: "0.2.0"})`.
 
+Alternatively, you can load the imjoy-rpc library via cdn `https://cdn.jsdelivr.net/npm/imjoy-rpc@latest/dist/imjoy-rpc.min.js` (or replace `@latest` to a version number). Using the the imjoy-loader will be more flexible since it only load when you call the load function.
+
 A full example html file can be found [here](/src/rpc-example.html).
 #### Option 2: Import the ImJoy RPC library from the npm module
 
