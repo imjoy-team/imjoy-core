@@ -14,7 +14,7 @@ import { BasicConnection } from "./connection.js";
 import { Whenable } from "./utils.js";
 
 import DOMPurify from "dompurify";
-import { loadImJoyRPC } from "./imjoy-loader.mjs";
+import { loadImJoyRPC } from "./imjoyLoader.js";
 
 const JailedConfig = {};
 if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {

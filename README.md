@@ -21,7 +21,7 @@ Or, you can inject the ImJoy runtime into your web application, such that it can
 
 #### Option 1: Load the ImJoy Core into your HTML file
 ```js
-<script src="https://lib.imjoy.io/imjoy-loader.js"></script>
+<script src="https://lib.imjoy.io/imjoy-loader.min.js"></script>
 
 <script>
 loadImJoyCore().then((imjoyCore)=>{
@@ -36,6 +36,8 @@ loadImJoyCore().then((imjoyCore)=>{
 </script>
 ```
 A full example html file can be found [here](/src/core-example.html).
+
+Note: To improve reproducibility in production, you should specify the `version` for the core by calling for example `loadImJoyCore({version: "0.12.0"})`.
 
 #### Option 2: Use the npm module
 
@@ -68,7 +70,7 @@ You can easily support by loading the ImJoy Remote Procedure Call(RPC) runtime, 
 
 #### Option 1: Load the ImJoy RPC library in your HTML file
 ```js
-<script src="https://lib.imjoy.io/imjoy-loader.js"></script>
+<script src="https://lib.imjoy.io/imjoy-loader.min.js"></script>
 
 <script>
 loadImJoyRPC().then(async (imjoyRPC)=>{
@@ -85,8 +87,7 @@ loadImJoyRPC().then(async (imjoyRPC)=>{
 })
 </script>
 ```
-
-Note: you can use the returned `api` object, and also a global `api` object will also be injected (as `window.api`).
+Note: To improve reproducibility in production, you should specify the `api_version` (or pin to a specific `version`) by calling for example `loadImJoyRPC({api_version: "0.2.0"})`.
 
 A full example html file can be found [here](/src/rpc-example.html).
 #### Option 2: Import the ImJoy RPC library from the npm module

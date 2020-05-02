@@ -39,7 +39,7 @@ export function loadImJoyCore(config) {
         await _injectScript(baseUrl + "imjoy-core.min.js");
       }
       if (typeof define === "function" && define.amd)
-        require(["imjoyCore"], resolve);
+        eval("require")(["imjoyCore"], resolve);
       else if (window["imjoyCore"]) resolve(window["imjoyCore"]);
       else reject("Failed to import imjoy-core.");
     } catch (e) {
@@ -146,7 +146,7 @@ export function loadImJoyRPC(config) {
     _injectScript(rpc_url)
       .then(() => {
         if (typeof define === "function" && define.amd)
-          require(["imjoyRPC"], imjoyRPC => {
+          eval("require")(["imjoyRPC"], imjoyRPC => {
             try {
               checkAndCacheLib(imjoyRPC);
               resolve(imjoyRPC);

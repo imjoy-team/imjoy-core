@@ -41,7 +41,10 @@ const readme_file = {
 };
 
 module.exports = {
-    entry: path.resolve(__dirname, 'src', 'imjoyCore.js'),
+    entry: {
+        'imjoyCore': path.resolve(__dirname, 'src', 'imjoyCore.js'),
+        'imjoyLoader': path.resolve(__dirname, 'src', 'imjoyLoader.js'),
+    },
     resolve: {
         extensions: ['.js']
     },
@@ -73,10 +76,6 @@ module.exports = {
             },{
                 from: path.join(__dirname, "src/joy.css"),
                 to: path.join(__dirname, "dist/static/joy.css"),
-                toType: "file"
-            },{
-                from: path.join(__dirname, "src/imjoy-loader.mjs"),
-                to: path.join(__dirname, "dist/imjoy-loader.mjs"),
                 toType: "file"
             },{
                 from: path.join(__dirname, "src/core-example.html"),

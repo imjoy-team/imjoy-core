@@ -1,17 +1,17 @@
 const path = require('path');
-// const webpack = require('webpack');
-const {InjectManifest} = require('workbox-webpack-plugin');
+const { InjectManifest } = require('workbox-webpack-plugin');
+const renameOutputPlugin = require('rename-output-webpack-plugin');
 
 module.exports = (env, argv) => {
     const options = require('./webpack.config.js');
     options.output = {
         path: path.resolve(__dirname, 'dist'),
-        filename: argv.filename || 'imjoy-core.js',
-        library: 'imjoyCore',
+        filename: '[name].js',
+        library: '[name]',
         libraryTarget: argv.libraryTarget ? argv.libraryTarget : 'umd',
         umdNamedDefine: true
     }
-    if(argv.generate_service_worker){
+    if (argv.generate_service_worker) {
         options.plugins.push(
             new InjectManifest({
                 swDest: 'plugin-service-worker.js',
@@ -20,8 +20,12 @@ module.exports = (env, argv) => {
             })
         )
     }
+    options.plugins.push(
+        new renameOutputPlugin({
+            'imjoyCore': argv.fileid ? 'imjoy-core.' + argv.fileid + '.js' : 'imjoy-core.js',
+            'imjoyLoader': argv.fileid ? 'imjoy-loader.' + argv.fileid + '.js' : 'imjoy-loader.js',
+        })
+    )
 
     return options
 };
-
-

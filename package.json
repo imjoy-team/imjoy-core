@@ -22,8 +22,8 @@
   "scripts": {
     "serve": "webpack-dev-server --config webpack.library.js",
     "build": "rm -rf dist && npm run build-umd && npm run build-module",
-    "build-umd": "webpack --config webpack.library.js --mode development --filename imjoy-core.js && webpack --config webpack.library.js --mode production --filename imjoy-core.min.js --generate_service_worker",
-    "build-module": "webpack --config webpack.library.js --mode development --libraryTarget commonjs2 --filename imjoy-core.module.js",
+    "build-umd": "webpack --config webpack.library.js --mode development && webpack --config webpack.library.js --mode production --fileid min  --generate_service_worker",
+    "build-module": "webpack --config webpack.library.js --mode development --libraryTarget commonjs2 --fileid module",
     "check-format": "prettier --check \"{src,tests}/**/**\"",
     "format": "prettier --write \"{src,tests}/**/**\"",
     "lint": "eslint \"{src,tests}/**/**\"",
@@ -68,6 +68,7 @@
     "postcss-url": "^7.2.1",
     "prettier": "1.17.0",
     "raw-loader": "^1.0.0",
+    "rename-output-webpack-plugin": "^1.0.1",
     "uglify-es": "github:mishoo/UglifyJS2#harmony",
     "uglify-js": "^2.8.29",
     "url-loader": "^1.1.2",
