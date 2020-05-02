@@ -9,10 +9,12 @@
  */
 
 import { randId } from "./utils.js";
-import { getBackendByType } from "./api.js";
-import { RPC, BasicConnection, Whenable } from "imjoy-rpc";
+import { getBackendByType, CONFIG_SCHEMA } from "./api.js";
+import { BasicConnection } from "./connection.js";
+import { Whenable } from "./utils.js";
 
 import DOMPurify from "dompurify";
+import { loadImJoyRPC } from "./imjoyLoader.js";
 
 const JailedConfig = {};
 if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
@@ -275,19 +277,35 @@ class DynamicPlugin {
     this._connection = new BasicConnection(_frame);
     this.initializing = true;
     this._updateUI();
-    this._connection.onInit(async () => {
-      this._rpc = new RPC(this._connection);
-      this._registerSiteEvents(this._rpc);
-      this._rpc.setInterface(this._initialInterface);
-      await this._rpc.sendInterface();
-      await this._executePlugin();
-      this.api = await this._requestRemote();
-      this.api.__as_interface__ = true;
-      this.api.__id__ = this.id;
-      this._disconnected = false;
-      this.initializing = false;
-      this._updateUI();
-      this._connected.emit();
+    this._connection.onInit(async pluginConfig => {
+      try {
+        pluginConfig = pluginConfig || {};
+        if (!CONFIG_SCHEMA(pluginConfig)) {
+          const error = CONFIG_SCHEMA.errors;
+          console.error(
+            "Invalid config: " + pluginConfig.name || "unkown",
+            error
+          );
+          throw error;
+        }
+        const imjoyRPC = await loadImJoyRPC({
+          api_version: pluginConfig.api_version,
+        });
+        this._rpc = new imjoyRPC.RPC(this._connection);
+        this._registerSiteEvents(this._rpc);
+        this._rpc.setInterface(this._initialInterface);
+        await this._rpc.sendInterface();
+        await this._executePlugin();
+        this.api = await this._requestRemote();
+        this.api.__as_interface__ = true;
+        this.api.__id__ = this.id;
+        this._disconnected = false;
+        this.initializing = false;
+        this._updateUI();
+        this._connected.emit();
+      } catch (e) {
+        this._fail.emit(e);
+      }
     });
     this._connection.onFailed(e => {
       this._fail.emit(e);

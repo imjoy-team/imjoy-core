@@ -3,7 +3,6 @@ const CopyWebpackPlugin = require('copy-webpack-plugin')
 const CnameWebpackPlugin = require('cname-webpack-plugin')
 const CreateFileWebpack = require('create-file-webpack')
 const package_json = require('./package.json')
-
 const version_file = {
     // path to folder in which the file will be created
     path: path.join(__dirname, "dist"),
@@ -40,8 +39,12 @@ const readme_file = {
     content: "# Core Library for [ImJoy](https://imjoy.io)\n\nFiles in this repo are automatically generated from the [`ImJoy-Core` repo](https://github.com/imjoy-team/ImJoy-core) and served in `https://lib.imjoy.io`.\n"
 };
 
+const isDevServer = process.env.WEBPACK_DEV_SERVER;
 module.exports = {
-    entry: path.resolve(__dirname, 'src', 'imjoyCore.js'),
+    entry: {
+        'imjoyCore': path.resolve(__dirname, 'src', 'imjoyCore.js'),
+        'imjoyLoader': path.resolve(__dirname, 'src', 'imjoyLoader.js'),
+    },
     resolve: {
         extensions: ['.js']
     },
@@ -69,14 +72,19 @@ module.exports = {
             },{
                 from: path.join(__dirname, "src/base_frame.html"),
                 to: path.join(__dirname, "dist/base_frame.html"),
-                toType: "file"
+                toType: "file",
+                transform(content) {
+                    if(isDevServer){
+                        return content
+                        .toString().replace(/src="(.*?)"/, 'src="/imjoy-rpc.js"')
+                    }
+                    else{
+                        return content.toString()
+                    }
+                },
             },{
                 from: path.join(__dirname, "src/joy.css"),
                 to: path.join(__dirname, "dist/static/joy.css"),
-                toType: "file"
-            },{
-                from: path.join(__dirname, "src/imjoy-loader.js"),
-                to: path.join(__dirname, "dist/imjoy-loader.js"),
                 toType: "file"
             },{
                 from: path.join(__dirname, "src/core-example.html"),

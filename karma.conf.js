@@ -20,13 +20,11 @@ module.exports = function (config) {
             // and require all tests in there
             'tests/*_test.js',
             'src/base_frame.html',
-            { pattern: 'node_modules/imjoy-rpc/dist/*', watched: false, included: false, served: true, nocache: false },
             { pattern: 'src/*.js', watched: false, included: false, served: true, nocache: false },
         ],
 
         proxies: {
             "/base_frame.html": '/base/src/base_frame.html',
-            "/imjoy-rpc.js": '/base/node_modules/imjoy-rpc/dist/imjoy-rpc.js',
             "/plugin-service-worker.js": "/base/src/plugin-service-worker.js"
         },
 
@@ -39,16 +37,16 @@ module.exports = function (config) {
         // preprocess matching files before serving them to the browser
         // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
         preprocessors: {
-        // add webpack as preprocessor
-        'tests/*_test.js': ['webpack']
+            // add webpack as preprocessor
+            'tests/*_test.js': ['webpack']
         },
 
         webpack: webpackConfig,
 
         webpackMiddleware: {
-        // webpack-dev-middleware configuration
-        // i. e.
-        stats: 'errors-only',
+            // webpack-dev-middleware configuration
+            // i. e.
+            stats: 'errors-only',
         },
 
 

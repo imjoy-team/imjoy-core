@@ -21,7 +21,7 @@ Or, you can inject the ImJoy runtime into your web application, such that it can
 
 #### Option 1: Load the ImJoy Core into your HTML file
 ```js
-<script src="https://lib.imjoy.io/imjoy-loader.js"></script>
+<script src="https://lib.imjoy.io/imjoy-loader.min.js"></script>
 
 <script>
 loadImJoyCore().then((imjoyCore)=>{
@@ -36,6 +36,8 @@ loadImJoyCore().then((imjoyCore)=>{
 </script>
 ```
 A full example html file can be found [here](/src/core-example.html).
+
+Note: To improve reproducibility in production, you should specify the `version` for the core by calling for example `loadImJoyCore({version: "0.12.0"})`.
 
 #### Option 2: Use the npm module
 
@@ -68,7 +70,7 @@ You can easily support by loading the ImJoy Remote Procedure Call(RPC) runtime, 
 
 #### Option 1: Load the ImJoy RPC library in your HTML file
 ```js
-<script src="https://lib.imjoy.io/imjoy-loader.js"></script>
+<script src="https://lib.imjoy.io/imjoy-loader.min.js"></script>
 
 <script>
 loadImJoyRPC().then(async (imjoyRPC)=>{
@@ -76,7 +78,7 @@ loadImJoyRPC().then(async (imjoyRPC)=>{
     function setup(){
         api.alert('ImJoy RPC initialized.')
     }
-    // define your plugin api which can be called by other plugins in ImJoy
+    // define your api which can be called by other plugins in ImJoy
     function my_api_func(){
 
     }
@@ -85,13 +87,14 @@ loadImJoyRPC().then(async (imjoyRPC)=>{
 })
 </script>
 ```
+Note: To improve reproducibility in production, you should specify the `api_version` (or pin to a specific `version`) by calling for example `loadImJoyRPC({api_version: "0.2.0"})`.
 
-Note: you can use the returned `api` object, and also a global `api` object will also be injected (as `window.api`).
+Alternatively, you can load the imjoy-rpc library via cdn `https://cdn.jsdelivr.net/npm/imjoy-rpc@latest/dist/imjoy-rpc.min.js` (or replace `@latest` to a version number). Using the the imjoy-loader will be more flexible since it only load when you call the load function.
 
-A full example html file can be found [here](/src/plugin-example.html).
+A full example html file can be found [here](/src/rpc-example.html).
 #### Option 2: Import the ImJoy RPC library from the npm module
 
-Install the imjoy-rpc via npm:
+Install the `imjoy-rpc` library via npm:
 
 ```bash
 npm install imjoy-rpc
@@ -151,9 +154,9 @@ else {
 ```
 
 ### API options
-For all three api function (`loadImJoyRPC`, `loadImJoyCore` and `loadImJoyAuto`), you can optinally pass a `config` object contains the following options:
- * `version`: specify the imjoy-core library version
- * `debug`: load the full imjoy-core version instead of a minified version, useful for debugging
+For all three api function (`loadImJoyRPC`, `loadImJoyCore`), you can optinally pass a `config` object contains the following options:
+ * `version`: specify the `imjoy-core` or `imjoy-rpc` library version
+ * `debug`: load the full `imjoy-core` version instead of a minified version, useful for debugging
 
 ## Examples for using the ImJoy Core
 

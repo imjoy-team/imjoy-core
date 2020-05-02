@@ -375,3 +375,26 @@ export const FILE_MANAGER_SCHEMA = ajv.compile({
     heartbeat: { instanceof: [Function, null] },
   },
 });
+
+export const CONFIG_SCHEMA = ajv.compile({
+  properties: {
+    allow_execution: { type: "boolean" },
+    api_version: { type: "string" },
+    cover: { type: ["string", "array"] },
+    dedicated_thread: { type: "boolean" },
+    description: { type: "string", maxLength: 256 },
+    flags: { type: "array" },
+    icon: { type: "string" },
+    id: { type: "string" },
+    inputs: { type: ["object", "array"] },
+    labels: { type: "array" },
+    lang: { type: "string" },
+    name: { type: "string" },
+    outputs: { type: ["object", "array"] },
+    tags: { type: "array" },
+    token: { type: "string" },
+    ui: { type: "string" },
+    version: { type: "string" },
+  },
+  required: ["api_version", "allow_execution", "token", "id"],
+});
