@@ -116,7 +116,6 @@
     />
     <meta name="theme-color" content="#f5f9ff" />
 
-    <script src="/imjoy-loader.js"></script>
     <link rel="stylesheet" href="/static/joy.css" />
     <link
       rel="stylesheet"
@@ -192,6 +191,9 @@
         border: #0a52eeea;
         background-color: #ffffff91;
       }
+      #window-dialog-container {
+        height: 100vh;
+      }
     </style>
   </head>
 
@@ -247,7 +249,9 @@
     <div class="whiteboard" id="whiteboard">
       <img src="static/img/imjoy-io-icon.svg" id="empty-img" />
     </div>
-    <script>
+    <script type="module">
+      import { loadImJoyCore, loadImJoyRPC } from "/imjoy-loader.mjs";
+
       function openDialog() {
         document.getElementById("dialog-container").classList.add("active");
       }
@@ -497,8 +501,7 @@
             await imjoy.pm.createWindow(null, {
               type: "external",
               fullscreen: true,
-              src:
-                "http://127.0.0.1:9527/notebooks/python/imjoy-rpc-dev.ipynb?token=fad300c529b66ce57e1cf4a51aaaf954d2592a3f060f3795",
+              src: "http://127.0.0.1:5000/?imjoy=1",
             });
 
             document.getElementById("loading").style.display = "none";
