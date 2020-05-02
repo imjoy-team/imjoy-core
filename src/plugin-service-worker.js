@@ -31,6 +31,11 @@ if (typeof workbox !== "undefined") {
   );
 
   workbox.routing.registerRoute(
+    new RegExp("https://cdn.jsdelivr.net/npm/imjoy-rpc@.*"),
+    new workbox.strategies.StaleWhileRevalidate()
+  );
+
+  workbox.routing.registerRoute(
     new RegExp("(http|https)://lib.imjoy.io/.*"),
     new workbox.strategies.StaleWhileRevalidate()
   );
