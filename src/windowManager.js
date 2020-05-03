@@ -178,6 +178,15 @@ export class WindowManager {
       w.api.emit("focus");
     };
 
+    w.api.show = w.show =()=>{
+      this.selectWindow(w);
+      w.api.emit("focus");
+    }
+
+    w.api.hide = w.hide =()=>{
+      w.api.emit("hide");
+    }
+
     w.api.close = w.close = async () => {
       // TODO: handle close gracefully
       let close_timer = setTimeout(() => {
@@ -212,7 +221,7 @@ export class WindowManager {
         this.windows.push(w);
         this.window_ids[w.id] = w;
         this.setupCallbacks(w);
-        this.selectWindow(w, w.dialog);
+        this.selectWindow(w);
         if (this.add_window_callback) {
           Promise.resolve(this.add_window_callback(w)).then(() => {
             this.event_bus.emit("add_window", w);
@@ -232,9 +241,13 @@ export class WindowManager {
     });
   }
 
-  selectWindow(w, is_dialog) {
+  selectWindow(w) {
     if (!w) return;
-    if (!is_dialog) {
+    if (w.dialog) {
+      w.selected = true;
+      this.active_windows = [w];
+    }
+    else{
       for (let i = 0; i < this.active_windows.length; i++) {
         if (this.active_windows[i]) {
           this.active_windows[i].selected = false;
@@ -249,6 +262,7 @@ export class WindowManager {
       this.active_windows = [w];
       if (!w.standalone && w.focus) w.focus();
     }
+
     w.selected = true;
     if (w.refresh) {
       w.refresh();
