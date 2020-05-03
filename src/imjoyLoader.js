@@ -29,6 +29,7 @@ export function loadImJoyCore(config) {
         const version = config.version || "latest";
         baseUrl = `https://cdn.jsdelivr.net/npm/imjoy-core@${version}/dist/`;
       }
+      delete window.imjoyRPC;
       if (config.debug) {
         await _injectScript(baseUrl + "imjoy-core.js");
       } else {
@@ -147,9 +148,10 @@ export function loadImJoyRPC(config) {
       }
       _rpc_registry[imjoyRPC.VERSION] = imjoyRPC;
     }
+    delete window.imjoyRPC;
     _injectScript(rpc_url)
       .then(() => {
-        if (window["imjoyRPC"]) {
+        if (window.imjoyRPC) {
           const imjoyRPC = window.imjoyRPC;
           delete window.imjoyRPC;
           try {
