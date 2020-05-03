@@ -136,6 +136,33 @@ const win = await api.showDialog({
 // further interaction can be performed via `win` object
 ```
 
+### Using with RequireJS (and jQuery)
+
+You can also use the libraries with RequireJS, this is typically used with, for example jQuery.
+
+The following example illustrate the use of imjoyLoader with RequireJS.
+```html
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
+<script>
+require.config({
+    paths: {
+        'imjoyLoader': 'https://lib.imjoy.io/imjoy-loader.js',
+    }
+});
+
+require(["imjoyLoader"], function (imjoyLoder) {
+    imjoyLoder.loadImJoyRPC().then(async (imjoyRPC) => {
+
+    }
+    imjoyLoder.loadImJoyCore().then(async (imjoyCore) => {
+        
+    }
+}
+</script>
+```
+
+Similarily, you can also use RequireJS to load `imjoy-rpc` and `imjoy-core`.
+
 ### Automatically switching between plugin and core mode
 For web applications which support loading as a plugin and use the imjoy core,
 we provide a function to enable automatic swithching between the two modes by detecting whether the current webpage is loaded inside an iframe:
