@@ -320,11 +320,6 @@ class DynamicPlugin {
         }
       }
       this._set_disconnected();
-      // this.terminate()
-      if (this.config.type === "window" && this.config.iframe_container) {
-        const container = document.getElementById(this.config.iframe_container);
-        container.parentNode.removeChild(container);
-      }
     });
   }
   /**
