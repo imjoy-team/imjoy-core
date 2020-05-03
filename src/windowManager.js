@@ -178,14 +178,14 @@ export class WindowManager {
       w.api.emit("focus");
     };
 
-    w.api.show = w.show =()=>{
+    w.api.show = w.show = () => {
       this.selectWindow(w);
       w.api.emit("focus");
-    }
+    };
 
-    w.api.hide = w.hide =()=>{
+    w.api.hide = w.hide = () => {
       w.api.emit("hide");
-    }
+    };
 
     w.api.close = w.close = async () => {
       // TODO: handle close gracefully
@@ -246,8 +246,7 @@ export class WindowManager {
     if (w.dialog) {
       w.selected = true;
       this.active_windows = [w];
-    }
-    else{
+    } else {
       for (let i = 0; i < this.active_windows.length; i++) {
         if (this.active_windows[i]) {
           this.active_windows[i].selected = false;
