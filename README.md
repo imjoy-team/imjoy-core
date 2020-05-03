@@ -24,7 +24,7 @@ Or, you can inject the ImJoy runtime into your web application, such that it can
 <script src="https://lib.imjoy.io/imjoy-loader.min.js"></script>
 
 <script>
-imjoyLoader.loadImJoyCore().then((imjoyCore)=>{
+loadImJoyCore().then((imjoyCore)=>{
     const imjoy = new imjoyCore.ImJoy({
         imjoy_api: {},
         //imjoy config
@@ -37,7 +37,7 @@ imjoyLoader.loadImJoyCore().then((imjoyCore)=>{
 ```
 A full example html file can be found [here](/src/core-example.html).
 
-Note: To improve reproducibility in production, you should specify the `version` for the core by calling for example `imjoyLoader.loadImJoyCore({version: "0.12.0"})`.
+Note: To improve reproducibility in production, you should specify the `version` for the core by calling for example `loadImJoyCore({version: "0.12.0"})`.
 
 #### Option 2: Use the npm module
 
@@ -73,7 +73,7 @@ You can easily support by loading the ImJoy Remote Procedure Call(RPC) runtime, 
 <script src="https://lib.imjoy.io/imjoy-loader.min.js"></script>
 
 <script>
-imjoyLoader.loadImJoyRPC().then(async (imjoyRPC)=>{
+loadImJoyRPC().then(async (imjoyRPC)=>{
     const api = await imjoyRPC.setupRPC();
     function setup(){
         api.alert('ImJoy RPC initialized.')
@@ -87,7 +87,7 @@ imjoyLoader.loadImJoyRPC().then(async (imjoyRPC)=>{
 })
 </script>
 ```
-Note: To improve reproducibility in production, you should specify the `api_version` (or pin to a specific `version`) by calling for example `imjoyLoader.loadImJoyRPC({api_version: "0.2.0"})`.
+Note: To improve reproducibility in production, you should specify the `api_version` (or pin to a specific `version`) by calling for example `loadImJoyRPC({api_version: "0.2.0"})`.
 
 Alternatively, you can load the imjoy-rpc library via cdn `https://cdn.jsdelivr.net/npm/imjoy-rpc@latest/dist/imjoy-rpc.min.js` (or replace `@latest` to a version number). Using the the imjoy-loader will be more flexible since it only load when you call the load function.
 
@@ -142,19 +142,19 @@ we provide a function to enable automatic swithching between the two modes by de
 ```js
 // check if it's inside an iframe
 if(window.self !== window.top){
-    imjoyLoader.loadImJoyRPC().then((imjoyRPC)=>{
+    loadImJoyRPC().then((imjoyRPC)=>{
         
     })
 }
 else {
-    imjoyLoader.loadImJoyCore().then((imjoyCore)=>{
+    loadImJoyCore().then((imjoyCore)=>{
 
     })
 }
 ```
 
 ### API options
-For the loader functions (`imjoyLoader.loadImJoyRPC`, `imjoyLoader.loadImJoyCore`), you can optinally pass a `config` object contains the following options:
+For the loader functions (`loadImJoyRPC`, `loadImJoyCore`), you can optinally pass a `config` object contains the following options:
  * `version`: specify the `imjoy-core` or `imjoy-rpc` library version
  * `api_version`: for `imjoy-rpc` only, to contrain the api version of the RPC
  * `debug`: load the full `imjoy-core` version instead of a minified version, useful for debugging

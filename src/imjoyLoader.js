@@ -169,3 +169,6 @@ export function loadImJoyRPC(config) {
       .catch(reject);
   });
 }
+
+window.loadImJoyRPC = loadImJoyRPC;
+window.loadImJoyCore = loadImJoyCore;
