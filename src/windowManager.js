@@ -180,7 +180,7 @@ export class WindowManager {
 
     w.api.show = w.show = () => {
       this.selectWindow(w);
-      w.api.emit("focus");
+      w.api.emit("show");
     };
 
     w.api.hide = w.hide = () => {
