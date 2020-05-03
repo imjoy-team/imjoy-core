@@ -1,1 +1,1 @@
-module.exports = require('./src/imjoyCore');
+module.exports = require('./dist/imjoy-core.module');

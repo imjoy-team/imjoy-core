@@ -1,6 +1,6 @@
 {
   "name": "imjoy-core",
-  "version": "0.12.3",
+  "version": "0.12.4",
   "private": false,
   "description": "The core library for ImJoy -- a sandboxed plugin framework for computational web applications.",
   "author": "imjoy-team <imjoy.team@gmail.com>",
@@ -24,6 +24,7 @@
     "build": "rm -rf dist && npm run build-umd && npm run build-module",
     "build-umd": "webpack --config webpack.library.js --mode development && webpack --config webpack.library.js --mode production --fileid min  --generate_service_worker",
     "build-module": "webpack --config webpack.library.js --mode development --libraryTarget commonjs2 --fileid module",
+    "watch": "webpack --watch --progress --config  webpack.library.js --mode development --libraryTarget commonjs2 --fileid module ",
     "check-format": "prettier --check \"{src,tests}/**/**\"",
     "format": "prettier --write \"{src,tests}/**/**\"",
     "lint": "eslint \"{src,tests}/**/**\"",

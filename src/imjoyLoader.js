@@ -29,15 +29,23 @@ export function loadImJoyCore(config) {
         const version = config.version || "latest";
         baseUrl = `https://cdn.jsdelivr.net/npm/imjoy-core@${version}/dist/`;
       }
+      delete window.imjoyRPC;
       if (config.debug) {
         await _injectScript(baseUrl + "imjoy-core.js");
       } else {
         await _injectScript(baseUrl + "imjoy-core.min.js");
       }
-      // eslint-disable-next-line no-undef
-      if (typeof define === "function" && define.amd)
+      if (window["imjoyCore"]) {
+        const imjoyRPC = window.imjoyRPC;
+        delete window.imjoyRPC;
+        resolve(imjoyRPC);
+      } else if (
+        typeof define === "function" &&
+        // eslint-disable-next-line no-undef
+        define.amd &&
+        typeof require === "function"
+      )
         eval("require")(["imjoyCore"], resolve);
-      else if (window["imjoyCore"]) resolve(window["imjoyCore"]);
       else reject("Failed to import imjoy-core.");
     } catch (e) {
       reject(e);
@@ -140,19 +148,10 @@ export function loadImJoyRPC(config) {
       }
       _rpc_registry[imjoyRPC.VERSION] = imjoyRPC;
     }
+    delete window.imjoyRPC;
     _injectScript(rpc_url)
       .then(() => {
-        // eslint-disable-next-line no-undef
-        if (typeof define === "function" && define.amd)
-          eval("require")(["imjoyRPC"], imjoyRPC => {
-            try {
-              checkAndCacheLib(imjoyRPC);
-              resolve(imjoyRPC);
-            } catch (e) {
-              reject(e);
-            }
-          });
-        else if (window["imjoyRPC"]) {
+        if (window.imjoyRPC) {
           const imjoyRPC = window.imjoyRPC;
           delete window.imjoyRPC;
           try {
@@ -161,7 +160,21 @@ export function loadImJoyRPC(config) {
           } catch (e) {
             reject(e);
           }
-        } else {
+        } else if (
+          typeof define === "function" &&
+          // eslint-disable-next-line no-undef
+          define.amd &&
+          typeof require === "function"
+        )
+          eval("require")(["imjoyRPC"], imjoyRPC => {
+            try {
+              checkAndCacheLib(imjoyRPC);
+              resolve(imjoyRPC);
+            } catch (e) {
+              reject(e);
+            }
+          });
+        else {
           reject("Failed to import imjoy-rpc.");
           return;
         }

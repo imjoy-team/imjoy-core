@@ -69,23 +69,38 @@ export class WindowManager {
     const loaders = {};
     // find all the plugins registered for this type
     for (let k in this.registered_inputs) {
-      if (this.registered_inputs.hasOwnProperty(k)) {
-        if (
-          this.registered_inputs[k].loader_key &&
-          this.registered_inputs[k].schema(data)
-        ) {
-          try {
-            const loader_key = this.registered_inputs[k].loader_key;
-            if (this.registered_loaders[loader_key]) {
-              loaders[loader_key] = this.registered_loaders[loader_key];
-            }
-          } catch (e) {
-            console.error("Failed to get loaders.", e);
+      if (
+        this.registered_inputs[k].loader_key &&
+        this.registered_inputs[k].schema(data)
+      ) {
+        try {
+          const loader_key = this.registered_inputs[k].loader_key;
+          if (this.registered_loaders[loader_key]) {
+            loaders[loader_key] = this.registered_loaders[loader_key];
           }
+        } catch (e) {
+          console.error("Failed to get loaders.", e);
         }
       }
     }
     return loaders;
+  }
+
+  closeWindow(w) {
+    const index = this.windows.indexOf(w);
+    if (index > -1) {
+      this.windows.splice(index, 1);
+      delete this.window_ids[w.id];
+    }
+    if (w.selected || this.selected_window === w) {
+      w.selected = false;
+      if (this.window_mode === "single") {
+        this.selected_window = this.windows[0];
+      } else {
+        this.selected_window = null;
+      }
+    }
+    this.event_bus.emit("close_window", w);
   }
 
   setupCallbacks(w) {
@@ -119,6 +134,7 @@ export class WindowManager {
       }
     };
     w.api.emit = (name, data) => {
+      // eslint-disable-next-line no-async-promise-executor
       return new Promise(async (resolve, reject) => {
         const errors = [];
         try {
@@ -162,36 +178,29 @@ export class WindowManager {
       w.api.emit("focus");
     };
 
+    w.api.show = w.show = () => {
+      this.selectWindow(w);
+      w.api.emit("focus");
+    };
+
+    w.api.hide = w.hide = () => {
+      w.api.emit("hide");
+    };
+
     w.api.close = w.close = async () => {
       // TODO: handle close gracefully
       let close_timer = setTimeout(() => {
         console.warn("Force quitting the window due to timeout.");
-        forceClose();
+        this.closeWindow(w);
       }, 2000);
 
-      const forceClose = () => {
-        const index = this.windows.indexOf(w);
-        if (index > -1) {
-          this.windows.splice(index, 1);
-          delete this.window_ids[w.id];
-        }
-        if (w.selected || this.selected_window === w) {
-          w.selected = false;
-          if (this.window_mode === "single") {
-            this.selected_window = this.windows[0];
-          } else {
-            this.selected_window = null;
-          }
-        }
-        this.event_bus.emit("close_window", w);
-      };
       try {
         //TODO: figure out why it's not closing if we await the emit function
         w.api.emit("close");
       } catch (es) {
         console.error(es);
       } finally {
-        forceClose();
+        this.closeWindow(w);
         clearTimeout(close_timer);
       }
     };
@@ -212,7 +221,7 @@ export class WindowManager {
         this.windows.push(w);
         this.window_ids[w.id] = w;
         this.setupCallbacks(w);
-        this.selectWindow(w, w.dialog);
+        this.selectWindow(w);
         if (this.add_window_callback) {
           Promise.resolve(this.add_window_callback(w)).then(() => {
             this.event_bus.emit("add_window", w);
@@ -232,9 +241,12 @@ export class WindowManager {
     });
   }
 
-  selectWindow(w, is_dialog) {
+  selectWindow(w) {
     if (!w) return;
-    if (!is_dialog) {
+    if (w.dialog) {
+      w.selected = true;
+      this.active_windows = [w];
+    } else {
       for (let i = 0; i < this.active_windows.length; i++) {
         if (this.active_windows[i]) {
           this.active_windows[i].selected = false;
@@ -249,6 +261,7 @@ export class WindowManager {
       this.active_windows = [w];
       if (!w.standalone && w.focus) w.focus();
     }
+
     w.selected = true;
     if (w.refresh) {
       w.refresh();
