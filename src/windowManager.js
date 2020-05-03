@@ -188,20 +188,12 @@ export class WindowManager {
     };
 
     w.api.close = w.close = async () => {
-      // TODO: handle close gracefully
-      let close_timer = setTimeout(() => {
-        console.warn("Force quitting the window due to timeout.");
-        this.closeWindow(w);
-      }, 2000);
-
       try {
-        //TODO: figure out why it's not closing if we await the emit function
         w.api.emit("close");
       } catch (es) {
         console.error(es);
       } finally {
         this.closeWindow(w);
-        clearTimeout(close_timer);
       }
     };
   }
