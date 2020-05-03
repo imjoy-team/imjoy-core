@@ -2326,13 +2326,14 @@ export class PluginManager {
           this.wm.setupCallbacks(pconfig);
           setTimeout(() => {
             const p = this.renderWindow(pconfig);
-            if (pconfig.passive) {
+            if (pconfig.window_type === "external") {
               clearTimeout(loadingTimer);
               pconfig.loading = false;
+            }
+            if (pconfig.passive || window_config.passive) {
               resolve({
                 __as_interface__: true,
                 setup: () => {},
-                on: () => {},
               });
               return;
             }
@@ -2361,9 +2362,11 @@ export class PluginManager {
             setTimeout(() => {
               pconfig.refresh();
               const p = this.renderWindow(pconfig);
-              if (pconfig.passive || window_config.passive) {
+              if (pconfig.window_type === "external") {
                 clearTimeout(loadingTimer);
                 pconfig.loading = false;
+              }
+              if (pconfig.passive || window_config.passive) {
                 resolve({
                   __as_interface__: true,
                   setup: () => {},
