@@ -193,7 +193,9 @@ export class WindowManager {
       } catch (es) {
         console.error(es);
       } finally {
-        this.closeWindow(w);
+        setTimeout(() => {
+          this.closeWindow(w);
+        }, 800);
       }
     };
   }
