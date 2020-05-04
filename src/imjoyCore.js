@@ -17,7 +17,7 @@ export { ajv } from "./api";
 import * as _utils from "./utils.js";
 export const utils = _utils;
 
-export { version } from "../package.json";
+export { version as VERSION } from "../package.json";
 
 export class ImJoy {
   constructor({
