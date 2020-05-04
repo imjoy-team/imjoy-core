@@ -29,16 +29,16 @@ export function loadImJoyCore(config) {
         const version = config.version || "latest";
         baseUrl = `https://cdn.jsdelivr.net/npm/imjoy-core@${version}/dist/`;
       }
-      delete window.imjoyRPC;
+      delete window.imjoyCore;
       if (config.debug) {
         await _injectScript(baseUrl + "imjoy-core.js");
       } else {
         await _injectScript(baseUrl + "imjoy-core.min.js");
       }
-      if (window["imjoyCore"]) {
-        const imjoyRPC = window.imjoyRPC;
-        delete window.imjoyRPC;
-        resolve(imjoyRPC);
+      if (window.imjoyCore) {
+        const imjoyCore = window.imjoyCore;
+        delete window.imjoyCore;
+        resolve(imjoyCore);
       } else if (
         typeof define === "function" &&
         // eslint-disable-next-line no-undef
