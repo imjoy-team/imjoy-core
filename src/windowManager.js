@@ -195,7 +195,7 @@ export class WindowManager {
       } finally {
         setTimeout(() => {
           this.closeWindow(w);
-        }, 800);
+        }, 0);
       }
     };
   }
