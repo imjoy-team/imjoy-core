@@ -221,7 +221,6 @@ const _backends = {
     type: "internal",
     name: "Web Worker",
     lang: "javascript",
-    icon: "⚙️",
   },
   iframe: {
     type: "internal",
