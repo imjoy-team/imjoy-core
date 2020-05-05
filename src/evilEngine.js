@@ -140,11 +140,12 @@ export const evil_engine = {
   },
   async startPlugin(config, api_interface) {
     if (this._disconnected) throw "engine is disconnected.";
+    // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve, reject) => {
       const export_api = remote_api => {
         console.log(
           `plugin ${config.name} (id=${config.id}) initialized.`,
-          remote_api
+          Object.keys(remote_api)
         );
         promisify_functions(remote_api);
         resolve(remote_api);

@@ -39,9 +39,8 @@ const initializeJailed = config => {
   _initialized = true;
 };
 
-function createIframe(id, type, config) {
+export function createIframe(config) {
   var sample = document.createElement("iframe");
-
   sample.src = config.base_frame;
   sample.sandbox = "";
   sample.frameBorder = "0";
@@ -98,15 +97,15 @@ function createIframe(id, type, config) {
   frame.sandbox = perm.join(" ");
   frame.allow = allows;
 
-  if (type !== "window") {
+  if (!["rpc-window", "rpc-worker", "iframe", "window"].includes(config.type)) {
     frame.src =
       frame.src +
       (frame.src.includes("?") ? "&" : "?") +
       "_plugin_type=" +
-      type;
+      config.type;
   }
 
-  frame.id = "iframe_" + id;
+  frame.id = "iframe_" + config.id;
   return frame;
 }
 
@@ -125,10 +124,9 @@ class DynamicPlugin {
     this.id = config.id || randId();
     this._id = config._id;
     this.name = config.name;
-    this.type = config.type;
     this.tag = config.tag;
     this.tags = config.tags;
-    this.type = config.type || "web-worker";
+    this.type = config.type;
     this.initializing = false;
     this.running = false;
     this._log_history = [];
@@ -137,6 +135,11 @@ class DynamicPlugin {
     this.backend = getBackendByType(this.type);
     this.engine = engine;
     this.allow_evil = allow_evil;
+    this._hasVisibleWindow = [
+      "window",
+      "web-python-window",
+      "rpc-window",
+    ].includes(this.type);
 
     this._updateUI =
       (_interface && _interface.utils && _interface.utils.$forceUpdate) ||
@@ -247,6 +250,7 @@ class DynamicPlugin {
         this._set_disconnected();
       });
   }
+
   _setupViaIframe() {
     if (!getBackendByType(this.type)) {
       throw `Unsupported backend type (${this.type})`;
@@ -254,18 +258,15 @@ class DynamicPlugin {
     if (!this.config.base_frame) {
       this.config.base_frame = JailedConfig.asset_url + "base_frame.html";
     }
-    const _frame = createIframe(this.id, this.type, this.config);
-    if (
-      this.type === "iframe" ||
-      this.type === "window" ||
-      this.type === "web-python-window"
-    ) {
+    const _frame = createIframe(this.config);
+    if (this._hasVisibleWindow) {
       let iframe_container = this.config.iframe_container;
       if (typeof iframe_container === "string") {
         iframe_container = document.getElementById(iframe_container);
       }
       if (iframe_container) {
         _frame.style.display = "block";
+        iframe_container.innerHTML = "";
         iframe_container.appendChild(_frame);
         this.iframe_container = iframe_container;
       } else {
@@ -284,7 +285,8 @@ class DynamicPlugin {
         if (!CONFIG_SCHEMA(pluginConfig)) {
           const error = CONFIG_SCHEMA.errors;
           console.error(
-            "Invalid config: " + pluginConfig.name || "unkown",
+            "Invalid config " + pluginConfig.name || "unkown" + ": ",
+            pluginConfig,
             error
           );
           throw error;
@@ -296,7 +298,9 @@ class DynamicPlugin {
         this._registerSiteEvents(this._rpc);
         this._rpc.setInterface(this._initialInterface);
         await this._rpc.sendInterface();
-        await this._executePlugin();
+        if (pluginConfig.allow_execution) {
+          await this._executePlugin();
+        }
         this.api = await this._requestRemote();
         this.api.__as_interface__ = true;
         this.api.__id__ = this.id;
@@ -339,7 +343,7 @@ class DynamicPlugin {
       this.disconnect();
       this.initializing = false;
       if (error) this.error(error.toString());
-      if (this.config.type === "window" && this.config.iframe_container) {
+      if (this._hasVisibleWindow && this.config.iframe_container) {
         const container = document.getElementById(this.config.iframe_container);
         container.innerHTML = `<h5>Oops! failed to load the window.</h5><code>Details: ${DOMPurify.sanitize(
           String(error)
@@ -397,9 +401,7 @@ class DynamicPlugin {
           env: this.config.env,
         });
       }
-      if (
-        ["iframe", "window", "web-python-window"].includes(this.config.type)
-      ) {
+      if (this._hasVisibleWindow) {
         if (this.config.styles) {
           for (let i = 0; i < this.config.styles.length; i++) {
             await this._connection.execute({

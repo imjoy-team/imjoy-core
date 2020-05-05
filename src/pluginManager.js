@@ -6,6 +6,9 @@ import axios from "axios";
 import yaml from "js-yaml";
 import { Joy } from "./joy.js";
 import { saveAs } from "file-saver";
+import { createIframe } from "./jailedPlugin.js";
+import { BasicConnection } from "./connection.js";
+import { getBackendByType, CONFIG_SCHEMA } from "./api.js";
 
 import {
   _clone,
@@ -22,7 +25,6 @@ import {
 
 import INTERNAL_PLUGINS from "./internalPlugins.json";
 import { DynamicPlugin, initializeJailed } from "./jailedPlugin.js";
-import { getBackendByType } from "./api.js";
 import { parseComponent } from "./pluginParser.js";
 
 import {
@@ -865,6 +867,7 @@ export class PluginManager {
   }
 
   async normalizePluginUrl(uri, scoped_plugins) {
+    let external = false;
     let selected_tag;
     scoped_plugins = scoped_plugins || this.available_plugins;
     if (
@@ -879,6 +882,7 @@ export class PluginManager {
       selected_tag = plugin_name.split("@")[1];
       plugin_name = plugin_name.split("@")[0];
       plugin_name = plugin_name.trim();
+
       const repo_hashtag = repo_name.split("@")[1];
       repo_name = repo_name.split("@")[0];
       repo_name = repo_name.trim();
@@ -911,19 +915,59 @@ export class PluginManager {
         uri = ps[0].uri;
       }
     } else {
+      if (!uri.split("?")[0].endsWith(".imjoy.html")) {
+        external = true;
+      }
       selected_tag = uri.split(".imjoy.html@")[1];
       if (selected_tag) {
         uri = uri.split("@" + selected_tag)[0];
       }
     }
-    if (!uri.split("?")[0].endsWith(".imjoy.html")) {
-      throw 'Plugin url must be ends with ".imjoy.html"';
-    }
-    return { uri, scoped_plugins, selected_tag };
-  }
 
+    return { uri, scoped_plugins, selected_tag, external };
+  }
+  getExternalPluginConfig(url) {
+    return new Promise((resolve, reject) => {
+      const _frame = createIframe({
+        id: "external_" + randId(),
+        type: "window",
+        base_frame: url,
+        permissions: [],
+      });
+      _frame.style.display = "none";
+      document.body.appendChild(_frame);
+      this._connection = new BasicConnection(_frame);
+      this._connection.onInit(async pluginConfig => {
+        if (!CONFIG_SCHEMA(pluginConfig)) {
+          const error = CONFIG_SCHEMA.errors;
+          console.error(
+            "Invalid config " + pluginConfig.name || "unkown" + ": ",
+            pluginConfig,
+            error
+          );
+          throw error;
+        }
+        pluginConfig.base_frame = url;
+        pluginConfig.code = `<config lang="json">\n${JSON.stringify(
+          pluginConfig,
+          null,
+          "  "
+        )}\n</config>`;
+        pluginConfig.badges = this.getBadges(pluginConfig);
+        pluginConfig.uri = url;
+        pluginConfig.origin = url;
+        resolve(pluginConfig);
+      });
+      this._connection.onFailed(e => {
+        reject(e);
+      });
+    });
+  }
   async getPluginFromUrl(uri, scoped_plugins) {
     const obj = await this.normalizePluginUrl(uri, scoped_plugins);
+    if (obj.external) {
+      return await this.getExternalPluginConfig(uri);
+    }
     uri = obj.uri;
     scoped_plugins = obj.scoped_plugins;
     const selected_tag = obj.selected_tag;
@@ -1256,6 +1300,7 @@ export class PluginManager {
         let p;
 
         if (
+          template.type === "rpc-window" ||
           template.type === "window" ||
           template.type === "web-python-window"
         ) {
@@ -1946,6 +1991,10 @@ export class PluginManager {
       // save type to tags
       if (config.type === "window") {
         joy_template.tags.push("window");
+      } else if (config.type === "rpc-window") {
+        joy_template.tags.push("rpc-window");
+      } else if (config.type === "rpc-worker") {
+        joy_template.tags.push("rpc-worker");
       } else if (config.type === "native-python") {
         joy_template.tags.push("python");
       } else if (config.type === "web-worker") {
@@ -2219,6 +2268,11 @@ export class PluginManager {
   }
   createWindow(_plugin, wconfig) {
     return new Promise((resolve, reject) => {
+      if (!wconfig.type) {
+        if (wconfig.ui) {
+          wconfig.type = "imjoy/joy";
+        }
+      }
       wconfig.data = wconfig.data || null;
       wconfig.panel = wconfig.panel || null;
       if (!WINDOW_SCHEMA(wconfig)) {
@@ -2229,7 +2283,6 @@ export class PluginManager {
       wconfig.name = wconfig.name || wconfig.type;
       if (wconfig.type && wconfig.type.startsWith("imjoy/")) {
         wconfig.id = "imjoy_" + randId();
-        wconfig.window_type = wconfig.type;
         this.wm
           .addWindow(wconfig)
           .then(wid => {
@@ -2255,17 +2308,10 @@ export class PluginManager {
           .catch(reject);
       } else {
         let window_config;
-        // set type to external if src is present
-        if (wconfig.src && !wconfig.type) {
-          wconfig.type = "external";
-        }
-        if (wconfig.type === "external") {
-          if (wconfig.name === wconfig.type)
-            wconfig.name = wconfig.src.split("?")[0];
-          if (!wconfig.src) {
-            reject("You must specify the `src` for the external window.");
-            return;
-          }
+        // load rpc-window if src presents
+        if (wconfig.src) {
+          wconfig.type = wconfig.type || wconfig.src.split("?")[0];
+          wconfig.name = wconfig.name || wconfig.type;
           window_config = Object.assign({}, wconfig);
           delete window_config.data;
           delete window_config.config;
@@ -2277,9 +2323,9 @@ export class PluginManager {
               }
             }
           }
+          window_config.type = "rpc-window";
           window_config.base_frame = wconfig.src;
-          window_config.type = "window";
-          window_config.id = "external_" + randId();
+          window_config.id = "rpc_window_" + randId();
         } else {
           window_config = this.registered.windows[wconfig.type];
         }
@@ -2295,10 +2341,13 @@ export class PluginManager {
         //generate a new window id
         pconfig.id = pconfig.id || window_config.id + "_" + randId();
 
-        pconfig.window_type = pconfig.type;
         //assign plugin type ('window')
         pconfig.type = window_config.type;
-        if (pconfig.type !== "window" && pconfig.type !== "web-python-window") {
+        if (
+          pconfig.type !== "rpc-window" &&
+          pconfig.type !== "window" &&
+          pconfig.type !== "web-python-window"
+        ) {
           throw 'Window plugin must be with type "window"';
         }
 
@@ -2326,7 +2375,7 @@ export class PluginManager {
           this.wm.setupCallbacks(pconfig);
           setTimeout(() => {
             const p = this.renderWindow(pconfig);
-            if (pconfig.window_type === "external") {
+            if (pconfig.type === "rpc-window") {
               clearTimeout(loadingTimer);
               pconfig.loading = false;
             }
@@ -2362,7 +2411,7 @@ export class PluginManager {
             setTimeout(() => {
               pconfig.refresh();
               const p = this.renderWindow(pconfig);
-              if (pconfig.window_type === "external") {
+              if (pconfig.type === "rpc-window") {
                 clearTimeout(loadingTimer);
                 pconfig.loading = false;
               }
