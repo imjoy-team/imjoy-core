@@ -19,12 +19,16 @@ module.exports = function (config) {
             // only specify one entry point
             // and require all tests in there
             'tests/*_test.js',
-            'src/base_frame.html',
+            'node_modules/imjoy-rpc/dist/imjoy-rpc.js',
+            'node_modules/imjoy-rpc/dist/imjoy-rpc.min.js',
+            'node_modules/imjoy-rpc/dist/base_frame.html',
             { pattern: 'src/*.js', watched: false, included: false, served: true, nocache: false },
         ],
 
         proxies: {
-            "/base_frame.html": '/base/src/base_frame.html',
+            "/base_frame.html": '/base/node_modules/imjoy-rpc/dist/base_frame.html',
+            "/imjoy-rpc.js": '/base/node_modules/imjoy-rpc/dist/imjoy-rpc.js',
+            "/imjoy-rpc.min.js": '/base/node_modules/imjoy-rpc/dist/imjoy-rpc.min.js',
             "/plugin-service-worker.js": "/base/src/plugin-service-worker.js"
         },
 

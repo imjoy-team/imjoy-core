@@ -70,7 +70,7 @@ module.exports = {
                 from: path.join(__dirname, "node_modules/imjoy-rpc/dist/"),
                 to: path.join(__dirname, "dist"),
             },{
-                from: path.join(__dirname, "src/base_frame.html"),
+                from: path.join(__dirname, "node_modules/imjoy-rpc/dist/base_frame.html"),
                 to: path.join(__dirname, "dist/base_frame.html"),
                 toType: "file",
                 transform(content) {

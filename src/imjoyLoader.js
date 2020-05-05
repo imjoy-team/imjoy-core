@@ -42,8 +42,7 @@ export function loadImJoyCore(config) {
       } else if (
         typeof define === "function" &&
         // eslint-disable-next-line no-undef
-        define.amd &&
-        typeof require === "function"
+        define.amd
       )
         eval("require")(["imjoyCore"], resolve);
       else reject("Failed to import imjoy-core.");
@@ -163,8 +162,7 @@ export function loadImJoyRPC(config) {
         } else if (
           typeof define === "function" &&
           // eslint-disable-next-line no-undef
-          define.amd &&
-          typeof require === "function"
+          define.amd
         )
           eval("require")(["imjoyRPC"], imjoyRPC => {
             try {

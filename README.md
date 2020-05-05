@@ -105,7 +105,7 @@ Then you can load the ImJoy RPC runtime and setup the RPC, an `api` object can t
 ```js
 import * as imjoyRPC from 'imjoy-rpc';
 
-imjoyRPC.setupRPC().then((api)=>{
+imjoyRPC.setupRPC({name: 'my-awesome-app'}).then((api)=>{
  // call api.export to expose your plugin api
 })
 ```
