@@ -2280,8 +2280,6 @@ export class PluginManager {
         console.error("Error occured during creating window ", wconfig, error);
         throw error;
       }
-      // eslint-disable-next-line no-debugger
-      debugger;
       wconfig.name = wconfig.name || wconfig.type;
       if (wconfig.type && wconfig.type.startsWith("imjoy/")) {
         wconfig.id = "imjoy_" + randId();

@@ -291,8 +291,6 @@ class DynamicPlugin {
           );
           throw error;
         }
-        // eslint-disable-next-line no-debugger
-        debugger;
         const imjoyRPC = await loadImJoyRPC({
           api_version: pluginConfig.api_version,
         });
