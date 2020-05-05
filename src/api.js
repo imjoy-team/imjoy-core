@@ -410,5 +410,13 @@ export const CONFIG_SCHEMA = ajv.compile({
     ui: { type: "string", maxLength: 2048 },
     version: { type: "string", maxLength: 32 },
   },
-  required: ["api_version", "id", "allow_execution", "token"],
+  required: [
+    "name",
+    "version",
+    "description",
+    "api_version",
+    "id",
+    "allow_execution",
+    "token",
+  ],
 });
