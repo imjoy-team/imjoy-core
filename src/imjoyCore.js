@@ -49,7 +49,7 @@ export class ImJoy {
     this.add_window_callback =
       add_window_callback ||
       async function(w) {
-        console.log("add window: ", w);
+        console.log("add window: ", w.name);
       };
 
     this.em = new EngineManager({

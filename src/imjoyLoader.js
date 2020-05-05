@@ -5,7 +5,7 @@ function _injectScript(src) {
     script.addEventListener("load", resolve);
     script.addEventListener("error", () => {
       document.head.removeChild(script);
-      reject("Error loading script.");
+      reject("Error loading script: " + src);
     });
     script.addEventListener("abort", () => reject("Script loading aborted."));
     document.head.appendChild(script);
