@@ -861,7 +861,7 @@ var _fixStringInput = function(input) {
 
   // Line breaks? HECK NO!
   if (input.innerHTML.search("<br>") >= 0) {
-    input.innerHTML = input.innerHTML.replace(/(\<br\>)+/g, "&nbsp;");
+    input.innerHTML = input.innerHTML.replace(/(\xa0)+/g, "");
     _selectAll(input, true);
   }
 };
