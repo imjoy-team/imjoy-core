@@ -74,7 +74,7 @@ You can easily support by loading the ImJoy Remote Procedure Call(RPC) runtime, 
 
 <script>
 loadImJoyRPC().then(async (imjoyRPC)=>{
-    const api = await imjoyRPC.setupRPC();
+    const api = await imjoyRPC.setupRPC({name: 'My Awesome App'});
     function setup(){
         api.alert('ImJoy RPC initialized.')
     }
@@ -105,7 +105,7 @@ Then you can load the ImJoy RPC runtime and setup the RPC, an `api` object can t
 ```js
 import * as imjoyRPC from 'imjoy-rpc';
 
-imjoyRPC.setupRPC({name: 'my-awesome-app'}).then((api)=>{
+imjoyRPC.setupRPC({name: 'My Awesome App'}).then((api)=>{
  // call api.export to expose your plugin api
 })
 ```
@@ -119,16 +119,14 @@ In any other ImJoy plugin, you can then use your web app by:
 
 // as a new window
 const win = await api.createWindow({
-    type:'external',
-    name: 'my awesome app',
+    type: 'My Awesome App',
     src: 'https://my-awesome-app.com/',
     data: { }
 })
 
 // or, as a dialog
 const win = await api.showDialog({
-    type:'external',
-    name: 'my awesome app',
+    type: 'My Awesome App',
     src: 'https://my-awesome-app.com/',
     data: { }
 })
