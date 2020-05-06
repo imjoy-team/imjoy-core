@@ -861,7 +861,7 @@ var _fixStringInput = function(input) {
 
   // Line breaks? HECK NO!
   if (input.innerHTML.search("<br>") >= 0) {
-    input.innerHTML = input.innerHTML.replace(/(\xa0)+/g, "");
+    input.innerHTML = input.innerHTML.replace(/(\<br\>)+/g, "&nbsp;");
     _selectAll(input, true);
   }
 };
@@ -1339,7 +1339,7 @@ String's config:
     // On input!
     input.oninput = function(event) {
       _fixStringInput(input);
-      var value = input.innerText.replace(/&nbsp;/g, ""); // NOT innerHTML
+      var value = input.innerText.replace(/(\xa0)+/g, ""); // NOT innerHTML
       config.onchange(value); // callback!
     };
 
