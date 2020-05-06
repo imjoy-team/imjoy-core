@@ -1339,7 +1339,7 @@ String's config:
     // On input!
     input.oninput = function(event) {
       _fixStringInput(input);
-      var value = input.innerText; // NOT innerHTML
+      var value = input.innerText.replace(/&nbsp;/g, ""); // NOT innerHTML
       config.onchange(value); // callback!
     };
 
