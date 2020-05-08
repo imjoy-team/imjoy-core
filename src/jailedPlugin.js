@@ -379,7 +379,7 @@ class DynamicPlugin {
       this._set_disconnected();
     });
 
-    _rpc.on("remoteReady", () => {
+    _rpc.on("remoteIdle", () => {
       if (this.running) {
         this.running = false;
         this._updateUI();
@@ -468,7 +468,7 @@ class DynamicPlugin {
    */
   _requestRemote() {
     return new Promise(resolve => {
-      this._rpc.on("remoteUpdated", () => {
+      this._rpc.once("remoteReady", () => {
         resolve(this._rpc.getRemote());
       });
       this._rpc.requestRemote();
