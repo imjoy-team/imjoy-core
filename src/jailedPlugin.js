@@ -280,6 +280,10 @@ class DynamicPlugin {
     this.initializing = true;
     this._updateUI();
     this._connection.on("initialized", async data => {
+      if (!data.success) {
+        console.error("Plugin failed to initialize", data.error);
+        throw new Error(data.error);
+      }
       try {
         const pluginConfig = data.config || {};
         if (!CONFIG_SCHEMA(pluginConfig)) {
