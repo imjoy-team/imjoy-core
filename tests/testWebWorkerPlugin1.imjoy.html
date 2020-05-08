@@ -38,6 +38,13 @@ function assert(condition, message) {
 
 class ImJoyPlugin {
   async setup() {
+    if (
+      typeof WorkerGlobalScope === "undefined" ||
+      !self ||
+      !(self instanceof WorkerGlobalScope)
+    ) {
+      throw new Error("This plugin is not running in a webworker");
+    }
   }
 
   async run() {

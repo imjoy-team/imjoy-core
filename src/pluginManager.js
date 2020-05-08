@@ -937,7 +937,7 @@ export class PluginManager {
       _frame.style.display = "none";
       document.body.appendChild(_frame);
       this._connection = new BasicConnection(_frame);
-      this._connection.onInit(async pluginConfig => {
+      this._connection.on("initialized", async pluginConfig => {
         if (!CONFIG_SCHEMA(pluginConfig)) {
           const error = CONFIG_SCHEMA.errors;
           console.error(

@@ -279,9 +279,9 @@ class DynamicPlugin {
     this._connection = new BasicConnection(_frame);
     this.initializing = true;
     this._updateUI();
-    this._connection.onInit(async pluginConfig => {
+    this._connection.on("initialized", async data => {
       try {
-        pluginConfig = pluginConfig || {};
+        const pluginConfig = data.config || {};
         if (!CONFIG_SCHEMA(pluginConfig)) {
           const error = CONFIG_SCHEMA.errors;
           console.error(
@@ -292,8 +292,9 @@ class DynamicPlugin {
           throw error;
         }
         const imjoyRPC = await loadImJoyRPC({
-          api_version: pluginConfig.api_version,
+          base_url: "/",
         });
+        console.log(`========imjoy-rpc:${imjoyRPC.VERSION}=======`);
         this._rpc = new imjoyRPC.RPC(this._connection);
         this._registerSiteEvents(this._rpc);
         this._rpc.setInterface(this._initialInterface);
@@ -312,11 +313,13 @@ class DynamicPlugin {
         this._fail.emit(e);
       }
     });
-    this._connection.onFailed(e => {
+
+    // TODO: check when this will fire
+    this._connection.on("failed", e => {
       this._fail.emit(e);
     });
 
-    this._connection.onDisconnect(details => {
+    this._connection.on("disconnected", details => {
       if (details) {
         if (details.success) {
           this.log(details.message);
@@ -326,6 +329,8 @@ class DynamicPlugin {
       }
       this._set_disconnected();
     });
+
+    this._connection.connect();
   }
   /**
    * Creates the connection to the plugin site
@@ -546,9 +551,12 @@ class DynamicPlugin {
     } catch (e) {
       console.error("error occured when terminating the plugin", e);
     } finally {
-      setTimeout(() => {
-        this._forceDisconnect();
-      }, 1000);
+      setTimeout(
+        (() => {
+          this._forceDisconnect();
+        }).bind(this),
+        1000
+      );
     }
   }
 
