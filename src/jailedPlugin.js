@@ -294,7 +294,9 @@ class DynamicPlugin {
         const imjoyRPC = await loadImJoyRPC({
           base_url: "/",
         });
-        console.log(`========imjoy-rpc:${imjoyRPC.VERSION}=======`);
+        console.log(
+          `loaded imjoy-rpc v${imjoyRPC.VERSION} for ${pluginConfig.name}`
+        );
         this._rpc = new imjoyRPC.RPC(this._connection);
         this._registerSiteEvents(this._rpc);
         this._rpc.setInterface(this._initialInterface);
@@ -365,7 +367,7 @@ class DynamicPlugin {
   }
 
   _registerSiteEvents(_rpc) {
-    _rpc.onDisconnect(details => {
+    _rpc.on("disconnected", details => {
       this._disconnect.emit();
       if (details) {
         if (details.success) {
@@ -377,14 +379,14 @@ class DynamicPlugin {
       this._set_disconnected();
     });
 
-    _rpc.onRemoteReady(() => {
+    _rpc.on("remoteReady", () => {
       if (this.running) {
         this.running = false;
         this._updateUI();
       }
     });
 
-    _rpc.onRemoteBusy(() => {
+    _rpc.on("remoteBusy", () => {
       if (!this._disconnected && !this.running) {
         this.running = true;
         this._updateUI();
@@ -466,7 +468,7 @@ class DynamicPlugin {
    */
   _requestRemote() {
     return new Promise(resolve => {
-      this._rpc.onRemoteUpdate(() => {
+      this._rpc.on("remoteUpdated", () => {
         resolve(this._rpc.getRemote());
       });
       this._rpc.requestRemote();

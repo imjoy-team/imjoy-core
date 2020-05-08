@@ -392,6 +392,7 @@ export const FILE_MANAGER_SCHEMA = ajv.compile({
 export const CONFIG_SCHEMA = ajv.compile({
   properties: {
     allow_execution: { type: "boolean" },
+    credentials: { type: ["object", "null"] },
     api_version: { type: "string", maxLength: 32 },
     cover: { type: ["string", "array"], maxLength: 1024 },
     dedicated_thread: { type: "boolean" },
@@ -405,7 +406,6 @@ export const CONFIG_SCHEMA = ajv.compile({
     name: { type: "string", maxLength: 32 },
     outputs: { type: ["object", "array"] },
     tags: { type: "array", maxLength: 32 },
-    token: { type: "string", maxLength: 1024 },
     type: { type: "string", enum: Object.keys(_backends) },
     ui: { type: "string", maxLength: 2048 },
     version: { type: "string", maxLength: 32 },
@@ -417,6 +417,5 @@ export const CONFIG_SCHEMA = ajv.compile({
     "api_version",
     "id",
     "allow_execution",
-    "token",
   ],
 });

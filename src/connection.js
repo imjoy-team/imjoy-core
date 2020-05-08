@@ -1,11 +1,21 @@
-export class BasicConnection {
+import { EventManager } from "./utils.js";
+
+export class BasicConnection extends EventManager {
   constructor(sourceIframe) {
+    super();
     this._event_handlers = {};
     this._disconnected = false;
     this.pluginConfig = {};
     this._frame = sourceIframe;
     this.on("initialized", data => {
       this.pluginConfig = data.config;
+      if (this.pluginConfig.origin) {
+        console.warn(
+          `RPC connect to ${this.pluginConfig.name} will limited to origin: ${
+            this.pluginConfig.origin
+          }`
+        );
+      }
     });
   }
 
@@ -16,28 +26,13 @@ export class BasicConnection {
         this._fire(e.data.type, e.data);
       }
     });
-  }
-
-  getConfig() {
-    return new Promise((resolve, reject) => {
-      this.on("config", data => {
-        this.pluginConfig = data.config;
-        resolve(data.config);
-      });
-      try {
-        this.emit({ type: "getConfig" });
-      } catch (e) {
-        reject(e);
-      }
-    });
+    this._fire("connected");
   }
 
   execute(code) {
     return new Promise((resolve, reject) => {
-      // TODO: remote the handlers if finished
-      this.on("executeSuccess", resolve);
-      this.on("executeFailure", reject);
-      console.log("=====>config", this.pluginConfig);
+      this.once("executeSuccess", resolve);
+      this.once("executeFailure", reject);
       if (this.pluginConfig.allow_execution) {
         this.emit({ type: "execute", code: code });
       } else {
@@ -51,9 +46,18 @@ export class BasicConnection {
    *
    * @param {Object} data to send
    */
-  emit(data, transferables) {
+  emit(data) {
+    let transferables = undefined;
+    if (data.__transferables__) {
+      transferables = data.__transferables__;
+      delete data.__transferables__;
+    }
     this._frame.contentWindow &&
-      this._frame.contentWindow.postMessage(data, "*", transferables);
+      this._frame.contentWindow.postMessage(
+        data,
+        this.pluginConfig.origin || "*",
+        transferables
+      );
   }
 
   /**
@@ -66,27 +70,6 @@ export class BasicConnection {
         this._frame.parentNode.removeChild(this._frame);
       } // otherwise farme is not yet created
       this._fire("disconnected", details);
-    }
-  }
-
-  on(event, handler) {
-    if (!this._event_handlers[event]) {
-      this._event_handlers[event] = [];
-    }
-    this._event_handlers[event].push(handler);
-  }
-
-  _fire(event, data) {
-    if (this._event_handlers[event]) {
-      for (let cb of this._event_handlers[event]) {
-        try {
-          cb(data);
-        } catch (e) {
-          console.error(e);
-        }
-      }
-    } else {
-      console.warn("unhandled event", event, data);
     }
   }
 }
