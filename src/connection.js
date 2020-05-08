@@ -31,8 +31,13 @@ export class BasicConnection extends EventManager {
 
   execute(code) {
     return new Promise((resolve, reject) => {
-      this.once("executeSuccess", resolve);
-      this.once("executeFailure", reject);
+      this.once("executed", result => {
+        if (result.success) {
+          resolve();
+        } else {
+          reject(result.error);
+        }
+      });
       if (this.pluginConfig.allow_execution) {
         this.emit({ type: "execute", code: code });
       } else {

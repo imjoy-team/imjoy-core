@@ -291,6 +291,7 @@ class DynamicPlugin {
           );
           throw error;
         }
+
         const imjoyRPC = await loadImJoyRPC({
           base_url: "/",
         });
@@ -298,7 +299,21 @@ class DynamicPlugin {
           `loaded imjoy-rpc v${imjoyRPC.VERSION} for ${pluginConfig.name}`
         );
         this._rpc = new imjoyRPC.RPC(this._connection);
-        this._registerSiteEvents(this._rpc);
+        this._registerRPCEvents(this._rpc);
+        if (pluginConfig.credential_required) {
+          let credential;
+          if (this.config.credential_handler) {
+            credential = await this.config.credential_handler(
+              pluginConfig.credential_required
+            );
+          } else {
+            credential = {};
+            for (let k in pluginConfig.credential_required) {
+              credential[k] = await this._initialInterface.prompt(k);
+            }
+          }
+          await this._rpc.authenticate(credential);
+        }
         this._rpc.setInterface(this._initialInterface);
         await this._rpc.sendInterface();
         if (pluginConfig.allow_execution) {
@@ -366,7 +381,7 @@ class DynamicPlugin {
     }
   }
 
-  _registerSiteEvents(_rpc) {
+  _registerRPCEvents(_rpc) {
     _rpc.on("disconnected", details => {
       this._disconnect.emit();
       if (details) {

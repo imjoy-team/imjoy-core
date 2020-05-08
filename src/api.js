@@ -392,7 +392,7 @@ export const FILE_MANAGER_SCHEMA = ajv.compile({
 export const CONFIG_SCHEMA = ajv.compile({
   properties: {
     allow_execution: { type: "boolean" },
-    credentials: { type: ["object", "null"] },
+    credential_required: { type: ["object", "null"] },
     api_version: { type: "string", maxLength: 32 },
     cover: { type: ["string", "array"], maxLength: 1024 },
     dedicated_thread: { type: "boolean" },
