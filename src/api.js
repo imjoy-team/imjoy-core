@@ -122,24 +122,21 @@ ajv.addKeyword("ndarray", {
     }
     return function(data) {
       const isndarray =
-        data.__jailed_type__ === "ndarray" &&
-        data.__value__ &&
-        data.__value__ instanceof ArrayBufferView &&
-        data.__shape__ &&
-        Array.isArray(data.__shape__) &&
-        data.__dtype__ &&
-        _dtypes.includes(data.__dtype__);
+        data._rtype === "ndarray" &&
+        data._rvalue &&
+        data._rvalue instanceof ArrayBufferView &&
+        data._rshape &&
+        Array.isArray(data._rshape) &&
+        data._rdtype &&
+        _dtypes.includes(data._rdtype);
       if (!isndarray) return false;
       if (!config) return true;
       for (let k in config) {
         if (k === "shape") {
           const shape = config[k];
-          if (data.__shape__.length !== shape.length) return false;
-          for (let i = 0; i < data.__shape__.length; i++) {
-            if (
-              typeof shape[i] === "number" &&
-              data.__shape__[i] !== shape[i]
-            ) {
+          if (data._rshape.length !== shape.length) return false;
+          for (let i = 0; i < data._rshape.length; i++) {
+            if (typeof shape[i] === "number" && data._rshape[i] !== shape[i]) {
               return false;
             }
           }
@@ -149,9 +146,9 @@ ajv.addKeyword("ndarray", {
           const dtype = config[k];
           let _ok = false;
           if (typeof dtype === "string") {
-            _ok = data.__dtype__ === config[k];
+            _ok = data._rdtype === config[k];
           } else if (Array.isArray(dtype)) {
-            _ok = dtype.includes(data.__dtype__);
+            _ok = dtype.includes(data._rdtype);
           }
           if (!_ok) return false;
         }
@@ -160,9 +157,9 @@ ajv.addKeyword("ndarray", {
           const ndim = config[k];
           let _ok = false;
           if (typeof ndim === "number") {
-            _ok = data.__shape__.length === ndim;
+            _ok = data._rshape.length === ndim;
           } else if (Array.isArray(ndim)) {
-            _ok = ndim.includes(data.__shape__.length);
+            _ok = ndim.includes(data._rshape.length);
           }
           if (!_ok) return false;
         }

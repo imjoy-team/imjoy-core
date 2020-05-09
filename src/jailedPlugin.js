@@ -164,7 +164,7 @@ class DynamicPlugin {
    */
   _bindInterface(_interface) {
     _interface = _interface || {};
-    this._initialInterface = { __as_interface__: true };
+    this._initialInterface = { _rintf: true };
     // bind this plugin to api functions
     for (var k in _interface) {
       if (Object.prototype.hasOwnProperty.call(_interface, k)) {
@@ -209,8 +209,8 @@ class DynamicPlugin {
     this._updateUI();
     const me = this;
     const engine_utils = {
-      __as_interface__: true,
-      __id__: this.config.id + "_utils",
+      _rintf: true,
+      _rid: this.config.id + "_utils",
       terminatePlugin() {
         me.terminate();
       },
@@ -237,8 +237,8 @@ class DynamicPlugin {
           return;
         }
         this.api = remote;
-        this.api.__as_interface__ = true;
-        this.api.__id__ = this.id;
+        this.api._rintf = true;
+        this.api._rid = this.id;
         this._disconnected = false;
         this.initializing = false;
         this._updateUI();
@@ -324,8 +324,8 @@ class DynamicPlugin {
           await this._executePlugin();
         }
         this.api = await this._requestRemote();
-        this.api.__as_interface__ = true;
-        this.api.__id__ = this.id;
+        this.api._rintf = true;
+        this.api._rid = this.id;
         this._disconnected = false;
         this.initializing = false;
         this._updateUI();
