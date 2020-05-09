@@ -302,7 +302,7 @@ class DynamicPlugin {
         console.log(
           `loaded imjoy-rpc v${imjoyRPC.VERSION} for ${pluginConfig.name}`
         );
-        this._rpc = new imjoyRPC.RPC(this._connection);
+        this._rpc = new imjoyRPC.RPC(this._connection, { name: "imjoy-core" });
         this._registerRPCEvents(this._rpc);
         if (pluginConfig.credential_required) {
           let credential;
