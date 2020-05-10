@@ -18,9 +18,6 @@ export class BasicConnection extends EventManager {
       }
     });
   }
-  init(){
-    
-  }
   connect() {
     // TODO: remove listener when disconnected
     window.addEventListener("message", e => {

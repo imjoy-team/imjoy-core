@@ -30,6 +30,7 @@
     "lint": "eslint \"{src,tests}/**/**\"",
     "check": "eslint \"{src,tests}/**/**\" && prettier --check \"{src,tests}/**/**\"",
     "test": "karma start --single-run --browsers ChromeHeadless,FirefoxHeadless karma.conf.js",
+    "test-watch": "karma start --auto-watch --browsers ChromeHeadless,FirefoxHeadless karma.conf.js",
     "deploy": "npm run build && node deploy-site.js"
   },
   "dependencies": {
