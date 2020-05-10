@@ -319,7 +319,7 @@ class DynamicPlugin {
           await this._rpc.authenticate(credential);
         }
         this._rpc.setInterface(this._initialInterface);
-        await this._rpc.sendInterface();
+        await this._sendInterface();
         if (pluginConfig.allow_execution) {
           await this._executePlugin();
         }
@@ -491,6 +491,13 @@ class DynamicPlugin {
         resolve(this._rpc.getRemote());
       });
       this._rpc.requestRemote();
+    });
+  }
+
+  _sendInterface() {
+    return new Promise(resolve => {
+      this._rpc.once("interfaceSetAsRemote", resolve);
+      this._rpc.sendInterface();
     });
   }
 
