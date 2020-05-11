@@ -663,4 +663,53 @@ class DynamicPlugin {
   }
 }
 
-export { initializeJailed, DynamicPlugin };
+function getExternalPluginConfig(url) {
+  return new Promise((resolve, reject) => {
+    const _frame = createIframe({
+      id: "external_" + randId(),
+      type: "window",
+      base_frame: url,
+      permissions: [],
+    });
+    _frame.style.display = "none";
+    document.body.appendChild(_frame);
+    const _connection = new BasicConnection(_frame);
+    const connection_timer = setTimeout(() => {
+      reject("Timeout error: failed to connect to the plugin");
+    }, 15000);
+    _connection.on("initialized", async data => {
+      clearTimeout(connection_timer);
+      const pluginConfig = data.config;
+      if (data.error) {
+        console.error("Plugin failed to initialize", data.error);
+        throw new Error(data.error);
+      }
+      if (!CONFIG_SCHEMA(pluginConfig)) {
+        const error = CONFIG_SCHEMA.errors;
+        console.error(
+          "Invalid config " + pluginConfig.name || "unkown" + ": ",
+          pluginConfig,
+          error
+        );
+        throw error;
+      }
+      pluginConfig.base_frame = url;
+      pluginConfig.code = `<config lang="json">\n${JSON.stringify(
+        pluginConfig,
+        null,
+        "  "
+      )}\n</config>`;
+      pluginConfig.badges = this.getBadges(pluginConfig);
+      pluginConfig.uri = url;
+      pluginConfig.origin = url;
+      resolve(pluginConfig);
+    });
+    _connection.on("failed", e => {
+      clearTimeout(connection_timer);
+      reject(e);
+    });
+    _connection.connect();
+  });
+}
+
+export { initializeJailed, DynamicPlugin, getExternalPluginConfig };

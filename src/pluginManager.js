@@ -6,9 +6,8 @@ import axios from "axios";
 import yaml from "js-yaml";
 import { Joy } from "./joy.js";
 import { saveAs } from "file-saver";
-import { createIframe } from "./jailedPlugin.js";
-import { BasicConnection } from "./connection.js";
-import { getBackendByType, CONFIG_SCHEMA } from "./api.js";
+import { getExternalPluginConfig } from "./jailedPlugin.js";
+import { getBackendByType } from "./api.js";
 
 import {
   _clone,
@@ -926,52 +925,11 @@ export class PluginManager {
 
     return { uri, scoped_plugins, selected_tag, external };
   }
-  getExternalPluginConfig(url) {
-    return new Promise((resolve, reject) => {
-      const _frame = createIframe({
-        id: "external_" + randId(),
-        type: "window",
-        base_frame: url,
-        permissions: [],
-      });
-      _frame.style.display = "none";
-      document.body.appendChild(_frame);
-      this._connection = new BasicConnection(_frame);
-      this._connection.on("initialized", async data => {
-        const pluginConfig = data.config;
-        if (data.error) {
-          console.error("Plugin failed to initialize", data.error);
-          throw new Error(data.error);
-        }
-        if (!CONFIG_SCHEMA(pluginConfig)) {
-          const error = CONFIG_SCHEMA.errors;
-          console.error(
-            "Invalid config " + pluginConfig.name || "unkown" + ": ",
-            pluginConfig,
-            error
-          );
-          throw error;
-        }
-        pluginConfig.base_frame = url;
-        pluginConfig.code = `<config lang="json">\n${JSON.stringify(
-          pluginConfig,
-          null,
-          "  "
-        )}\n</config>`;
-        pluginConfig.badges = this.getBadges(pluginConfig);
-        pluginConfig.uri = url;
-        pluginConfig.origin = url;
-        resolve(pluginConfig);
-      });
-      this._connection.onFailed(e => {
-        reject(e);
-      });
-    });
-  }
+
   async getPluginFromUrl(uri, scoped_plugins) {
     const obj = await this.normalizePluginUrl(uri, scoped_plugins);
     if (obj.external) {
-      return await this.getExternalPluginConfig(uri);
+      return await getExternalPluginConfig(uri);
     }
     uri = obj.uri;
     scoped_plugins = obj.scoped_plugins;
