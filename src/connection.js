@@ -1,60 +1,44 @@
-import { Whenable } from "./utils.js";
+import { EventManager } from "./utils.js";
 
-export class BasicConnection {
+export class BasicConnection extends EventManager {
   constructor(sourceIframe) {
-    this._init = new Whenable(true);
-    this._fail = new Whenable(true);
+    super();
+    this._event_handlers = {};
     this._disconnected = false;
     this.pluginConfig = {};
-    this._getConfigSCb = function() {};
-    this._executeSCb = function() {};
-    this._executeFCb = function() {};
-    this._messageHandler = function() {};
     this._frame = sourceIframe;
-
-    // TODO: remove listener when disconnected
-    window.addEventListener("message", e => {
-      if (this._frame.contentWindow && e.source === this._frame.contentWindow) {
-        const m = e.data;
-        switch (m && m.type) {
-          case "config":
-            this.pluginConfig = m.config;
-            this._getConfigSCb(m.config);
-            break;
-          case "initialized":
-            this.pluginConfig = m.config;
-            this._init.emit(this.pluginConfig);
-            break;
-          case "executeSuccess":
-            this._executeSCb();
-            break;
-          case "executeFailure":
-            this._executeFCb(m.error);
-            break;
-          default:
-            this._messageHandler(m);
-        }
+    this.on("initialized", data => {
+      this.pluginConfig = data.config;
+      if (this.pluginConfig.origin) {
+        console.warn(
+          `RPC connect to ${this.pluginConfig.name} will limited to origin: ${
+            this.pluginConfig.origin
+          }`
+        );
       }
     });
   }
-
-  getConfig() {
-    return new Promise((resolve, reject) => {
-      this._getConfigSCb = resolve;
-      try {
-        this.send({ type: "getConfig" });
-      } catch (e) {
-        reject(e);
+  connect() {
+    // TODO: remove listener when disconnected
+    window.addEventListener("message", e => {
+      if (this._frame.contentWindow && e.source === this._frame.contentWindow) {
+        this._fire(e.data.type, e.data);
       }
     });
+    this._fire("connected");
   }
 
   execute(code) {
     return new Promise((resolve, reject) => {
-      this._executeSCb = resolve;
-      this._executeFCb = reject;
+      this.once("executed", result => {
+        if (result.error) {
+          reject(result.error);
+        } else {
+          resolve();
+        }
+      });
       if (this.pluginConfig.allow_execution) {
-        this.send({ type: "execute", code: code });
+        this.emit({ type: "execute", code: code });
       } else {
         reject("Connection does not allow execution");
       }
@@ -62,74 +46,34 @@ export class BasicConnection {
   }
 
   /**
-   * Sets-up the handler to be called upon the BasicConnection
-   * initialization is completed.
-   *
-   * For the web-browser environment, the handler is issued when
-   * the plugin worker successfully imported and executed the
-   * _pluginWebWorker.js or _pluginWebIframe.js, and replied to
-   * the application site with the initImprotSuccess message.
-   *
-   * @param {Function} handler to be called upon connection init
-   */
-  onInit(handler) {
-    this._init.whenEmitted(handler);
-  }
-
-  /**
-   * Sets-up the handler to be called upon the BasicConnection
-   * failed.
-   *
-   * For the web-browser environment, the handler is issued when
-   * the plugin worker successfully imported and executed the
-   * _pluginWebWorker.js or _pluginWebIframe.js, and replied to
-   * the application site with the initImprotSuccess message.
-   *
-   * @param {Function} handler to be called upon connection init
-   */
-  onFailed(handler) {
-    this._fail.whenEmitted(handler);
-  }
-
-  /**
    * Sends a message to the plugin site
    *
    * @param {Object} data to send
    */
-  send(data, transferables) {
+  emit(data) {
+    let transferables = undefined;
+    if (data.__transferables__) {
+      transferables = data.__transferables__;
+      delete data.__transferables__;
+    }
     this._frame.contentWindow &&
-      this._frame.contentWindow.postMessage(data, "*", transferables);
-  }
-
-  /**
-   * Adds a handler for a message received from the plugin site
-   *
-   * @param {Function} handler to call upon a message
-   */
-  onMessage(handler) {
-    this._messageHandler = handler;
-  }
-
-  /**
-   * Adds a handler for the event of plugin disconnection
-   * (not used in case of Worker)
-   *
-   * @param {Function} handler to call upon a disconnect
-   */
-  onDisconnect(handler) {
-    this._disconnectHandler = handler;
+      this._frame.contentWindow.postMessage(
+        data,
+        this.pluginConfig.origin || "*",
+        transferables
+      );
   }
 
   /**
    * Disconnects the plugin (= kills the frame)
    */
-  disconnect() {
+  disconnect(details) {
     if (!this._disconnected) {
       this._disconnected = true;
       if (typeof this._frame !== "undefined") {
         this._frame.parentNode.removeChild(this._frame);
       } // otherwise farme is not yet created
-      if (this._disconnectHandler) this._disconnectHandler();
+      this._fire("disconnected", details);
     }
   }
 }

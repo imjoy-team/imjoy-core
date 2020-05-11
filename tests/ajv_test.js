@@ -5,10 +5,10 @@ describe("ajv", async () => {
   let schema;
   const data = {
     mydata: {
-      __jailed_type__: "ndarray",
-      __value__: new Uint8Array(new ArrayBuffer(100)),
-      __shape__: [10, 10],
-      __dtype__: "uint8",
+      _rtype: "ndarray",
+      _rvalue: new Uint8Array(new ArrayBuffer(100)),
+      _rshape: [10, 10],
+      _rdtype: "uint8",
     },
     myfile: new File(["foo"], "foo.txt", {
       type: "text/plain",
@@ -91,10 +91,10 @@ describe("ajv", async () => {
     schema = { ndarray: {} };
     expect(
       ajv.compile(schema)({
-        __jailed_type__: "ndarray",
-        __value__: new Uint8Array(new ArrayBuffer(10)),
-        __shape__: [1, 10],
-        __dtype__: "uint8",
+        _rtype: "ndarray",
+        _rvalue: new Uint8Array(new ArrayBuffer(10)),
+        _rshape: [1, 10],
+        _rdtype: "uint8",
       })
     ).to.be.true;
 
@@ -102,10 +102,10 @@ describe("ajv", async () => {
     schema = { ndarray: { shape: [null, null] } };
     expect(
       ajv.compile(schema)({
-        __jailed_type__: "ndarray",
-        __value__: new Uint8Array(new ArrayBuffer(10)),
-        __shape__: [1, 10],
-        __dtype__: "uint8",
+        _rtype: "ndarray",
+        _rvalue: new Uint8Array(new ArrayBuffer(10)),
+        _rshape: [1, 10],
+        _rdtype: "uint8",
       })
     ).to.be.true;
   });

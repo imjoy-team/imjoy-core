@@ -15,12 +15,12 @@ import { Whenable } from "./utils.js";
 
 import DOMPurify from "dompurify";
 import { loadImJoyRPC } from "./imjoyLoader.js";
-
+import { VERSION } from "./imjoyCore.js";
 const JailedConfig = {};
 if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
   JailedConfig.asset_url = "/";
 } else {
-  JailedConfig.asset_url = "https://lib.imjoy.io/";
+  JailedConfig.asset_url = `https://cdn.jsdelivr.net/npm/imjoy-core@${VERSION}/dist/`;
 }
 /**
  * Initializes the library site for web environment
@@ -164,7 +164,7 @@ class DynamicPlugin {
    */
   _bindInterface(_interface) {
     _interface = _interface || {};
-    this._initialInterface = { __as_interface__: true };
+    this._initialInterface = { _rintf: true };
     // bind this plugin to api functions
     for (var k in _interface) {
       if (Object.prototype.hasOwnProperty.call(_interface, k)) {
@@ -209,8 +209,8 @@ class DynamicPlugin {
     this._updateUI();
     const me = this;
     const engine_utils = {
-      __as_interface__: true,
-      __id__: this.config.id + "_utils",
+      _rintf: true,
+      _rid: this.config.id + "_utils",
       terminatePlugin() {
         me.terminate();
       },
@@ -237,8 +237,8 @@ class DynamicPlugin {
           return;
         }
         this.api = remote;
-        this.api.__as_interface__ = true;
-        this.api.__id__ = this.id;
+        this.api._rintf = true;
+        this.api._rid = this.id;
         this._disconnected = false;
         this.initializing = false;
         this._updateUI();
@@ -279,9 +279,13 @@ class DynamicPlugin {
     this._connection = new BasicConnection(_frame);
     this.initializing = true;
     this._updateUI();
-    this._connection.onInit(async pluginConfig => {
+    this._connection.on("initialized", async data => {
+      if (data.error) {
+        console.error("Plugin failed to initialize", data.error);
+        throw new Error(data.error);
+      }
       try {
-        pluginConfig = pluginConfig || {};
+        const pluginConfig = data.config || {};
         if (!CONFIG_SCHEMA(pluginConfig)) {
           const error = CONFIG_SCHEMA.errors;
           console.error(
@@ -291,41 +295,75 @@ class DynamicPlugin {
           );
           throw error;
         }
+
         const imjoyRPC = await loadImJoyRPC({
           api_version: pluginConfig.api_version,
         });
-        this._rpc = new imjoyRPC.RPC(this._connection);
-        this._registerSiteEvents(this._rpc);
+        console.log(
+          `loaded imjoy-rpc v${imjoyRPC.VERSION} for ${pluginConfig.name}`
+        );
+        this._rpc = new imjoyRPC.RPC(this._connection, { name: "imjoy-core" });
+        this._registerRPCEvents(this._rpc);
+        if (pluginConfig.credential_required) {
+          let credential;
+          if (this.config.credential_handler) {
+            credential = await this.config.credential_handler(
+              pluginConfig.credential_required
+            );
+          } else {
+            credential = {};
+            for (let k in pluginConfig.credential_required) {
+              credential[k] = await this._initialInterface.prompt(k);
+            }
+          }
+          await this._rpc.authenticate(credential);
+        }
         this._rpc.setInterface(this._initialInterface);
-        await this._rpc.sendInterface();
+        await this._sendInterface();
         if (pluginConfig.allow_execution) {
           await this._executePlugin();
         }
         this.api = await this._requestRemote();
-        this.api.__as_interface__ = true;
-        this.api.__id__ = this.id;
+        this.api._rintf = true;
+        this.api._rid = this.id;
         this._disconnected = false;
         this.initializing = false;
         this._updateUI();
         this._connected.emit();
-      } catch (e) {
-        this._fail.emit(e);
+      } catch (error) {
+        this._fail.emit(error);
+        this.disconnect();
+        this.initializing = false;
+        if (error) this.error(error.toString());
+        if (this._hasVisibleWindow && this.config.iframe_container) {
+          const container = document.getElementById(
+            this.config.iframe_container
+          );
+          container.innerHTML = `<h5>Oops! failed to load the window.</h5><code>Details: ${DOMPurify.sanitize(
+            String(error)
+          )}</code>`;
+        }
+        this._updateUI();
       }
     });
-    this._connection.onFailed(e => {
+
+    // TODO: check when this will fire
+    this._connection.on("failed", e => {
       this._fail.emit(e);
     });
 
-    this._connection.onDisconnect(details => {
+    this._connection.on("disconnected", details => {
       if (details) {
-        if (details.success) {
-          this.log(details.message);
-        } else {
-          this.error(details.message);
+        if (details.error) {
+          this.error(details.error);
+        } else if (details.info) {
+          this.log(details.info);
         }
       }
       this._set_disconnected();
     });
+
+    this._connection.connect();
   }
   /**
    * Creates the connection to the plugin site
@@ -337,21 +375,6 @@ class DynamicPlugin {
     this._fail = new Whenable(true);
     this._disconnect = new Whenable(true);
 
-    // binded failure callback
-    this._fCb = error => {
-      this._fail.emit(error);
-      this.disconnect();
-      this.initializing = false;
-      if (error) this.error(error.toString());
-      if (this._hasVisibleWindow && this.config.iframe_container) {
-        const container = document.getElementById(this.config.iframe_container);
-        container.innerHTML = `<h5>Oops! failed to load the window.</h5><code>Details: ${DOMPurify.sanitize(
-          String(error)
-        )}</code>`;
-      }
-      this._updateUI();
-    };
-
     if (!this.backend) {
       this._setupViaEngine();
     } else {
@@ -359,27 +382,27 @@ class DynamicPlugin {
     }
   }
 
-  _registerSiteEvents(_rpc) {
-    _rpc.onDisconnect(details => {
+  _registerRPCEvents(_rpc) {
+    _rpc.on("disconnected", details => {
       this._disconnect.emit();
       if (details) {
-        if (details.success) {
-          this.log(details.message);
-        } else {
+        if (details.error) {
           this.error(details.message);
+        } else if (details.info) {
+          this.log(details.info);
         }
       }
       this._set_disconnected();
     });
 
-    _rpc.onRemoteReady(() => {
+    _rpc.on("remoteIdle", () => {
       if (this.running) {
         this.running = false;
         this._updateUI();
       }
     });
 
-    _rpc.onRemoteBusy(() => {
+    _rpc.on("remoteBusy", () => {
       if (!this._disconnected && !this.running) {
         this.running = true;
         this._updateUI();
@@ -392,63 +415,56 @@ class DynamicPlugin {
    * DynamicPlugin)
    */
   async _executePlugin() {
-    try {
-      if (this.config.requirements) {
-        await this._connection.execute({
-          type: "requirements",
-          lang: this.config.lang,
-          requirements: this.config.requirements,
-          env: this.config.env,
-        });
-      }
-      if (this._hasVisibleWindow) {
-        if (this.config.styles) {
-          for (let i = 0; i < this.config.styles.length; i++) {
-            await this._connection.execute({
-              type: "style",
-              content: this.config.styles[i].content,
-              attrs: this.config.styles[i].attrs,
-              src: this.config.styles[i].attrs.src,
-            });
-          }
-        }
-        if (this.config.links) {
-          for (let i = 0; i < this.config.links.length; i++) {
-            await this._connection.execute({
-              type: "link",
-              rel: this.config.links[i].attrs.rel,
-              type_: this.config.links[i].attrs.type,
-              attrs: this.config.links[i].attrs,
-              href: this.config.links[i].attrs.href,
-            });
-          }
-        }
-        if (this.config.windows) {
-          for (let i = 0; i < this.config.windows.length; i++) {
-            await this._connection.execute({
-              type: "html",
-              content: this.config.windows[i].content,
-              attrs: this.config.windows[i].attrs,
-            });
-          }
-        }
-      }
-      if (this.config.scripts) {
-        for (let i = 0; i < this.config.scripts.length; i++) {
+    if (this.config.requirements) {
+      await this._connection.execute({
+        type: "requirements",
+        lang: this.config.lang,
+        requirements: this.config.requirements,
+        env: this.config.env,
+      });
+    }
+    if (this._hasVisibleWindow) {
+      if (this.config.styles) {
+        for (let i = 0; i < this.config.styles.length; i++) {
           await this._connection.execute({
-            type: "script",
-            content: this.config.scripts[i].content,
-            lang: this.config.scripts[i].attrs.lang,
-            attrs: this.config.scripts[i].attrs,
-            src: this.config.scripts[i].attrs.src,
+            type: "style",
+            content: this.config.styles[i].content,
+            attrs: this.config.styles[i].attrs,
+            src: this.config.styles[i].attrs.src,
           });
         }
       }
-    } catch (e) {
-      this._fCb(
-        ("Error in loading plugin: " + e && e.toString()) ||
-          "Error in loading plugin"
-      );
+      if (this.config.links) {
+        for (let i = 0; i < this.config.links.length; i++) {
+          await this._connection.execute({
+            type: "link",
+            rel: this.config.links[i].attrs.rel,
+            type_: this.config.links[i].attrs.type,
+            attrs: this.config.links[i].attrs,
+            href: this.config.links[i].attrs.href,
+          });
+        }
+      }
+      if (this.config.windows) {
+        for (let i = 0; i < this.config.windows.length; i++) {
+          await this._connection.execute({
+            type: "html",
+            content: this.config.windows[i].content,
+            attrs: this.config.windows[i].attrs,
+          });
+        }
+      }
+    }
+    if (this.config.scripts) {
+      for (let i = 0; i < this.config.scripts.length; i++) {
+        await this._connection.execute({
+          type: "script",
+          content: this.config.scripts[i].content,
+          lang: this.config.scripts[i].attrs.lang,
+          attrs: this.config.scripts[i].attrs,
+          src: this.config.scripts[i].attrs.src,
+        });
+      }
     }
   }
 
@@ -461,10 +477,17 @@ class DynamicPlugin {
    */
   _requestRemote() {
     return new Promise(resolve => {
-      this._rpc.onRemoteUpdate(() => {
+      this._rpc.once("remoteReady", () => {
         resolve(this._rpc.getRemote());
       });
       this._rpc.requestRemote();
+    });
+  }
+
+  _sendInterface() {
+    return new Promise(resolve => {
+      this._rpc.once("interfaceSetAsRemote", resolve);
+      this._rpc.sendInterface();
     });
   }
 
@@ -546,9 +569,12 @@ class DynamicPlugin {
     } catch (e) {
       console.error("error occured when terminating the plugin", e);
     } finally {
-      setTimeout(() => {
-        this._forceDisconnect();
-      }, 1000);
+      setTimeout(
+        (() => {
+          this._forceDisconnect();
+        }).bind(this),
+        1000
+      );
     }
   }
 

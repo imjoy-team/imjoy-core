@@ -66,7 +66,7 @@ var execute = async function(code, api_interface) {
         throw `Failed to import required scripts ${code.requirements}: ${e}`;
       }
     }
-  } else if (code.type == "script") {
+  } else if (code.type === "script") {
     if (code.src) {
       var script_node = document.createElement("script");
       script_node.setAttribute("type", code.attrs.type);

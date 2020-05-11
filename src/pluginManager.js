@@ -937,7 +937,12 @@ export class PluginManager {
       _frame.style.display = "none";
       document.body.appendChild(_frame);
       this._connection = new BasicConnection(_frame);
-      this._connection.onInit(async pluginConfig => {
+      this._connection.on("initialized", async data => {
+        const pluginConfig = data.config;
+        if (data.error) {
+          console.error("Plugin failed to initialize", data.error);
+          throw new Error(data.error);
+        }
         if (!CONFIG_SCHEMA(pluginConfig)) {
           const error = CONFIG_SCHEMA.errors;
           console.error(
@@ -1530,8 +1535,8 @@ export class PluginManager {
         // create a proxy plugin
         const plugin = new DynamicPlugin(tconfig, _interface, null, true);
         plugin.api = {
-          __as_interface__: true,
-          __id__: plugin.id,
+          _rintf: true,
+          _rid: plugin.id,
           setup: async () => {},
           run: async my => {
             const c = _clone(template.defaults) || {};
@@ -1821,8 +1826,8 @@ export class PluginManager {
     if (!my) return null;
     //conver config--> data  data-->target
     const res = {};
-    res.__as_interface__ = my.__as_interface__;
-    res.__id__ = my.__id__;
+    res._rintf = my._rintf;
+    res._rid = my._rid;
     if (my.type && my.data) {
       res.data = my.config;
       res.target = my.data;
@@ -1874,8 +1879,8 @@ export class PluginManager {
     if (!my) return null;
     my.target = my.target || {};
     const ret = {
-      __as_interface__: my.__as_interface__,
-      __id__: my.__id__,
+      _rintf: my._rintf,
+      _rid: my._rid,
       _variables: my.target._variables || null,
       _op: my.target._op,
       _source_op: my.target._source_op,
@@ -2109,7 +2114,7 @@ export class PluginManager {
             if (result) {
               const res = this.plugin2joy(result);
               // if it's not a window
-              if (res && !res.__as_interface__) {
+              if (res && !res._rintf) {
                 const w = {};
                 w.name = res.name || "result";
                 w.type = res.type || "imjoy/generic";
@@ -2292,8 +2297,8 @@ export class PluginManager {
                 wconfig.refresh();
                 wconfig.api = wconfig.api || {};
                 wconfig.api = Object.assign(wconfig.api, {
-                  __as_interface__: true,
-                  __id__: wid,
+                  _rintf: true,
+                  _rid: wid,
                   run: new_config => {
                     for (let k in new_config) {
                       wconfig[k] = new_config[k];
@@ -2381,7 +2386,7 @@ export class PluginManager {
             }
             if (pconfig.passive || window_config.passive) {
               resolve({
-                __as_interface__: true,
+                _rintf: true,
                 setup: () => {},
               });
               return;
@@ -2417,7 +2422,7 @@ export class PluginManager {
               }
               if (pconfig.passive || window_config.passive) {
                 resolve({
-                  __as_interface__: true,
+                  _rintf: true,
                   setup: () => {},
                   on: () => {},
                 });

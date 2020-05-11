@@ -35,9 +35,9 @@ class ImJoyPlugin {
     return arg*arg
   }
 
-  _rpcEncode(d){
+  _rpc_encode(d){
     if(d === 99*99){
-      return {__rpc_dtype__: 'my_special_number'}
+      return {_ctype: 'my_special_number'}
     }
     return d
   }

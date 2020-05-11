@@ -53,7 +53,8 @@ export function loadImJoyCore(config) {
 }
 const _rpc_registry = {};
 const _rpc_api_versions = {
-  "0.2.0": { from: "0.1.10", to: "latest", skips: [] },
+  "0.2.0": { from: "0.1.10", to: "0.1.17", skips: [] },
+  "0.2.1": { from: "0.1.18", to: "0.2.0", skips: [] },
 };
 
 // specify an api version and this function will return the actual imjoy-rpc version
