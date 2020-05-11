@@ -107,9 +107,9 @@ module.exports = function (config) {
         // Concurrency level
         // how many browser should be started simultaneous
         concurrency: Infinity,
-        captureTimeout: 20000,
+        captureTimeout: 30000,
         browserDisconnectTolerance: 2,
-        browserDisconnectTimeout: 30000,
-        browserNoActivityTimeout: 10000,
+        browserDisconnectTimeout: 40000,
+        browserNoActivityTimeout: 40000,
     })
 }
