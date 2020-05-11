@@ -929,7 +929,9 @@ export class PluginManager {
   async getPluginFromUrl(uri, scoped_plugins) {
     const obj = await this.normalizePluginUrl(uri, scoped_plugins);
     if (obj.external) {
-      return await getExternalPluginConfig(uri);
+      const pluginConfig = await getExternalPluginConfig(uri);
+      pluginConfig.badges = this.getBadges(pluginConfig);
+      return pluginConfig;
     }
     uri = obj.uri;
     scoped_plugins = obj.scoped_plugins;

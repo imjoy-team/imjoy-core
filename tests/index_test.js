@@ -99,6 +99,22 @@ describe("ImJoy Core", async () => {
     plugin.terminate();
   }).timeout(20000);
 
+  it("should get plugin config from github", async () => {
+    const config1 = await pm.getPluginFromUrl(
+      "https://github.com/imjoy-team/ImJoy/blob/master/web/src/plugins/windowTemplate.imjoy.html"
+    );
+    expect(config1.name).to.equal("Untitled Plugin");
+    expect(config1.type).to.equal("window");
+  });
+
+  it("should get plugin config from external url", async () => {
+    const config2 = await pm.getPluginFromUrl(
+      "https://lib.imjoy.io/plugin-example.html"
+    );
+    expect(config2.name).to.equal("My Awesome App");
+    expect(config2.type).to.equal("rpc-window");
+  });
+
   describe("ImJoy API", async () => {
     let plugin1;
     let plugin2;

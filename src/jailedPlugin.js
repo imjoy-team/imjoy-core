@@ -699,7 +699,6 @@ function getExternalPluginConfig(url) {
         null,
         "  "
       )}\n</config>`;
-      pluginConfig.badges = this.getBadges(pluginConfig);
       pluginConfig.uri = url;
       pluginConfig.origin = url;
       resolve(pluginConfig);
