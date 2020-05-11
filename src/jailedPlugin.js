@@ -15,12 +15,12 @@ import { Whenable } from "./utils.js";
 
 import DOMPurify from "dompurify";
 import { loadImJoyRPC } from "./imjoyLoader.js";
-import { VERSION } from "./imjoyCore.js";
+
 const JailedConfig = {};
 if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
   JailedConfig.asset_url = "/";
 } else {
-  JailedConfig.asset_url = `https://cdn.jsdelivr.net/npm/imjoy-core@${VERSION}/dist/`;
+  JailedConfig.asset_url = "https://lib.imjoy.io/";
 }
 /**
  * Initializes the library site for web environment
