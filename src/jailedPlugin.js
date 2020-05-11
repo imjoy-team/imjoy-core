@@ -297,7 +297,7 @@ class DynamicPlugin {
         }
 
         const imjoyRPC = await loadImJoyRPC({
-          base_url: "/",
+          api_version: pluginConfig.api_version,
         });
         console.log(
           `loaded imjoy-rpc v${imjoyRPC.VERSION} for ${pluginConfig.name}`
