@@ -31,10 +31,10 @@ export class BasicConnection extends EventManager {
   execute(code) {
     return new Promise((resolve, reject) => {
       this.once("executed", result => {
-        if (result.success) {
-          resolve();
-        } else {
+        if (result.error) {
           reject(result.error);
+        } else {
+          resolve();
         }
       });
       if (this.pluginConfig.allow_execution) {
