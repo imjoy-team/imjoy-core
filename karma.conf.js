@@ -22,7 +22,13 @@ module.exports = function (config) {
             'node_modules/imjoy-rpc/dist/imjoy-rpc.js',
             'node_modules/imjoy-rpc/dist/imjoy-rpc.min.js',
             'node_modules/imjoy-rpc/dist/base_frame.html',
-            { pattern: 'src/*.js', watched: false, included: false, served: true, nocache: false },
+            {
+                pattern: 'src/*.js',
+                watched: false,
+                included: false,
+                served: true,
+                nocache: false
+            },
         ],
 
         proxies: {
@@ -34,8 +40,7 @@ module.exports = function (config) {
 
 
         // list of files / patterns to exclude
-        exclude: [
-        ],
+        exclude: [],
 
 
         // preprocess matching files before serving them to the browser
@@ -57,8 +62,15 @@ module.exports = function (config) {
         // test results reporter to use
         // possible values: 'dots', 'progress'
         // available reporters: https://npmjs.org/browse/keyword/karma-reporter
-        reporters: ['progress'],
-
+        reporters: ["spec"],
+        specReporter: {
+            maxLogLines: 5, // limit number of lines logged per test
+            suppressErrorSummary: true, // do not print error summary
+            suppressFailed: false, // do not print information about failed tests
+            suppressPassed: false, // do not print information about passed tests
+            suppressSkipped: true, // do not print information about skipped tests
+            showSpecTiming: false // print the time elapsed for each spec
+        },
 
         // web server port
         port: 9876,
@@ -95,9 +107,9 @@ module.exports = function (config) {
         // Concurrency level
         // how many browser should be started simultaneous
         concurrency: Infinity,
-        captureTimeout: 210000,
-        browserDisconnectTolerance: 3, 
-        browserDisconnectTimeout : 210000,
-        browserNoActivityTimeout : 210000,
+        captureTimeout: 20000,
+        browserDisconnectTolerance: 2,
+        browserDisconnectTimeout: 30000,
+        browserNoActivityTimeout: 10000,
     })
 }
