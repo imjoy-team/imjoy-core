@@ -19,7 +19,7 @@ console.log("ImJoy Core version: " + imjoyCore.VERSION);
 describe("ImJoy Core", async () => {
   let imjoy, wm, pm;
   before(function(done) {
-    this.timeout(10000);
+    this.timeout(30000);
     imjoy = new imjoyCore.ImJoy({
       imjoy_api: {},
       show_message_callback: console.log,
@@ -77,7 +77,7 @@ describe("ImJoy Core", async () => {
   //   expect(plugin.type).to.equal('native-python')
   //   expect(typeof plugin.api.run).to.equal('function')
   //   plugin.api.run({})
-  // }).timeout(10000)
+  // }).timeout(30000)
 
   it("should load the new web-python plugin", async () => {
     const code = _.clone(WEB_PYTHON_PLUGIN_TEMPLATE);
