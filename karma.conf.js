@@ -21,7 +21,6 @@ module.exports = function (config) {
             'tests/*_test.js',
             'node_modules/imjoy-rpc/dist/imjoy-rpc.js',
             'node_modules/imjoy-rpc/dist/imjoy-rpc.min.js',
-            'node_modules/imjoy-rpc/dist/base_frame.html',
             {
                 pattern: 'src/*.js',
                 watched: false,
@@ -32,7 +31,7 @@ module.exports = function (config) {
         ],
 
         proxies: {
-            "/base_frame.html": '/base/node_modules/imjoy-rpc/dist/base_frame.html',
+            "/default_base_frame.html": '/base/src/default_base_frame.html',
             "/imjoy-rpc.js": '/base/node_modules/imjoy-rpc/dist/imjoy-rpc.js',
             "/imjoy-rpc.min.js": '/base/node_modules/imjoy-rpc/dist/imjoy-rpc.min.js',
             "/plugin-service-worker.js": "/base/src/plugin-service-worker.js"

@@ -96,15 +96,6 @@ export function createIframe(config) {
   }
   frame.sandbox = perm.join(" ");
   frame.allow = allows;
-
-  if (!["rpc-window", "rpc-worker", "iframe", "window"].includes(config.type)) {
-    frame.src =
-      frame.src +
-      (frame.src.includes("?") ? "&" : "?") +
-      "_plugin_type=" +
-      config.type;
-  }
-
   frame.id = "iframe_" + config.id;
   return frame;
 }
@@ -256,29 +247,61 @@ class DynamicPlugin {
       throw `Unsupported backend type (${this.type})`;
     }
     if (!this.config.base_frame) {
-      this.config.base_frame = JailedConfig.asset_url + "base_frame.html";
+      this.config.base_frame = "https://lib.imjoy.io/default_base_frame.html";
     }
     const _frame = createIframe(this.config);
-    if (this._hasVisibleWindow) {
-      let iframe_container = this.config.iframe_container;
-      if (typeof iframe_container === "string") {
-        iframe_container = document.getElementById(iframe_container);
-      }
-      if (iframe_container) {
-        _frame.style.display = "block";
-        iframe_container.innerHTML = "";
-        iframe_container.appendChild(_frame);
-        this.iframe_container = iframe_container;
-      } else {
-        document.body.appendChild(_frame);
-        this.iframe_container = null;
-      }
-    } else {
-      document.body.appendChild(_frame);
-    }
     this._connection = new BasicConnection(_frame);
     this.initializing = true;
     this._updateUI();
+
+    this._connection.on("imjoyRPCReady", async data => {
+      const config = data.config || {};
+      let forwarding_functions = ["close", "on", "off", "emit"];
+      if (
+        ["rpc-window", "window", "web-python-window"].includes(this.config.type)
+      ) {
+        forwarding_functions = forwarding_functions.concat([
+          "resize",
+          "show",
+          "hide",
+          "refresh",
+        ]);
+      }
+      let credential;
+      if (config.credential_required) {
+        if (!Array.isArray(config.credential_fields)) {
+          throw new Error(
+            "Please specify the `config.credential_fields` as an array of object."
+          );
+        }
+        if (this.config.credential_handler) {
+          credential = await this.config.credential_handler(
+            config.credential_fields
+          );
+        } else {
+          credential = {};
+          for (let k in config.credential_fields) {
+            credential[k.id] = await this._initialInterface.prompt(
+              k.label,
+              k.value
+            );
+          }
+        }
+      }
+      this._connection.emit({
+        type: "initialize",
+        config: {
+          name: this.config.name,
+          type: this.config.type,
+          allow_execution: true,
+          enable_service_worker: true,
+          forwarding_functions: forwarding_functions,
+          expose_api_globally: true,
+          credential: credential,
+        },
+      });
+    });
+
     this._connection.on("initialized", async data => {
       if (data.error) {
         console.error("Plugin failed to initialize", data.error);
@@ -304,20 +327,6 @@ class DynamicPlugin {
         );
         this._rpc = new imjoyRPC.RPC(this._connection, { name: "imjoy-core" });
         this._registerRPCEvents(this._rpc);
-        if (pluginConfig.credential_required) {
-          let credential;
-          if (this.config.credential_handler) {
-            credential = await this.config.credential_handler(
-              pluginConfig.credential_required
-            );
-          } else {
-            credential = {};
-            for (let k in pluginConfig.credential_required) {
-              credential[k] = await this._initialInterface.prompt(k);
-            }
-          }
-          await this._rpc.authenticate(credential);
-        }
         this._rpc.setInterface(this._initialInterface);
         await this._sendInterface();
         if (pluginConfig.allow_execution) {
@@ -362,8 +371,25 @@ class DynamicPlugin {
       }
       this._set_disconnected();
     });
-
     this._connection.connect();
+
+    if (this._hasVisibleWindow) {
+      let iframe_container = this.config.iframe_container;
+      if (typeof iframe_container === "string") {
+        iframe_container = document.getElementById(iframe_container);
+      }
+      if (iframe_container) {
+        _frame.style.display = "block";
+        iframe_container.innerHTML = "";
+        iframe_container.appendChild(_frame);
+        this.iframe_container = iframe_container;
+      } else {
+        document.body.appendChild(_frame);
+        this.iframe_container = null;
+      }
+    } else {
+      document.body.appendChild(_frame);
+    }
   }
   /**
    * Creates the connection to the plugin site

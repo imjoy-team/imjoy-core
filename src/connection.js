@@ -7,8 +7,28 @@ export class BasicConnection extends EventManager {
     this._disconnected = false;
     this.pluginConfig = {};
     this._frame = sourceIframe;
+    this._access_token = null;
+    this._refresh_token = null;
     this.on("initialized", data => {
       this.pluginConfig = data.config;
+      if (this.pluginConfig.auth) {
+        if (!this.pluginConfig.origin || this.pluginConfig.origin === "*") {
+          console.error(
+            "Refuse to transmit the token without an explicit origin, there is a security risk that you may leak the credential to website from other origin. Please specify the `origin` explicitly."
+          );
+          this._access_token = null;
+          this._refresh_token = null;
+        }
+        if (this.pluginConfig.auth.type !== "jwt") {
+          console.error(
+            "Unsupported authentication type: " + this.pluginConfig.auth.type
+          );
+        } else {
+          this._expires_in = this.pluginConfig.auth.expires_in;
+          this._access_token = this.pluginConfig.auth.access_token;
+          this._refresh_token = this.pluginConfig.auth.refresh_token;
+        }
+      }
       if (this.pluginConfig.origin) {
         console.warn(
           `RPC connect to ${this.pluginConfig.name} will limited to origin: ${
@@ -55,6 +75,13 @@ export class BasicConnection extends EventManager {
     if (data.__transferables__) {
       transferables = data.__transferables__;
       delete data.__transferables__;
+    }
+    if (this._access_token) {
+      if (Date.now() >= this._expires_in * 1000) {
+        //TODO: refresh access token
+        throw new Error("Refresh token is not implemented.");
+      }
+      data.access_token = this._access_token;
     }
     this._frame.contentWindow &&
       this._frame.contentWindow.postMessage(

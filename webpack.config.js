@@ -39,7 +39,6 @@ const readme_file = {
     content: "# Core Library for [ImJoy](https://imjoy.io)\n\nFiles in this repo are automatically generated from the [`ImJoy-Core` repo](https://github.com/imjoy-team/ImJoy-core) and served in `https://lib.imjoy.io`.\n"
 };
 
-const isDevServer = process.env.WEBPACK_DEV_SERVER;
 module.exports = {
     entry: {
         'imjoyCore': path.resolve(__dirname, 'src', 'imjoyCore.js'),
@@ -70,18 +69,9 @@ module.exports = {
                 from: path.join(__dirname, "node_modules/imjoy-rpc/dist/"),
                 to: path.join(__dirname, "dist"),
             },{
-                from: path.join(__dirname, "node_modules/imjoy-rpc/dist/base_frame.html"),
-                to: path.join(__dirname, "dist/base_frame.html"),
+                from: path.join(__dirname, "src/default_base_frame.html"),
+                to: path.join(__dirname, "dist/default_base_frame.html"),
                 toType: "file",
-                transform(content) {
-                    if(isDevServer){
-                        return content
-                        .toString().replace(/src="(.*?)"/, 'src="/imjoy-rpc.js"')
-                    }
-                    else{
-                        return content.toString()
-                    }
-                },
             },{
                 from: path.join(__dirname, "src/joy.css"),
                 to: path.join(__dirname, "dist/static/joy.css"),
