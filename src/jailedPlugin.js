@@ -14,7 +14,7 @@ import { BasicConnection } from "./connection.js";
 import { Whenable } from "./utils.js";
 
 import DOMPurify from "dompurify";
-import { loadImJoyRPC } from "./imjoyLoader.js";
+import { loadImJoyRPC, latest_rpc_version } from "./imjoyLoader.js";
 
 const JailedConfig = {};
 if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
@@ -247,7 +247,17 @@ class DynamicPlugin {
       throw `Unsupported backend type (${this.type})`;
     }
     if (!this.config.base_frame) {
-      this.config.base_frame = "https://lib.imjoy.io/default_base_frame.html";
+      let frame_url = JailedConfig.asset_url + "default_base_frame.html";
+      if (
+        location.hostname === "localhost" ||
+        location.hostname === "127.0.0.1"
+      ) {
+        frame_url = frame_url + "?base_url=/";
+      } else {
+        frame_url = frame_url + "?version=" + latest_rpc_version;
+      }
+      frame_url = frame_url + "&id=" + this.config.id;
+      this.config.base_frame = frame_url;
     }
     const _frame = createIframe(this.config);
     this._connection = new BasicConnection(_frame);

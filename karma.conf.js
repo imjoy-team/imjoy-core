@@ -21,6 +21,7 @@ module.exports = function (config) {
             'tests/*_test.js',
             'node_modules/imjoy-rpc/dist/imjoy-rpc.js',
             'node_modules/imjoy-rpc/dist/imjoy-rpc.min.js',
+            'src/*.html',
             {
                 pattern: 'src/*.js',
                 watched: false,

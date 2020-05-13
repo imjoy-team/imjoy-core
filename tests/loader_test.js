@@ -13,12 +13,12 @@ describe("imjoy-loader", async () => {
   });
 
   it("should load imjoy rpc", async () => {
-    const imjoyRPC = await loadImJoyRPC({ base_url: "/", debug: true });
+    const imjoyRPC = await loadImJoyRPC({ base_url: "/" });
     expect(typeof imjoyRPC).to.equal("object");
     expect(typeof imjoyRPC.VERSION).to.equal("string");
     expect(typeof imjoyRPC.API_VERSION).to.equal("string");
     expect(typeof imjoyRPC.RPC).to.equal("function");
     expect(typeof imjoyRPC.setupRPC).to.equal("function");
-    expect(typeof imjoyRPC.setupBaseFrame).to.equal("function");
+    expect(typeof imjoyRPC.waitForInitialization).to.equal("function");
   });
 });

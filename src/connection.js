@@ -1,6 +1,6 @@
-import { EventManager } from "./utils.js";
+import { EventEmitter } from "./utils.js";
 
-export class BasicConnection extends EventManager {
+export class BasicConnection extends EventEmitter {
   constructor(sourceIframe) {
     super();
     this._event_handlers = {};
