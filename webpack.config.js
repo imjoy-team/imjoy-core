@@ -30,7 +30,7 @@ const index_file = {
     // file name
     fileName: 'index.js',
     // content of the file
-    content: "module.exports = require('./imjoy-core.js');"
+    content: "module.exports = require('./imjoy-core.min.js');"
 };
 
 const readme_file = {
