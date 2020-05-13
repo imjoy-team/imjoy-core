@@ -9,7 +9,7 @@ describe("imjoy-loader", async () => {
       debug: true,
     });
     expect(typeof imjoyCore).to.equal("object");
-    expect(typeof imjoyCore.VERSION).to.equal(core_version);
+    expect(imjoyCore.VERSION).to.equal(core_version);
     expect(typeof imjoyCore.ImJoy).to.equal("function");
     expect(typeof imjoyCore.Joy).to.equal("function");
     expect(typeof imjoyCore.ajv).to.equal("object");
