@@ -51,3 +51,4 @@ yarn-error.log*
 *.sw*
 
 .eslintcache
+report.html

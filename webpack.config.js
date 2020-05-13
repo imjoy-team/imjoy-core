@@ -2,6 +2,10 @@ const path = require('path');
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const CnameWebpackPlugin = require('cname-webpack-plugin')
 const CreateFileWebpack = require('create-file-webpack')
+const { InjectManifest } = require('workbox-webpack-plugin');
+const renameOutputPlugin = require('rename-output-webpack-plugin');
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer')
+  .BundleAnalyzerPlugin;
 const package_json = require('./package.json')
 const version_file = {
     // path to folder in which the file will be created
@@ -44,6 +48,13 @@ module.exports = {
         'imjoyCore': path.resolve(__dirname, 'src', 'imjoyCore.js'),
         'imjoyLoader': path.resolve(__dirname, 'src', 'imjoyLoader.js'),
     },
+    output: {
+        path: path.resolve(__dirname, 'dist'),
+        filename: process.env.NODE_ENV === 'production'? '[name].min.js': '[name].js',
+        library: '[name]',
+        libraryTarget: 'umd',
+        umdNamedDefine: true
+    },
     resolve: {
         extensions: ['.js']
     },
@@ -53,7 +64,28 @@ module.exports = {
             {
                 test: /\.imjoy.html$/i,
                 use: 'raw-loader'
-            }
+            },
+            {
+                test: /\.js$/,
+                exclude: /node_modules/,
+                use: [{
+                    loader: 'babel-loader',
+                    options: {
+                      presets: [
+                        [
+                          '@babel/preset-env',
+                          {
+                            targets: { browsers: ['last 2 Chrome versions'] },
+                            useBuiltIns: 'entry',
+                            modules: false,
+                          },
+                        ],
+                      ],
+                      plugins: ['@babel/plugin-syntax-dynamic-import', "lodash"],
+                      cacheDirectory: true,
+                    },
+                }
+              ],},
         ]
     },
     plugins: [
@@ -63,6 +95,16 @@ module.exports = {
         new CreateFileWebpack(readme_file),
         new CnameWebpackPlugin({
             domain: 'lib.imjoy.io',
+        }),
+
+        new renameOutputPlugin({
+            'imjoyCore': process.env.NODE_ENV === 'production'? 'imjoy-core.min.js': 'imjoy-core.js',
+            'imjoyLoader': process.env.NODE_ENV === 'production'?'imjoy-loader.min.js': 'imjoy-loader.js',
+        }),
+        new InjectManifest({
+            swDest: 'plugin-service-worker.js',
+            swSrc: path.join(__dirname, 'src/plugin-service-worker.js'),
+            exclude: [new RegExp('^[.].*'), new RegExp('.*[.]map$')]
         }),
         new CopyWebpackPlugin([
             {
@@ -94,6 +136,10 @@ module.exports = {
                 toType: "file"
             },
         ]),
-        
+        new BundleAnalyzerPlugin({
+            analyzerMode: 'static',
+            openAnalyzer: false,
+            reportFilename: path.join(__dirname, 'report.html'),
+          }),
     ]
 }

@@ -22,17 +22,12 @@ module.exports = function (config) {
             'node_modules/imjoy-rpc/dist/imjoy-rpc.js',
             'node_modules/imjoy-rpc/dist/imjoy-rpc.min.js',
             'src/*.html',
-            {
-                pattern: 'src/*.js',
-                watched: false,
-                included: false,
-                served: true,
-                nocache: false
-            },
+            'dist/imjoy-loader.js'
         ],
 
         proxies: {
             "/default_base_frame.html": '/base/src/default_base_frame.html',
+            "/imjoy-loader.js": '/base/dist/imjoy-loader.js',
             "/imjoy-rpc.js": '/base/node_modules/imjoy-rpc/dist/imjoy-rpc.js',
             "/imjoy-rpc.min.js": '/base/node_modules/imjoy-rpc/dist/imjoy-rpc.min.js',
             "/plugin-service-worker.js": "/base/src/plugin-service-worker.js"
