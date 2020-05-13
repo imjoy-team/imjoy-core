@@ -31,8 +31,8 @@ jobs:
             ${{ runner.os }}-node-
       - run: npm ci
       - run: npm run check-format
-      - run: npm run test
       - run: npm run build
+      - run: npm run test
       - name: Save build output
         uses: actions/upload-artifact@v1
         with:
