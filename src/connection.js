@@ -1,6 +1,6 @@
-import { EventEmitter } from "./utils.js";
+import { MessageEmitter } from "./utils.js";
 
-export class BasicConnection extends EventEmitter {
+export class BasicConnection extends MessageEmitter {
   constructor(sourceIframe) {
     super();
     this._event_handlers = {};
@@ -9,8 +9,14 @@ export class BasicConnection extends EventEmitter {
     this._frame = sourceIframe;
     this._access_token = null;
     this._refresh_token = null;
+    this._peer_id = null;
     this.on("initialized", data => {
       this.pluginConfig = data.config;
+      // peer_id can only be set for once
+      this._peer_id = this._peer_id || data.peer_id;
+      if (!this._peer_id) {
+        throw new Error("Please provide a peer_id for the connection.");
+      }
       if (this.pluginConfig.auth) {
         if (!this.pluginConfig.origin || this.pluginConfig.origin === "*") {
           console.error(
@@ -83,6 +89,7 @@ export class BasicConnection extends EventEmitter {
       }
       data.access_token = this._access_token;
     }
+    data.peer_id = this._peer_id;
     this._frame.contentWindow &&
       this._frame.contentWindow.postMessage(
         data,

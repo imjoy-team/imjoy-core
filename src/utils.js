@@ -808,7 +808,7 @@ export function _clone(aObject) {
   return bObject;
 }
 
-export class EventEmitter {
+export class MessageEmitter {
   constructor(debug) {
     this._event_handlers = {};
     this._once_handlers = {};
