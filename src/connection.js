@@ -35,13 +35,6 @@ export class BasicConnection extends MessageEmitter {
           this._refresh_token = this.pluginConfig.auth.refresh_token;
         }
       }
-      if (this.pluginConfig.origin) {
-        console.warn(
-          `RPC connect to ${this.pluginConfig.name} will limited to origin: ${
-            this.pluginConfig.origin
-          }`
-        );
-      }
     });
   }
   connect() {
