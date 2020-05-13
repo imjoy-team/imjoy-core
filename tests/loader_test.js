@@ -3,9 +3,13 @@ import { loadImJoyCore, loadImJoyRPC } from "../src/imjoyLoader.js";
 
 describe("imjoy-loader", async () => {
   it("should load imjoy core", async () => {
-    const imjoyCore = await loadImJoyCore({ version: "0.12.6", debug: true });
+    const core_version = "0.12.6";
+    const imjoyCore = await loadImJoyCore({
+      version: core_version,
+      debug: true,
+    });
     expect(typeof imjoyCore).to.equal("object");
-    // expect(typeof imjoyCore.VERSION).to.equal('string')
+    expect(typeof imjoyCore.VERSION).to.equal(core_version);
     expect(typeof imjoyCore.ImJoy).to.equal("function");
     expect(typeof imjoyCore.Joy).to.equal("function");
     expect(typeof imjoyCore.ajv).to.equal("object");
