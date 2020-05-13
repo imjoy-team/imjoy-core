@@ -2,7 +2,6 @@ const path = require('path');
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const CnameWebpackPlugin = require('cname-webpack-plugin')
 const CreateFileWebpack = require('create-file-webpack')
-const { InjectManifest } = require('workbox-webpack-plugin');
 const renameOutputPlugin = require('rename-output-webpack-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer')
   .BundleAnalyzerPlugin;
@@ -31,7 +30,7 @@ const index_file = {
     // file name
     fileName: 'index.js',
     // content of the file
-    content: "module.exports = require('./imjoy-core.module.js');"
+    content: "module.exports = require('./imjoy-core.js');"
 };
 
 const readme_file = {
@@ -58,7 +57,6 @@ module.exports = {
     resolve: {
         extensions: ['.js']
     },
-    devtool: 'source-map',
     module: {
         rules: [
             {
@@ -100,11 +98,6 @@ module.exports = {
         new renameOutputPlugin({
             'imjoyCore': process.env.NODE_ENV === 'production'? 'imjoy-core.min.js': 'imjoy-core.js',
             'imjoyLoader': process.env.NODE_ENV === 'production'?'imjoy-loader.min.js': 'imjoy-loader.js',
-        }),
-        new InjectManifest({
-            swDest: 'plugin-service-worker.js',
-            swSrc: path.join(__dirname, 'src/plugin-service-worker.js'),
-            exclude: [new RegExp('^[.].*'), new RegExp('.*[.]map$')]
         }),
         new CopyWebpackPlugin([
             {

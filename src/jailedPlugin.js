@@ -248,15 +248,9 @@ class DynamicPlugin {
     }
     if (!this.config.base_frame) {
       let frame_url = JailedConfig.asset_url + "default_base_frame.html";
-      if (
-        location.hostname === "localhost" ||
-        location.hostname === "127.0.0.1"
-      ) {
-        frame_url = frame_url + "?base_url=/";
-        frame_url = frame_url + "&debug=1";
-      } else {
-        frame_url = frame_url + "?version=" + latest_rpc_version;
-      }
+
+      frame_url = frame_url + "?version=" + latest_rpc_version;
+
       frame_url = frame_url + "&id=" + this.config.id;
 
       this.config.base_frame = frame_url;
@@ -330,19 +324,8 @@ class DynamicPlugin {
           );
           throw error;
         }
-        let base_url = null,
-          debug = false;
-        if (
-          location.hostname === "localhost" ||
-          location.hostname === "127.0.0.1"
-        ) {
-          base_url = "/";
-          debug = true;
-        }
         const imjoyRPC = await loadImJoyRPC({
-          base_url: base_url,
           api_version: pluginConfig.api_version,
-          debug: debug,
         });
         console.log(
           `loaded imjoy-rpc v${imjoyRPC.VERSION} for ${pluginConfig.name}`

@@ -1,6 +1,6 @@
 {
   "name": "imjoy-core",
-  "version": "0.13.4",
+  "version": "0.13.5",
   "private": false,
   "description": "The core library for ImJoy -- a sandboxed plugin framework for computational web applications.",
   "author": "imjoy-team <imjoy.team@gmail.com>",
@@ -22,7 +22,7 @@
   "scripts": {
     "serve": "webpack-dev-server --config webpack.config.js --mode development",
     "build": "rm -rf dist && npm run build-prod && npm run build-dev",
-    "build-prod": "NODE_ENV=production webpack --config webpack.config.js --mode production",
+    "build-prod": "NODE_ENV=production webpack --config webpack.config.js --mode production  --devtool source-map",
     "build-dev": "NODE_ENV=development webpack --config webpack.config.js --mode development",
     "watch": "webpack --watch --progress --config  webpack.config.js --mode development",
     "check-format": "prettier --check \"{src,tests}/**/**\"",
@@ -39,7 +39,7 @@
     "core-js": "^3.6.5",
     "dompurify": "^2.0.8",
     "file-saver": "^1.3.3",
-    "imjoy-rpc": "^0.2.1",
+    "imjoy-rpc": "^0.2.2",
     "js-yaml": "^3.13.1",
     "lodash": "^4.17.15",
     "lz-string": "^1.4.4",
@@ -89,8 +89,7 @@
     "webpack": "^4.42.0",
     "webpack-bundle-analyzer": "^3.7.0",
     "webpack-cli": "^3.3.6",
-    "webpack-dev-server": "^3.1.1",
-    "workbox-webpack-plugin": "^4.3.1"
+    "webpack-dev-server": "^3.1.1"
   },
   "eslintConfig": {
     "root": true,

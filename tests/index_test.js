@@ -23,7 +23,7 @@ describe("ImJoy Core", async () => {
     imjoy = new imjoyCore.ImJoy({
       imjoy_api: {},
       show_message_callback: console.log,
-      jailed_asset_url: `${location.protocol}//${location.hostname}${
+      asset_url: `${location.protocol}//${location.hostname}${
         location.port ? ":" + location.port : ""
       }/`,
       client_id: "123",
