@@ -1,20 +1,39 @@
-import { EventManager } from "./utils.js";
+import { MessageEmitter } from "./utils.js";
 
-export class BasicConnection extends EventManager {
+export class BasicConnection extends MessageEmitter {
   constructor(sourceIframe) {
     super();
     this._event_handlers = {};
     this._disconnected = false;
     this.pluginConfig = {};
     this._frame = sourceIframe;
+    this._access_token = null;
+    this._refresh_token = null;
+    this._peer_id = null;
     this.on("initialized", data => {
       this.pluginConfig = data.config;
-      if (this.pluginConfig.origin) {
-        console.warn(
-          `RPC connect to ${this.pluginConfig.name} will limited to origin: ${
-            this.pluginConfig.origin
-          }`
-        );
+      // peer_id can only be set for once
+      this._peer_id = this._peer_id || data.peer_id;
+      if (!this._peer_id) {
+        throw new Error("Please provide a peer_id for the connection.");
+      }
+      if (this.pluginConfig.auth) {
+        if (!this.pluginConfig.origin || this.pluginConfig.origin === "*") {
+          console.error(
+            "Refuse to transmit the token without an explicit origin, there is a security risk that you may leak the credential to website from other origin. Please specify the `origin` explicitly."
+          );
+          this._access_token = null;
+          this._refresh_token = null;
+        }
+        if (this.pluginConfig.auth.type !== "jwt") {
+          console.error(
+            "Unsupported authentication type: " + this.pluginConfig.auth.type
+          );
+        } else {
+          this._expires_in = this.pluginConfig.auth.expires_in;
+          this._access_token = this.pluginConfig.auth.access_token;
+          this._refresh_token = this.pluginConfig.auth.refresh_token;
+        }
       }
     });
   }
@@ -56,6 +75,14 @@ export class BasicConnection extends EventManager {
       transferables = data.__transferables__;
       delete data.__transferables__;
     }
+    if (this._access_token) {
+      if (Date.now() >= this._expires_in * 1000) {
+        //TODO: refresh access token
+        throw new Error("Refresh token is not implemented.");
+      }
+      data.access_token = this._access_token;
+    }
+    data.peer_id = this._peer_id;
     this._frame.contentWindow &&
       this._frame.contentWindow.postMessage(
         data,

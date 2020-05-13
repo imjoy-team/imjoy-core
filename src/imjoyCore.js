@@ -28,7 +28,7 @@ export class ImJoy {
     show_message_callback = null,
     update_ui_callback = null,
     add_window_callback = null,
-    jailed_asset_url = null,
+    asset_url = null,
   }) {
     this.config_db =
       config_db ||
@@ -78,7 +78,7 @@ export class ImJoy {
       imjoy_api: this.imjoy_api,
       show_message_callback: this.show_message_callback,
       update_ui_callback: this.update_ui_callback,
-      jailed_asset_url: jailed_asset_url,
+      asset_url: asset_url,
     });
   }
 

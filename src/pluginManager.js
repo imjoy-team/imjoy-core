@@ -50,7 +50,7 @@ export class PluginManager {
     imjoy_api = {},
     show_message_callback = null,
     update_ui_callback = null,
-    jailed_asset_url = null,
+    asset_url = null,
   }) {
     this.event_bus = event_bus;
     this.em = engine_manager;
@@ -63,7 +63,7 @@ export class PluginManager {
     assert(this.wm, "window manager is not available");
     assert(this.config_db, "config database is not available");
 
-    this.jailed_asset_url = jailed_asset_url;
+    this.asset_url = asset_url;
 
     this.show_message_callback = show_message_callback;
     this.update_ui_callback = update_ui_callback || function() {};
@@ -299,8 +299,8 @@ export class PluginManager {
 
   async init() {
     const config = {};
-    if (this.jailed_asset_url) {
-      config.asset_url = this.jailed_asset_url;
+    if (this.asset_url) {
+      config.asset_url = this.asset_url;
     }
 
     if ("serviceWorker" in navigator) {
@@ -929,7 +929,9 @@ export class PluginManager {
   async getPluginFromUrl(uri, scoped_plugins) {
     const obj = await this.normalizePluginUrl(uri, scoped_plugins);
     if (obj.external) {
-      return await getExternalPluginConfig(uri);
+      const pluginConfig = await getExternalPluginConfig(uri);
+      pluginConfig.badges = this.getBadges(pluginConfig);
+      return pluginConfig;
     }
     uri = obj.uri;
     scoped_plugins = obj.scoped_plugins;

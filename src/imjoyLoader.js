@@ -12,6 +12,25 @@ function _injectScript(src) {
   });
 }
 
+/**
+ * Get the URL parameters
+ * source: https://css-tricks.com/snippets/javascript/get-url-variables/
+ * @param  {String} url The URL
+ * @return {Object}     The URL parameters
+ */
+var _getParams = function(url) {
+  var params = {};
+  var parser = document.createElement("a");
+  parser.href = url;
+  var query = parser.search.substring(1);
+  var vars = query.split("&");
+  for (var i = 0; i < vars.length; i++) {
+    var pair = vars[i].split("=");
+    params[pair[0]] = decodeURIComponent(pair[1]);
+  }
+  return params;
+};
+
 // Load the imjoy core script
 // it support the following options:
 // 1) version, you can specify a specific version of the core,
@@ -52,9 +71,11 @@ export function loadImJoyCore(config) {
   });
 }
 const _rpc_registry = {};
+export const latest_rpc_version = "0.2.2";
+
 const _rpc_api_versions = {
   "0.2.0": { from: "0.1.10", to: "0.1.17", skips: [] },
-  "0.2.1": { from: "0.1.18", to: "0.2.0", skips: [] },
+  "0.2.1": { from: "0.1.18", to: latest_rpc_version, skips: [] },
 };
 
 // specify an api version and this function will return the actual imjoy-rpc version
@@ -182,5 +203,11 @@ export function loadImJoyRPC(config) {
   });
 }
 
+async function loadImJoyRPCByQueryString() {
+  const urlParams = _getParams(window.location);
+  return await loadImJoyRPC(urlParams);
+}
+
+window.loadImJoyRPCByQueryString = loadImJoyRPCByQueryString;
 window.loadImJoyRPC = loadImJoyRPC;
 window.loadImJoyCore = loadImJoyCore;
