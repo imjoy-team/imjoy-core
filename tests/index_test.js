@@ -97,7 +97,7 @@ describe("ImJoy Core", async () => {
     expect(typeof plugin.api.run).to.equal("function");
     await plugin.api.run({});
     plugin.terminate();
-  }).timeout(20000);
+  }).timeout(100000);
 
   it("should get plugin config from github", async () => {
     const config1 = await pm.getPluginFromUrl(
