@@ -252,6 +252,10 @@ class DynamicPlugin {
       if (JailedConfig.default_rpc_base_url) {
         frame_url =
           frame_url + "?base_url=" + JailedConfig.default_rpc_base_url;
+        console.log(
+          "imjoy-rpc library will be loaded from " +
+            JailedConfig.default_rpc_base_url
+        );
       } else {
         frame_url = frame_url + "?version=" + latest_rpc_version;
       }
