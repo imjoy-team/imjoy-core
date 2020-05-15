@@ -22,11 +22,11 @@ describe("ImJoy Core", async () => {
     this.timeout(30000);
     imjoy = new imjoyCore.ImJoy({
       imjoy_api: {},
-      show_message_callback: console.log,
       default_base_frame: "/default_base_frame.html",
       default_rpc_base_url: "/",
       client_id: "123",
     });
+    imjoy.event_bus.on("show_message", console.log);
     wm = imjoy.wm; //window_manager
     pm = imjoy.pm; //plugin_manager
     imjoy.start({ workspace: "default" }).then(done);
