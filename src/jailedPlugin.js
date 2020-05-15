@@ -16,7 +16,7 @@ import { Whenable } from "./utils.js";
 import DOMPurify from "dompurify";
 import { loadImJoyRPC, latest_rpc_version } from "./imjoyLoader.js";
 
-const JailedConfig = {};
+const JailedConfig = { base_url: null };
 if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
   JailedConfig.asset_url = "/";
 } else {
@@ -35,6 +35,9 @@ const initializeJailed = config => {
   // normalize asset_url
   if (!JailedConfig.asset_url.endsWith("/")) {
     JailedConfig.asset_url = JailedConfig.asset_url + "/";
+  }
+  if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
+    JailedConfig.base_url = JailedConfig.asset_url;
   }
   _initialized = true;
 };
@@ -248,8 +251,11 @@ class DynamicPlugin {
     }
     if (!this.config.base_frame) {
       let frame_url = JailedConfig.asset_url + "default_base_frame.html";
-
-      frame_url = frame_url + "?version=" + latest_rpc_version;
+      if (JailedConfig.base_url) {
+        frame_url = frame_url + "?base_url=" + JailedConfig.base_url;
+      } else {
+        frame_url = frame_url + "?version=" + latest_rpc_version;
+      }
 
       frame_url = frame_url + "&id=" + this.config.id;
 
@@ -325,14 +331,19 @@ class DynamicPlugin {
           throw error;
         }
         const imjoyRPC = await loadImJoyRPC({
+          base_url: JailedConfig.base_url,
           api_version: pluginConfig.api_version,
         });
         console.log(
           `loaded imjoy-rpc v${imjoyRPC.VERSION} for ${pluginConfig.name}`
         );
-        this._rpc = new imjoyRPC.RPC(this._connection, { name: "imjoy-core" });
-        this._registerRPCEvents(this._rpc);
-        this._rpc.setInterface(this._initialInterface);
+        if (!this._rpc) {
+          this._rpc = new imjoyRPC.RPC(this._connection, {
+            name: "imjoy-core",
+          });
+          this._registerRPCEvents(this._rpc);
+          this._rpc.setInterface(this._initialInterface);
+        }
         await this._sendInterface();
         if (pluginConfig.allow_execution) {
           await this._executePlugin();
@@ -708,7 +719,7 @@ function getExternalPluginConfig(url) {
     const connection_timer = setTimeout(() => {
       reject("Timeout error: failed to connect to the plugin");
     }, 15000);
-    _connection.on("initialized", async data => {
+    _connection.once("initialized", async data => {
       clearTimeout(connection_timer);
       const pluginConfig = data.config;
       if (data.error) {
