@@ -25,9 +25,6 @@ export class ImJoy {
     event_bus = null,
     client_id = null,
     config_db = null,
-    show_message_callback = null,
-    update_ui_callback = null,
-    add_window_callback = null,
     default_base_frame = null,
     default_rpc_base_url = null,
   }) {
@@ -41,29 +38,14 @@ export class ImJoy {
     this.event_bus = event_bus || Minibus.create();
     this.client_id = client_id || "imjoy_web_" + randId();
     this.imjoy_api = imjoy_api || {};
-    this.update_ui_callback = update_ui_callback || function() {};
-    this.show_message_callback =
-      show_message_callback ||
-      async function(msg) {
-        console.log("show message: ", msg);
-      };
-    this.add_window_callback =
-      add_window_callback ||
-      async function(w) {
-        console.log("add window: ", w.name);
-      };
-
     this.em = new EngineManager({
       event_bus: this.event_bus,
       config_db: this.config_db,
-      show_message_callback: this.show_message_callback,
       client_id: this.client_id,
     });
 
     this.wm = new WindowManager({
       event_bus: this.event_bus,
-      show_message_callback: this.show_message_callback,
-      add_window_callback: this.add_window_callback,
     });
 
     this.fm = new FileManager({
@@ -77,8 +59,6 @@ export class ImJoy {
       window_manager: this.wm,
       file_manager: this.fm,
       imjoy_api: this.imjoy_api,
-      show_message_callback: this.show_message_callback,
-      update_ui_callback: this.update_ui_callback,
       default_base_frame: default_base_frame,
       default_rpc_base_url: default_rpc_base_url,
     });
@@ -93,7 +73,8 @@ export class ImJoy {
       console.log("Successfully initialized the engine manager.");
     } catch (e) {
       console.error(e);
-      this.show_message_callback(
+      this.event_bus.emit(
+        "show_message",
         "Failed to initialize the engine manager: " + e.toString()
       );
     }

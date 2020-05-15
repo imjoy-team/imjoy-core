@@ -411,19 +411,20 @@
         window.imjoyCore = await loadImJoyCore({ base_url: "/", debug: true });
         imjoy = new imjoyCore.ImJoy({
           imjoy_api: imjoy_api,
-          show_message_callback: console.log,
-          add_window_callback: async w => {
-            if (w.fullscreen || w.standalone) {
-              document.querySelector(".navbar").style.height = "2px";
-              document.getElementById("logo").style.display = "none";
-              // document.getElementById("windows-menu").style.display = "none";
-            } else {
-              document.querySelector(".navbar").style.height = "32px";
-              document.getElementById("logo").style.display = "flex";
-            }
-            addWindow(w);
-          },
-          update_ui_callback: () => {},
+        });
+        imjoy.event_bus.on("show_message", msg => {
+          console.log(msg);
+        });
+        imjoy.event_bus.on("add_window", async w => {
+          if (w.fullscreen || w.standalone) {
+            document.querySelector(".navbar").style.height = "2px";
+            document.getElementById("logo").style.display = "none";
+            // document.getElementById("windows-menu").style.display = "none";
+          } else {
+            document.querySelector(".navbar").style.height = "32px";
+            document.getElementById("logo").style.display = "flex";
+          }
+          addWindow(w);
         });
         const workspace = getUrlParameter("workspace") || getUrlParameter("w");
         const token = getUrlParameter("token") || getUrlParameter("t");

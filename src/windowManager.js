@@ -1,18 +1,12 @@
 import { randId, assert } from "./utils.js";
 
 export class WindowManager {
-  constructor({
-    event_bus = null,
-    show_message_callback = null,
-    add_window_callback = null,
-  }) {
+  constructor({ event_bus = null }) {
     this.event_bus = event_bus;
     assert(this.event_bus);
     this.windows = [];
     this.window_ids = {};
     this.active_windows = [];
-    this.show_message_callback = show_message_callback;
-    this.add_window_callback = add_window_callback;
     this.selected_window = null;
     this.window_mode = "grid";
     this.registered_inputs = {};
@@ -24,14 +18,6 @@ export class WindowManager {
       h: 10,
       index: 0,
     };
-  }
-
-  showMessage(msg, duration) {
-    if (this.show_message_callback) {
-      this.show_message_callback(msg, duration);
-    } else {
-      console.log(`WINDOW MESSAGE: ${msg}`);
-    }
   }
 
   generateGridPosition(config) {
@@ -214,15 +200,9 @@ export class WindowManager {
         this.window_ids[w.id] = w;
         this.setupCallbacks(w);
         this.selectWindow(w);
-        if (this.add_window_callback) {
-          Promise.resolve(this.add_window_callback(w)).then(() => {
-            this.event_bus.emit("add_window", w);
-            resolve(w.id);
-          });
-        } else {
-          this.event_bus.emit("add_window", w);
-          resolve(w.id);
-        }
+        this.event_bus.emit("add_window", w);
+        resolve(w.id);
+
         //hack for testing
         if (w.__test__mode__) {
           w.api.emit("ready");

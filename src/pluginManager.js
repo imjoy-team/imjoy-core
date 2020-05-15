@@ -48,8 +48,6 @@ export class PluginManager {
     window_manager = null,
     file_manager = null,
     imjoy_api = {},
-    show_message_callback = null,
-    update_ui_callback = null,
     default_base_frame = null,
     default_rpc_base_url = null,
   }) {
@@ -66,9 +64,6 @@ export class PluginManager {
 
     this.default_base_frame = default_base_frame;
     this.default_rpc_base_url = default_rpc_base_url;
-
-    this.show_message_callback = show_message_callback;
-    this.update_ui_callback = update_ui_callback || function() {};
     this._allowed_evil_plugin = {};
     this.internal_plugins = INTERNAL_PLUGINS;
 
@@ -115,15 +110,15 @@ export class PluginManager {
       getFilePath: this.getFilePath,
       log: (plugin, ...args) => {
         plugin.log(...args);
-        this.update_ui_callback();
+        this.event_bus.emit("update_ui");
       },
       error: (plugin, ...args) => {
         plugin.error(...args);
-        this.update_ui_callback();
+        this.event_bus.emit("update_ui");
       },
       progress: (plugin, value) => {
         plugin.progress(value);
-        this.update_ui_callback();
+        this.event_bus.emit("update_ui");
       },
       exportFile(_plugin, file, name) {
         if (typeof file === "string") {
@@ -291,12 +286,8 @@ export class PluginManager {
     });
   }
 
-  showMessage(msg, duration) {
-    if (this.show_message_callback) {
-      this.show_message_callback(msg, duration);
-    } else {
-      console.log(`PLUGIN MESSAGE: ${msg}`);
-    }
+  showMessage(msg) {
+    this.event_bus.emit("show_message", msg);
   }
 
   async init() {
@@ -788,7 +779,7 @@ export class PluginManager {
           if (typeof plugin.terminate === "function") {
             try {
               plugin.terminate().then(() => {
-                this.update_ui_callback();
+                this.event_bus.emit("update_ui");
               });
             } catch (e) {
               console.error(e);
@@ -1230,10 +1221,10 @@ export class PluginManager {
           this.unregister(plugin);
           if (typeof plugin.terminate === "function") {
             plugin.terminate().then(() => {
-              this.update_ui_callback();
+              this.event_bus.emit("update_ui");
             });
           }
-          this.update_ui_callback();
+          this.event_bus.emit("update_ui");
         } catch (e) {
           console.error(e);
         }
@@ -1242,10 +1233,10 @@ export class PluginManager {
     this.unregister(_plugin);
     if (typeof _plugin.terminate === "function") {
       _plugin.terminate().finally(() => {
-        this.update_ui_callback();
+        this.event_bus.emit("update_ui");
       });
     }
-    this.update_ui_callback();
+    this.event_bus.emit("update_ui");
   }
 
   reloadPlugin(pconfig, allow_evil) {
@@ -1290,7 +1281,7 @@ export class PluginManager {
           pconfig.name = plugin.name;
           pconfig.type = plugin.type;
           pconfig.plugin = plugin;
-          this.update_ui_callback();
+          this.event_bus.emit("update_ui");
           resolve(plugin);
         }).catch(e => {
           pconfig.plugin = null;
@@ -1330,7 +1321,7 @@ export class PluginManager {
               this.showMessage(`${template.name} has been successfully saved.`);
             })
             .catch(err => {
-              this.showMessage("Failed to save the plugin.", 15);
+              this.showMessage("Failed to save the plugin.");
               console.error(err);
               reject("failed to save");
             });
@@ -1346,7 +1337,7 @@ export class PluginManager {
             addPlugin(template);
           });
       } catch (e) {
-        this.showMessage(e || "Error.", 15);
+        this.showMessage(e || "Error.");
         reject(e);
       }
     });
@@ -1609,7 +1600,7 @@ export class PluginManager {
               "WARNING: this plugin is ready but unloaded: " + plugin.id
             );
             plugin.terminate().then(() => {
-              this.update_ui_callback();
+              this.event_bus.emit("update_ui");
             });
             return;
           }
@@ -1636,7 +1627,7 @@ export class PluginManager {
                 this.showMessage(`<${template.name}>: ${e}`, 15);
                 reject(e);
                 plugin.terminate().then(() => {
-                  this.update_ui_callback();
+                  this.event_bus.emit("update_ui");
                 });
               });
           } else if (plugin.api.setup) {
@@ -1655,7 +1646,7 @@ export class PluginManager {
                 this.showMessage(`<${template.name}>: ${e}`, 15);
                 reject(e);
                 plugin.terminate().then(() => {
-                  this.update_ui_callback();
+                  this.event_bus.emit("update_ui");
                 });
               });
           } else {
@@ -1678,7 +1669,7 @@ export class PluginManager {
             e
           );
           plugin.terminate().then(() => {
-            this.update_ui_callback();
+            this.event_bus.emit("update_ui");
           });
           reject(e);
         });
@@ -1768,7 +1759,7 @@ export class PluginManager {
                 }: ${e && e.toString()}`
               );
               plugin.terminate().then(() => {
-                this.update_ui_callback();
+                this.event_bus.emit("update_ui");
               });
               reject(e);
             });
@@ -1777,7 +1768,7 @@ export class PluginManager {
           if (!pconfig.standalone && pconfig.focus) pconfig.focus();
           plugin.error(`Error occured when loading ${pconfig.name}: ${e}.`);
           plugin.terminate().then(() => {
-            this.update_ui_callback();
+            this.event_bus.emit("update_ui");
           });
           reject(e);
         });
@@ -2562,7 +2553,7 @@ export class PluginManager {
         plugin.update_available = false;
       }
     }
-    this.update_ui_callback();
+    this.event_bus.emit("update_ui");
   }
   checkUpdates() {
     for (let k in this.plugins) {
