@@ -23,9 +23,8 @@ describe("ImJoy Core", async () => {
     imjoy = new imjoyCore.ImJoy({
       imjoy_api: {},
       show_message_callback: console.log,
-      asset_url: `${location.protocol}//${location.hostname}${
-        location.port ? ":" + location.port : ""
-      }/`,
+      default_base_frame: "/default_base_frame.html",
+      default_rpc_base_url: "/",
       client_id: "123",
     });
     wm = imjoy.wm; //window_manager

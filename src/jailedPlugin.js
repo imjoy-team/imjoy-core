@@ -16,12 +16,8 @@ import { Whenable } from "./utils.js";
 import DOMPurify from "dompurify";
 import { loadImJoyRPC, latest_rpc_version } from "./imjoyLoader.js";
 
-const JailedConfig = { base_url: null };
-if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
-  JailedConfig.asset_url = "/";
-} else {
-  JailedConfig.asset_url = "https://lib.imjoy.io/";
-}
+const JailedConfig = { default_rpc_base_url: null, default_base_frame: null };
+
 /**
  * Initializes the library site for web environment
  */
@@ -32,12 +28,14 @@ const initializeJailed = config => {
       JailedConfig[k] = config[k];
     }
   }
-  // normalize asset_url
-  if (!JailedConfig.asset_url.endsWith("/")) {
-    JailedConfig.asset_url = JailedConfig.asset_url + "/";
-  }
-  if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
-    JailedConfig.base_url = JailedConfig.asset_url;
+  if (!JailedConfig.default_base_frame)
+    JailedConfig.default_base_frame =
+      "https://lib.imjoy.io/default_base_frame.html";
+  if (
+    JailedConfig.default_rpc_base_url &&
+    !JailedConfig.default_rpc_base_url.endsWith("/")
+  ) {
+    JailedConfig.default_rpc_base_url = JailedConfig.default_rpc_base_url + "/";
   }
   _initialized = true;
 };
@@ -250,9 +248,10 @@ class DynamicPlugin {
       throw `Unsupported backend type (${this.type})`;
     }
     if (!this.config.base_frame) {
-      let frame_url = JailedConfig.asset_url + "default_base_frame.html";
-      if (JailedConfig.base_url) {
-        frame_url = frame_url + "?base_url=" + JailedConfig.base_url;
+      let frame_url = JailedConfig.default_base_frame;
+      if (JailedConfig.default_rpc_base_url) {
+        frame_url =
+          frame_url + "?base_url=" + JailedConfig.default_rpc_base_url;
       } else {
         frame_url = frame_url + "?version=" + latest_rpc_version;
       }
@@ -331,7 +330,7 @@ class DynamicPlugin {
           throw error;
         }
         const imjoyRPC = await loadImJoyRPC({
-          base_url: JailedConfig.base_url,
+          base_url: JailedConfig.default_rpc_base_url,
           api_version: pluginConfig.api_version,
         });
         console.log(
