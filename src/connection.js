@@ -10,15 +10,24 @@ export class BasicConnection extends MessageEmitter {
     this._access_token = null;
     this._refresh_token = null;
     this._peer_id = null;
+    this._plugin_origin = null;
     this.on("initialized", data => {
       this.pluginConfig = data.config;
       // peer_id can only be set for once
-      this._peer_id = this._peer_id || data.peer_id;
+      this._peer_id = data.peer_id;
+      this._plugin_origin = data.origin || "*";
+      if (this._plugin_origin !== "*") {
+        console.log(
+          `connection to the imjoy-rpc peer ${
+            this._peer_id
+          } is limited to origin ${this._plugin_origin}.`
+        );
+      }
       if (!this._peer_id) {
         throw new Error("Please provide a peer_id for the connection.");
       }
       if (this.pluginConfig.auth) {
-        if (!this.pluginConfig.origin || this.pluginConfig.origin === "*") {
+        if (this._plugin_origin === "*") {
           console.error(
             "Refuse to transmit the token without an explicit origin, there is a security risk that you may leak the credential to website from other origin. Please specify the `origin` explicitly."
           );
@@ -86,7 +95,7 @@ export class BasicConnection extends MessageEmitter {
     this._frame.contentWindow &&
       this._frame.contentWindow.postMessage(
         data,
-        this.pluginConfig.origin || "*",
+        this._plugin_origin || "*",
         transferables
       );
   }

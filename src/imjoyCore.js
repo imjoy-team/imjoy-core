@@ -28,7 +28,8 @@ export class ImJoy {
     show_message_callback = null,
     update_ui_callback = null,
     add_window_callback = null,
-    asset_url = null,
+    default_base_frame = null,
+    default_rpc_base_url = null,
   }) {
     this.config_db =
       config_db ||
@@ -78,7 +79,8 @@ export class ImJoy {
       imjoy_api: this.imjoy_api,
       show_message_callback: this.show_message_callback,
       update_ui_callback: this.update_ui_callback,
-      asset_url: asset_url,
+      default_base_frame: default_base_frame,
+      default_rpc_base_url: default_rpc_base_url,
     });
   }
 

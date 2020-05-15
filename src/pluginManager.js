@@ -50,7 +50,8 @@ export class PluginManager {
     imjoy_api = {},
     show_message_callback = null,
     update_ui_callback = null,
-    asset_url = null,
+    default_base_frame = null,
+    default_rpc_base_url = null,
   }) {
     this.event_bus = event_bus;
     this.em = engine_manager;
@@ -63,7 +64,8 @@ export class PluginManager {
     assert(this.wm, "window manager is not available");
     assert(this.config_db, "config database is not available");
 
-    this.asset_url = asset_url;
+    this.default_base_frame = default_base_frame;
+    this.default_rpc_base_url = default_rpc_base_url;
 
     this.show_message_callback = show_message_callback;
     this.update_ui_callback = update_ui_callback || function() {};
@@ -299,8 +301,11 @@ export class PluginManager {
 
   async init() {
     const config = {};
-    if (this.asset_url) {
-      config.asset_url = this.asset_url;
+    if (this.default_base_frame) {
+      config.default_base_frame = this.default_base_frame;
+    }
+    if (this.default_rpc_base_url) {
+      config.default_rpc_base_url = this.default_rpc_base_url;
     }
 
     if ("serviceWorker" in navigator) {
