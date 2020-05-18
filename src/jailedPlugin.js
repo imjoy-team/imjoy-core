@@ -294,8 +294,11 @@ class DynamicPlugin {
         iframe_container.appendChild(_frame);
         this.iframe_container = iframe_container;
       } else {
-        document.body.appendChild(_frame);
-        this.iframe_container = null;
+        throw new Error(
+          `Failed to load plugin ${
+            this.config.name
+          }, iframe container (id=${iframe_container}) not found.`
+        );
       }
     } else {
       document.body.appendChild(_frame);

@@ -201,12 +201,26 @@ export class WindowManager {
         this.setupCallbacks(w);
         this.selectWindow(w);
         this.event_bus.emit("add_window", w);
-        resolve(w.id);
-
-        //hack for testing
-        if (w.__test__mode__) {
-          w.api.emit("ready");
-        }
+        let checkingTimer = null;
+        let count = 40;
+        const checkWindowReady = function() {
+          const iframe_container = document.getElementById(w.iframe_container);
+          if (iframe_container) {
+            clearInterval(checkingTimer);
+            //hack for testing
+            if (w.__test__mode__) {
+              w.api.emit("ready");
+            }
+            resolve(w.id);
+          }
+          if (count-- < 0) {
+            clearInterval(checkingTimer);
+            reject(
+              "Failed to add window, the iframe container was not created in 4s."
+            );
+          }
+        };
+        checkingTimer = setInterval(checkWindowReady, 100);
       } catch (e) {
         reject(e);
       }
