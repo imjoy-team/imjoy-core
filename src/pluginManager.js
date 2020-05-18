@@ -1237,6 +1237,7 @@ export class PluginManager {
       });
     }
     this.event_bus.emit("update_ui");
+    this.event_bus.emit("plugin_unloaded", _plugin);
   }
 
   connectPlugin(connection) {
