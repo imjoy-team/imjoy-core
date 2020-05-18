@@ -27,6 +27,11 @@ describe("ImJoy Core", async () => {
       client_id: "123",
     });
     imjoy.event_bus.on("show_message", console.log);
+    imjoy.event_bus.on("add_window", w => {
+      const elem = document.createElement("DIV");
+      elem.id = w.iframe_container;
+      document.body.appendChild(elem);
+    });
     wm = imjoy.wm; //window_manager
     pm = imjoy.pm; //plugin_manager
     imjoy.start({ workspace: "default" }).then(done);
@@ -62,9 +67,12 @@ describe("ImJoy Core", async () => {
   it("should load the new window plugin", async () => {
     const code = _.clone(WINDOW_PLUGIN_TEMPLATE);
     const plugin = await pm.reloadPlugin({ code: code });
+
     expect(plugin.name).to.equal("Untitled Plugin");
+
     expect(plugin.type).to.equal("window");
     expect(typeof plugin.api.run).to.equal("function");
+    console.log("============", plugin);
     await plugin.api.run({});
     plugin.terminate();
   }).timeout(20000);

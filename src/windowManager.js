@@ -207,20 +207,20 @@ export class WindowManager {
           const iframe_container = document.getElementById(w.iframe_container);
           if (iframe_container) {
             clearInterval(checkingTimer);
-            //hack for testing
-            if (w.__test__mode__) {
-              w.api.emit("ready");
-            }
             resolve(w.id);
           }
           if (count-- < 0) {
             clearInterval(checkingTimer);
             reject(
-              "Failed to add window, the iframe container was not created in 4s."
+              "Failed to add window, the iframe container was not created in 2s."
             );
           }
         };
-        checkingTimer = setInterval(checkWindowReady, 100);
+        checkingTimer = setInterval(checkWindowReady, 50);
+        //hack for testing
+        if (w.__test__mode__) {
+          w.api.emit("ready");
+        }
       } catch (e) {
         reject(e);
       }
