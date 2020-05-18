@@ -5,6 +5,8 @@ async function _importScript(url, scope) {
   const response = await axios.get(url);
   if (response && response.status == 200 && response.data) {
     const code = response.data;
+    // Avoid loading the script as amd module (requirejs)
+    scope["define"] = null;
     evalInScope(code, scope);
   } else {
     throw "Faild to fetch code from " + url;
