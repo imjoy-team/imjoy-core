@@ -109,7 +109,7 @@ export function createIframe(config) {
  * @param {Object} _interface to provide to the plugin
  */
 class DynamicPlugin {
-  constructor(config, _interface, engine, is_proxy, allow_evil) {
+  constructor(config, _interface, engine, is_proxy, allow_evil, connection) {
     if (!_initialized)
       throw "Please call `initializeJailed()` before using Jailed.";
     this.config = config;
@@ -147,7 +147,21 @@ class DynamicPlugin {
       if (!this._initialInterface.off) this._initialInterface.off = this.off;
       if (!this._initialInterface.emit) this._initialInterface.emit = this.emit;
 
-      this._connect();
+      this.api = null;
+
+      this._connected = new Whenable(true);
+      this._fail = new Whenable(true);
+      this._disconnect = new Whenable(true);
+
+      if (connection) {
+        this._setupRPC(connection, config);
+      } else {
+        if (!this.backend) {
+          this._setupViaEngine();
+        } else {
+          this._setupViaIframe();
+        }
+      }
     }
     this._updateUI();
   }
@@ -265,132 +279,9 @@ class DynamicPlugin {
       this.config.base_frame = frame_url;
     }
     const _frame = createIframe(this.config);
-    this._connection = new BasicConnection(_frame);
-    this.initializing = true;
-    this._updateUI();
+    const connection = new BasicConnection(_frame);
 
-    this._connection.on("imjoyRPCReady", async data => {
-      const config = data.config || {};
-      let forwarding_functions = ["close", "on", "off", "emit"];
-      if (
-        ["rpc-window", "window", "web-python-window"].includes(this.config.type)
-      ) {
-        forwarding_functions = forwarding_functions.concat([
-          "resize",
-          "show",
-          "hide",
-          "refresh",
-        ]);
-      }
-      let credential;
-      if (config.credential_required) {
-        if (!Array.isArray(config.credential_fields)) {
-          throw new Error(
-            "Please specify the `config.credential_fields` as an array of object."
-          );
-        }
-        if (this.config.credential_handler) {
-          credential = await this.config.credential_handler(
-            config.credential_fields
-          );
-        } else {
-          credential = {};
-          for (let k in config.credential_fields) {
-            credential[k.id] = await this._initialInterface.prompt(
-              k.label,
-              k.value
-            );
-          }
-        }
-      }
-      this._connection.emit({
-        type: "initialize",
-        config: {
-          name: this.config.name,
-          type: this.config.type,
-          allow_execution: true,
-          enable_service_worker: true,
-          forwarding_functions: forwarding_functions,
-          expose_api_globally: true,
-          credential: credential,
-        },
-      });
-    });
-
-    this._connection.on("initialized", async data => {
-      if (data.error) {
-        console.error("Plugin failed to initialize", data.error);
-        throw new Error(data.error);
-      }
-      try {
-        const pluginConfig = data.config || {};
-        if (!CONFIG_SCHEMA(pluginConfig)) {
-          const error = CONFIG_SCHEMA.errors;
-          console.error(
-            "Invalid config " + pluginConfig.name || "unkown" + ": ",
-            pluginConfig,
-            error
-          );
-          throw error;
-        }
-        const imjoyRPC = await loadImJoyRPC({
-          base_url: JailedConfig.default_rpc_base_url,
-          api_version: pluginConfig.api_version,
-        });
-        console.log(
-          `loaded imjoy-rpc v${imjoyRPC.VERSION} for ${pluginConfig.name}`
-        );
-        if (!this._rpc) {
-          this._rpc = new imjoyRPC.RPC(this._connection, {
-            name: "imjoy-core",
-          });
-          this._registerRPCEvents(this._rpc);
-          this._rpc.setInterface(this._initialInterface);
-        }
-        await this._sendInterface();
-        if (pluginConfig.allow_execution) {
-          await this._executePlugin();
-        }
-        this.api = await this._requestRemote();
-        this.api._rintf = true;
-        this.api._rid = this.id;
-        this._disconnected = false;
-        this.initializing = false;
-        this._updateUI();
-        this._connected.emit();
-      } catch (error) {
-        this._fail.emit(error);
-        this.disconnect();
-        this.initializing = false;
-        if (error) this.error(error.toString());
-        if (this._hasVisibleWindow && this.config.iframe_container) {
-          const container = document.getElementById(
-            this.config.iframe_container
-          );
-          container.innerHTML = `<h5>Oops! failed to load the window.</h5><code>Details: ${DOMPurify.sanitize(
-            String(error)
-          )}</code>`;
-        }
-        this._updateUI();
-      }
-    });
-
-    // TODO: check when this will fire
-    this._connection.on("failed", e => {
-      this._fail.emit(e);
-    });
-
-    this._connection.on("disconnected", details => {
-      if (details) {
-        if (details.error) {
-          this.error(details.error);
-        } else if (details.info) {
-          this.log(details.info);
-        }
-      }
-      this._set_disconnected();
-    });
-    this._connection.connect();
+    this._setupConnection(connection);
 
     if (this._hasVisibleWindow) {
       let iframe_container = this.config.iframe_container;
@@ -410,21 +301,92 @@ class DynamicPlugin {
       document.body.appendChild(_frame);
     }
   }
-  /**
-   * Creates the connection to the plugin site
-   */
-  _connect() {
-    this.api = null;
 
-    this._connected = new Whenable(true);
-    this._fail = new Whenable(true);
-    this._disconnect = new Whenable(true);
-
-    if (!this.backend) {
-      this._setupViaEngine();
-    } else {
-      this._setupViaIframe();
+  async _setupRPC(connection, pluginConfig) {
+    this._connection = connection;
+    this.initializing = true;
+    this._updateUI();
+    try {
+      if (!CONFIG_SCHEMA(pluginConfig)) {
+        const error = CONFIG_SCHEMA.errors;
+        console.error(
+          "Invalid config " + pluginConfig.name || "unkown" + ": ",
+          pluginConfig,
+          error
+        );
+        throw error;
+      }
+      const imjoyRPC = await loadImJoyRPC({
+        base_url: JailedConfig.default_rpc_base_url,
+        api_version: pluginConfig.api_version,
+      });
+      console.log(
+        `loaded imjoy-rpc v${imjoyRPC.VERSION} for ${pluginConfig.name}`
+      );
+      if (!this._rpc) {
+        this._rpc = new imjoyRPC.RPC(this._connection, {
+          name: "imjoy-core",
+        });
+        this._registerRPCEvents(this._rpc);
+        this._rpc.setInterface(this._initialInterface);
+      }
+      await this._sendInterface();
+      if (pluginConfig.allow_execution) {
+        await this._executePlugin();
+      }
+      this.api = await this._requestRemote();
+      this.api._rintf = true;
+      this.api._rid = this.id;
+      this._disconnected = false;
+      this.initializing = false;
+      this._updateUI();
+      this._connected.emit();
+    } catch (error) {
+      this._fail.emit(error);
+      this.disconnect();
+      this.initializing = false;
+      if (error) this.error(error.toString());
+      if (this._hasVisibleWindow && this.config.iframe_container) {
+        const container = document.getElementById(this.config.iframe_container);
+        container.innerHTML = `<h5>Oops! failed to load the window.</h5><code>Details: ${DOMPurify.sanitize(
+          String(error)
+        )}</code>`;
+      }
+      this._updateUI();
     }
+  }
+
+  _setupConnection(connection) {
+    this._connection = connection;
+    this.initializing = true;
+    this._updateUI();
+
+    initializeIfNeeded(this._connection, this.config);
+
+    this._connection.on("initialized", async data => {
+      if (data.error) {
+        console.error("Plugin failed to initialize", data.error);
+        throw new Error(data.error);
+      }
+      this._setupRPC(this._connection, data.config);
+    });
+
+    // TODO: check when this will fire
+    this._connection.on("failed", e => {
+      this._fail.emit(e);
+    });
+
+    this._connection.on("disconnected", details => {
+      if (details) {
+        if (details.error) {
+          this.error(details.error);
+        } else if (details.info) {
+          this.log(details.info);
+        }
+      }
+      this._set_disconnected();
+    });
+    this._connection.connect();
   }
 
   _registerRPCEvents(_rpc) {
@@ -708,20 +670,74 @@ class DynamicPlugin {
   }
 }
 
-function getExternalPluginConfig(url) {
-  return new Promise((resolve, reject) => {
-    const _frame = createIframe({
-      id: "external_" + randId(),
-      type: "window",
-      base_frame: url,
-      permissions: [],
+function initializeIfNeeded(connection, default_config) {
+  connection.once("imjoyRPCReady", async data => {
+    const config = data.config || {};
+    let forwarding_functions = ["close", "on", "off", "emit"];
+    if (["rpc-window", "window", "web-python-window"].includes(config.type)) {
+      forwarding_functions = forwarding_functions.concat([
+        "resize",
+        "show",
+        "hide",
+        "refresh",
+      ]);
+    }
+    let credential;
+    if (config.credential_required) {
+      if (!Array.isArray(config.credential_fields)) {
+        throw new Error(
+          "Please specify the `config.credential_fields` as an array of object."
+        );
+      }
+      if (default_config.credential_handler) {
+        credential = await default_config.credential_handler(
+          config.credential_fields
+        );
+      } else {
+        credential = {};
+        for (let k in config.credential_fields) {
+          credential[k.id] = window.prompt(k.label, k.value);
+        }
+      }
+    }
+    connection.emit({
+      type: "initialize",
+      config: {
+        name: default_config.name,
+        type: default_config.type,
+        allow_execution: true,
+        enable_service_worker: true,
+        forwarding_functions: forwarding_functions,
+        expose_api_globally: true,
+        credential: credential,
+      },
+      peer_id: data.peer_id,
     });
-    _frame.style.display = "none";
-    document.body.appendChild(_frame);
-    const _connection = new BasicConnection(_frame);
+  });
+}
+
+function getExternalPluginConfig(src) {
+  return new Promise((resolve, reject) => {
+    let _connection, url;
+    if (typeof src === "string") {
+      const _frame = createIframe({
+        id: "external_" + randId(),
+        type: "window",
+        base_frame: src,
+        permissions: [],
+      });
+      _frame.style.display = "none";
+      document.body.appendChild(_frame);
+      _connection = new BasicConnection(_frame);
+      url = src;
+    } else {
+      url = src.url;
+      _connection = src;
+    }
     const connection_timer = setTimeout(() => {
       reject("Timeout error: failed to connect to the plugin");
     }, 15000);
+    initializeIfNeeded(_connection, {});
     _connection.once("initialized", async data => {
       clearTimeout(connection_timer);
       const pluginConfig = data.config;
@@ -748,7 +764,7 @@ function getExternalPluginConfig(url) {
       pluginConfig.origin = url;
       resolve(pluginConfig);
     });
-    _connection.on("failed", e => {
+    _connection.once("failed", e => {
       clearTimeout(connection_timer);
       reject(e);
     });
