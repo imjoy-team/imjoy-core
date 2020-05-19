@@ -27,6 +27,11 @@ describe("ImJoy Core", async () => {
       client_id: "123",
     });
     imjoy.event_bus.on("show_message", console.log);
+    imjoy.event_bus.on("add_window", w => {
+      const elem = document.createElement("DIV");
+      elem.id = w.iframe_container;
+      document.body.appendChild(elem);
+    });
     wm = imjoy.wm; //window_manager
     pm = imjoy.pm; //plugin_manager
     imjoy.start({ workspace: "default" }).then(done);

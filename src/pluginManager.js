@@ -1237,6 +1237,21 @@ export class PluginManager {
       });
     }
     this.event_bus.emit("update_ui");
+    this.event_bus.emit("plugin_unloaded", _plugin);
+  }
+
+  connectPlugin(connection) {
+    return new Promise((resolve, reject) => {
+      getExternalPluginConfig(connection)
+        .then(config => {
+          this.loadPlugin(config, null, false, connection)
+            .then(p => {
+              resolve(p);
+            })
+            .catch(reject);
+        })
+        .catch(reject);
+    });
   }
 
   reloadPlugin(pconfig, allow_evil) {
@@ -1528,7 +1543,7 @@ export class PluginManager {
     });
   }
 
-  loadPlugin(template, rplugin, allow_evil) {
+  loadPlugin(template, rplugin, allow_evil, connection) {
     template = _clone(template);
     this.validatePluginConfig(template);
     //generate a random id for the plugin
@@ -1570,7 +1585,8 @@ export class PluginManager {
           _interface,
           engine,
           false,
-          allow_evil
+          allow_evil,
+          connection
         );
         plugin._log_history.push(
           `Loading plugin ${plugin.id} (TAG=${_interface.TAG}, WORKSPACE=${
