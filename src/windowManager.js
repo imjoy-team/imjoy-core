@@ -204,15 +204,17 @@ export class WindowManager {
         let checkingTimer = null;
         let count = 40;
         const checkWindowReady = function() {
-          const iframe_container = document.getElementById(w.iframe_container);
-          if (iframe_container) {
+          const window_id = document.getElementById(w.window_id);
+          if (window_id) {
             clearInterval(checkingTimer);
             resolve(w.id);
           }
           if (count-- < 0) {
             clearInterval(checkingTimer);
             reject(
-              "Failed to add window, the iframe container was not created in 2s."
+              `Failed to create window (element with id=${
+                w.window_id
+              } not detected in 2s).`
             );
           }
         };
