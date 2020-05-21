@@ -204,8 +204,8 @@ export class WindowManager {
         let checkingTimer = null;
         let count = 40;
         const checkWindowReady = function() {
-          const iframe_container = document.getElementById(w.iframe_container);
-          if (iframe_container) {
+          const window_id = document.getElementById(w.window_id);
+          if (window_id) {
             clearInterval(checkingTimer);
             resolve(w.id);
           }

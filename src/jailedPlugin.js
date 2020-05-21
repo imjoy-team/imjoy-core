@@ -284,20 +284,20 @@ class DynamicPlugin {
     this._setupConnection(connection);
 
     if (this._hasVisibleWindow) {
-      let iframe_container = this.config.iframe_container;
-      if (typeof iframe_container === "string") {
-        iframe_container = document.getElementById(iframe_container);
+      let window_id = this.config.window_id;
+      if (typeof window_id === "string") {
+        window_id = document.getElementById(window_id);
       }
-      if (iframe_container) {
+      if (window_id) {
         _frame.style.display = "block";
-        iframe_container.innerHTML = "";
-        iframe_container.appendChild(_frame);
-        this.iframe_container = iframe_container;
+        window_id.innerHTML = "";
+        window_id.appendChild(_frame);
+        this.window_id = window_id;
       } else {
         throw new Error(
           `Failed to load plugin ${
             this.config.name
-          }, iframe container (id=${iframe_container}) not found.`
+          }, iframe container (id=${window_id}) not found.`
         );
       }
     } else {
@@ -349,8 +349,8 @@ class DynamicPlugin {
       this.disconnect();
       this.initializing = false;
       if (error) this.error(error.toString());
-      if (this._hasVisibleWindow && this.config.iframe_container) {
-        const container = document.getElementById(this.config.iframe_container);
+      if (this._hasVisibleWindow && this.config.window_id) {
+        const container = document.getElementById(this.config.window_id);
         container.innerHTML = `<h5>Oops! failed to load the window.</h5><code>Details: ${DOMPurify.sanitize(
           String(error)
         )}</code>`;
