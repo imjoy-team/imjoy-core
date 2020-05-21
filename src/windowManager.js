@@ -212,7 +212,9 @@ export class WindowManager {
           if (count-- < 0) {
             clearInterval(checkingTimer);
             reject(
-              "Failed to add window, the iframe container was not created in 2s."
+              `Failed to create window (element with id=${
+                w.window_id
+              } not detected in 2s).`
             );
           }
         };
