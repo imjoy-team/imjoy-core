@@ -2258,6 +2258,9 @@ export class PluginManager {
         throw error;
       }
       wconfig.name = wconfig.name || wconfig.type;
+      // this is a unique id for the iframe to attach
+      wconfig.iframe_container =
+        wconfig.window_container || "plugin_window_" + wconfig.id + randId();
       if (wconfig.type && wconfig.type.startsWith("imjoy/")) {
         wconfig.id = "imjoy_" + randId();
         this.wm
@@ -2328,9 +2331,6 @@ export class PluginManager {
           throw 'Window plugin must be with type "window"';
         }
 
-        // this is a unique id for the iframe to attach
-        pconfig.iframe_container =
-          pconfig.window_container || "plugin_window_" + pconfig.id + randId();
         pconfig.iframe_window = null;
         pconfig.plugin = window_config;
 
