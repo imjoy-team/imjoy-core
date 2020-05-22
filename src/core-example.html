@@ -155,7 +155,7 @@
         max-height: 100%;
         min-height: 50vh;
       }
-      .window_container {
+      .window_id {
         width: 100%;
         height: 100%;
       }
@@ -268,9 +268,9 @@
       var windows = {};
       function addWindow(w) {
         windows = windows || {};
-        windows[w.iframe_container] = w;
+        windows[w.window_id] = w;
         var title = w.name,
-          id = w.iframe_container;
+          id = w.window_id;
         document.getElementById("windows-menu").innerHTML =
           `
             <span class="chip pointer window-chip" id="header_${id}" onclick="selectWindow('${id}')">
@@ -280,7 +280,7 @@
 
         document.getElementById("whiteboard").innerHTML =
           `
-                <div class="window_container" id="${id}"></div>
+                <div class="window_id" id="${id}"></div>
             ` + document.getElementById("whiteboard").innerHTML;
         window.onresize();
         updateWindowChips();
@@ -382,7 +382,7 @@
               }
             } else if (config.type) {
               openDialog();
-              config.window_container = "window-dialog-container";
+              config.window_id = "window-dialog-container";
               config.standalone = true;
               if (config.type.startsWith("imjoy/")) {
                 config.render = wconfig => {};

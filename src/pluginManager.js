@@ -2258,6 +2258,11 @@ export class PluginManager {
         throw error;
       }
       wconfig.name = wconfig.name || wconfig.type;
+      // this is a unique id for the iframe to attach
+      wconfig.window_id =
+        wconfig.window_id || "plugin_window_" + wconfig.id + randId();
+      // window_type will be used for detaching the window
+      wconfig.window_type = wconfig.type;
       if (wconfig.type && wconfig.type.startsWith("imjoy/")) {
         wconfig.id = "imjoy_" + randId();
         this.wm
@@ -2318,7 +2323,7 @@ export class PluginManager {
         //generate a new window id
         pconfig.id = pconfig.id || window_config.id + "_" + randId();
 
-        //assign plugin type ('window')
+        // assign plugin type ('window')
         pconfig.type = window_config.type;
         if (
           pconfig.type !== "rpc-window" &&
@@ -2328,10 +2333,6 @@ export class PluginManager {
           throw 'Window plugin must be with type "window"';
         }
 
-        // this is a unique id for the iframe to attach
-        pconfig.iframe_container =
-          pconfig.window_container || "plugin_window_" + pconfig.id + randId();
-        pconfig.iframe_window = null;
         pconfig.plugin = window_config;
 
         if (!WINDOW_SCHEMA(pconfig)) {
@@ -2348,9 +2349,10 @@ export class PluginManager {
           pconfig.loading = false;
           console.warn(`Failed to load window "${pconfig.name}" in 10s.`);
         }, 10000);
-        if (pconfig.window_container) {
-          this.wm.setupCallbacks(pconfig);
+
+        this.wm.addWindow(pconfig).then(() => {
           setTimeout(() => {
+            pconfig.refresh();
             const p = this.renderWindow(pconfig);
             if (pconfig.type === "rpc-window") {
               clearTimeout(loadingTimer);
@@ -2360,65 +2362,28 @@ export class PluginManager {
               resolve({
                 _rintf: true,
                 setup: () => {},
+                on: () => {},
               });
               return;
             }
             p.then(wplugin => {
-              if (pconfig.$el) {
-                wplugin.api.emit(
-                  "window_size_changed",
-                  pconfig.$el.getBoundingClientRect()
-                );
-              }
-              wplugin.api.refresh();
-              wplugin.api.on("close", async () => {
+              pconfig.api.on("close", async () => {
                 this.event_bus.emit("closing_window_plugin", wplugin);
                 await wplugin.terminate();
               });
+              pconfig.refresh();
               resolve(wplugin.api);
             })
-              .catch(reject)
+              .catch(e => {
+                pconfig.refresh();
+                reject(e);
+              })
               .finally(() => {
                 clearTimeout(loadingTimer);
                 pconfig.loading = false;
               });
           }, 0);
-        } else {
-          this.wm.addWindow(pconfig).then(() => {
-            setTimeout(() => {
-              pconfig.refresh();
-              const p = this.renderWindow(pconfig);
-              if (pconfig.type === "rpc-window") {
-                clearTimeout(loadingTimer);
-                pconfig.loading = false;
-              }
-              if (pconfig.passive || window_config.passive) {
-                resolve({
-                  _rintf: true,
-                  setup: () => {},
-                  on: () => {},
-                });
-                return;
-              }
-              p.then(wplugin => {
-                pconfig.api.on("close", async () => {
-                  this.event_bus.emit("closing_window_plugin", wplugin);
-                  await wplugin.terminate();
-                });
-                pconfig.refresh();
-                resolve(wplugin.api);
-              })
-                .catch(e => {
-                  pconfig.refresh();
-                  reject(e);
-                })
-                .finally(() => {
-                  clearTimeout(loadingTimer);
-                  pconfig.loading = false;
-                });
-            }, 0);
-          });
-        }
+        });
       }
     });
   }

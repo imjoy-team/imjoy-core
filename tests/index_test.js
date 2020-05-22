@@ -29,7 +29,7 @@ describe("ImJoy Core", async () => {
     imjoy.event_bus.on("show_message", console.log);
     imjoy.event_bus.on("add_window", w => {
       const elem = document.createElement("DIV");
-      elem.id = w.iframe_container;
+      elem.id = w.window_id;
       document.body.appendChild(elem);
     });
     wm = imjoy.wm; //window_manager
