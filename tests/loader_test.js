@@ -14,7 +14,7 @@ describe("imjoy-loader", async () => {
     expect(typeof imjoyCore.Joy).to.equal("function");
     expect(typeof imjoyCore.ajv).to.equal("object");
     expect(typeof imjoyCore.utils).to.equal("object");
-  });
+  }).timeout(20000);
 
   it("should load imjoy rpc", async () => {
     const imjoyRPC = await loadImJoyRPC({ base_url: "/" });
@@ -24,5 +24,5 @@ describe("imjoy-loader", async () => {
     expect(typeof imjoyRPC.RPC).to.equal("function");
     expect(typeof imjoyRPC.setupRPC).to.equal("function");
     expect(typeof imjoyRPC.waitForInitialization).to.equal("function");
-  });
+  }).timeout(20000);
 });
