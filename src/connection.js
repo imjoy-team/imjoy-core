@@ -60,7 +60,7 @@ export class BasicConnection extends MessageEmitter {
     return new Promise((resolve, reject) => {
       this.once("executed", result => {
         if (result.error) {
-          reject(result.error);
+          reject(new Error(result.error));
         } else {
           resolve();
         }

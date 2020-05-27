@@ -216,7 +216,6 @@ class DynamicPlugin {
     const me = this;
     const engine_utils = {
       _rintf: true,
-      _rid: this.config.id + "_utils",
       terminatePlugin() {
         me.terminate();
       },
@@ -244,7 +243,6 @@ class DynamicPlugin {
         }
         this.api = remote;
         this.api._rintf = true;
-        this.api._rid = this.id;
         this._disconnected = false;
         this.initializing = false;
         this._updateUI();
@@ -338,8 +336,6 @@ class DynamicPlugin {
         await this._executePlugin();
       }
       this.api = await this._requestRemote();
-      this.api._rintf = true;
-      this.api._rid = this.id;
       this._disconnected = false;
       this.initializing = false;
       this._updateUI();
