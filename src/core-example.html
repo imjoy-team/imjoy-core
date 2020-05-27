@@ -411,7 +411,6 @@
         window.imjoyCore = await loadImJoyCore({ base_url: "/", debug: true });
         imjoy = new imjoyCore.ImJoy({
           imjoy_api: imjoy_api,
-          default_rpc_base_url: 'http://localhost:8080/'
         });
         imjoy.event_bus.on("show_message", msg => {
           console.log(msg);

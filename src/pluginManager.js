@@ -1507,7 +1507,6 @@ export class PluginManager {
         const plugin = new DynamicPlugin(tconfig, _interface, null, true);
         plugin.api = {
           _rintf: true,
-          _rid: plugin.id,
           setup: async () => {},
           run: async my => {
             const c = _clone(template.defaults) || {};
@@ -1799,7 +1798,6 @@ export class PluginManager {
     //conver config--> data  data-->target
     const res = {};
     res._rintf = my._rintf;
-    res._rid = my._rid;
     if (my.type && my.data) {
       res.data = my.config;
       res.target = my.data;
@@ -1852,7 +1850,6 @@ export class PluginManager {
     my.target = my.target || {};
     const ret = {
       _rintf: my._rintf,
-      _rid: my._rid,
       _variables: my.target._variables || null,
       _op: my.target._op,
       _source_op: my.target._source_op,
@@ -2275,7 +2272,6 @@ export class PluginManager {
                 wconfig.api = wconfig.api || {};
                 wconfig.api = Object.assign(wconfig.api, {
                   _rintf: true,
-                  _rid: wid,
                   run: new_config => {
                     for (let k in new_config) {
                       wconfig[k] = new_config[k];
