@@ -336,8 +336,6 @@ class DynamicPlugin {
         await this._executePlugin();
       }
       this.api = await this._requestRemote();
-      // TODO remove this?
-      // this.api._rintf = true;
       this._disconnected = false;
       this.initializing = false;
       this._updateUI();
