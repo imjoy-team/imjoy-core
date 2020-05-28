@@ -1244,7 +1244,7 @@ export class PluginManager {
     return new Promise((resolve, reject) => {
       getExternalPluginConfig(connection)
         .then(config => {
-          this.loadPlugin(config, null, false, connection)
+          this.loadPlugin(config, { id: config.id }, false, connection)
             .then(p => {
               resolve(p);
             })
