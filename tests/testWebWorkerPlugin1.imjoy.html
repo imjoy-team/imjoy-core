@@ -36,6 +36,21 @@ function assert(condition, message) {
   }
 }
 
+class Cat{
+  constructor(name, color, age, clean){
+    this.name = name
+    this.color = color
+    this.age = age
+    this.clean = clean
+  }
+}
+
+api.registerCodec({'name': 'cat', 'type': Cat, 'encoder': (obj)=>{
+  return {_ctype: 'cat', name: obj.name, color: obj.color, age: obj.age, clean: obj.clean}
+}, 'decoder': (encoded_obj)=>{
+  return new Cat(encoded_obj.name, encoded_obj.color, encoded_obj.age, encoded_obj.clean)
+}})
+
 class ImJoyPlugin {
   async setup() {
     if (
@@ -51,17 +66,14 @@ class ImJoyPlugin {
     console.log('running in the plugin.')
   }
 
-  _rpc_decode(d){
-    if(d._ctype === 'my_special_number'){
-      return 'adsfwe02303'
-    }
-    return d
-  }
-
   async test_encoding_decoding() {
     const p = await api.getPlugin('Test Web Worker Plugin 2')
-    const ret = await p.square(99)
-    assert(ret === 'adsfwe02303', `The anwser should have been encoded into "adsfwe02303" by _rpc_decode(), not ${ret}`)
+    const dirty_bobo = new Cat('boboshu', 'mixed', 0.67, false)
+    const clean_bobo = await p.wash(dirty_bobo)
+    assert(clean_bobo instanceof Cat)
+    assert(clean_bobo.name === dirty_bobo.name)
+    assert(clean_bobo.age === dirty_bobo.age)
+    assert(clean_bobo.clean === true, `The cat should have been clean`)
     return true
   }
 
