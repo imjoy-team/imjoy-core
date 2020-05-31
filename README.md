@@ -37,7 +37,7 @@ loadImJoyCore().then((imjoyCore)=>{
 ```
 A full example html file can be found [here](/src/core-example.html).
 
-Note: To improve reproducibility in production, you should specify the `version` for the core by calling for example `loadImJoyCore({version: "0.12.0"})`.
+Note: To improve reproducibility in production, you should specify the `version` for the core by calling for example `loadImJoyCore({version: "0.13.12"})`.
 
 #### Option 2: Use the npm module
 
@@ -87,7 +87,7 @@ loadImJoyRPC().then(async (imjoyRPC)=>{
 })
 </script>
 ```
-Note: To improve reproducibility in production, you should specify the `api_version` (or pin to a specific `version`) by calling for example `loadImJoyRPC({api_version: "0.2.0"})`.
+Note: To improve reproducibility in production, you should specify the `api_version` (or pin to a specific `version`) by calling for example `loadImJoyRPC({api_version: "0.2.3"})`.
 
 Alternatively, you can load the imjoy-rpc library via cdn `https://cdn.jsdelivr.net/npm/imjoy-rpc@latest/dist/imjoy-rpc.min.js` (or replace `@latest` to a version number). Using the the imjoy-loader will be more flexible since it only load when you call the load function.
 
