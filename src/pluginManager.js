@@ -163,6 +163,9 @@ export class PluginManager {
         );
         plugin.on("close", cb);
       },
+      echo: (plugin, msg) => {
+        return msg;
+      },
       utils: {},
     };
     // bind this to api functions
