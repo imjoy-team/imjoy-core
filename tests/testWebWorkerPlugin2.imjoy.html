@@ -22,6 +22,21 @@
 </config>
 
 <script lang="javascript">
+class Cat{
+  constructor(name, color, age, clean){
+    this.name = name
+    this.color = color
+    this.age = age
+    this.clean = clean
+  }
+}
+
+api.registerCodec({'name': 'cat', 'type': Cat, 'encoder': (obj)=>{
+  return {_ctype: 'cat', name: obj.name, color: obj.color, age: obj.age, clean: obj.clean}
+}, 'decoder': (encoded_obj)=>{
+  return new Cat(encoded_obj.name, encoded_obj.color, encoded_obj.age, encoded_obj.clean)
+}})
+
 class ImJoyPlugin {
   async setup() {
   }
@@ -35,11 +50,10 @@ class ImJoyPlugin {
     return arg*arg
   }
 
-  _rpc_encode(d){
-    if(d === 99*99){
-      return {_ctype: 'my_special_number'}
-    }
-    return d
+  async wash(cat){
+    if(!cat.clean)
+    cat.clean = true
+    return cat
   }
 }
 
