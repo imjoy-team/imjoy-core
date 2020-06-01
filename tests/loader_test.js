@@ -1,5 +1,9 @@
 import { expect } from "chai";
-import { loadImJoyCore, loadImJoyRPC } from "../src/imjoyLoader.js";
+import {
+  loadImJoyCore,
+  loadImJoyRPC,
+  latest_rpc_version,
+} from "../src/imjoyLoader.js";
 
 describe("imjoy-loader", async () => {
   it("should load imjoy core", async () => {
@@ -19,7 +23,7 @@ describe("imjoy-loader", async () => {
   it("should load imjoy rpc", async () => {
     const imjoyRPC = await loadImJoyRPC({ base_url: "/" });
     expect(typeof imjoyRPC).to.equal("object");
-    expect(typeof imjoyRPC.VERSION).to.equal("string");
+    expect(imjoyRPC.VERSION).to.equal(latest_rpc_version);
     expect(typeof imjoyRPC.API_VERSION).to.equal("string");
     expect(typeof imjoyRPC.RPC).to.equal("function");
     expect(typeof imjoyRPC.setupRPC).to.equal("function");
