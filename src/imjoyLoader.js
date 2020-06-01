@@ -71,7 +71,7 @@ export function loadImJoyCore(config) {
   });
 }
 const _rpc_registry = {};
-export const latest_rpc_version = "0.2.7";
+export const latest_rpc_version = "0.2.8";
 
 const _rpc_api_versions = {
   "0.2.0": { from: "0.1.10", to: "0.1.17", skips: [] },
