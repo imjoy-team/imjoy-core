@@ -37,7 +37,7 @@ loadImJoyCore().then((imjoyCore)=>{
 ```
 A full example html file can be found [here](/src/core-example.html).
 
-Note: To improve reproducibility in production, you should specify the `version` for the core by calling for example `loadImJoyCore({version: "0.13.12"})`.
+Note: To improve reproducibility in production, you should specify the `version` for the core by calling for example `loadImJoyCore({version: "0.13.14"})`.
 
 #### Option 2: Use the npm module
 
