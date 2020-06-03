@@ -54,6 +54,11 @@ module.exports = {
         libraryTarget: 'umd',
         umdNamedDefine: true
     },
+    devServer: {
+        contentBase: path.join(__dirname, 'dist'),
+        compress: true,
+        port: 8080
+    },
     resolve: {
         extensions: ['.js']
     },
