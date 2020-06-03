@@ -1,5 +1,5 @@
 import { MessageEmitter } from "./utils.js";
-const all_connections = {}
+const all_connections = {};
 export class BasicConnection extends MessageEmitter {
   constructor(sourceIframe) {
     super();
@@ -51,13 +51,16 @@ export class BasicConnection extends MessageEmitter {
     // TODO: remove listener when disconnected
     window.addEventListener("message", e => {
       if (this._frame.contentWindow && e.source === this._frame.contentWindow) {
-        const peer_id = e.data.peer_id
-        if(peer_id && this._peer_id && peer_id !== this._peer_id){
-          const conn = all_connections[peer_id]
-          if(conn) conn._fire(e.data.type, e.data)
-          else console.warn(`connection with peer_id ${peer_id} not found, discarding data: `, e.data)
-        }
-        else{
+        const peer_id = e.data.peer_id;
+        if (peer_id && this._peer_id && peer_id !== this._peer_id) {
+          const conn = all_connections[peer_id];
+          if (conn) conn._fire(e.data.type, e.data);
+          else
+            console.warn(
+              `connection with peer_id ${peer_id} not found, discarding data: `,
+              e.data
+            );
+        } else {
           this._fire(e.data.type, e.data);
         }
       }
@@ -120,7 +123,7 @@ export class BasicConnection extends MessageEmitter {
       } // otherwise farme is not yet created
       this._fire("disconnected", details);
     }
-    if(this._peer_id && all_connections[this._peer_id])
-    delete all_connections[this._peer_id]
+    if (this._peer_id && all_connections[this._peer_id])
+      delete all_connections[this._peer_id];
   }
 }
