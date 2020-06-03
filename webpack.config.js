@@ -54,6 +54,11 @@ module.exports = {
         libraryTarget: 'umd',
         umdNamedDefine: true
     },
+    devServer: {
+        contentBase: path.join(__dirname, 'dist'),
+        compress: true,
+        port: 8080
+    },
     resolve: {
         extensions: ['.js']
     },
@@ -75,6 +80,7 @@ module.exports = {
                           {
                             targets: { browsers: ['last 2 Chrome versions'] },
                             useBuiltIns: 'entry',
+                            corejs: "3.0.0",
                             modules: false,
                           },
                         ],
