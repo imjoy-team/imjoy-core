@@ -715,18 +715,19 @@ function initializeIfNeeded(connection, default_config) {
   });
 }
 
-function getExternalPluginConfig(src) {
+function getExternalPluginConfig(src, container) {
   return new Promise((resolve, reject) => {
-    let _connection, url;
+    let _connection, url, _frame;
+    container = container || document.body;
     if (typeof src === "string") {
-      const _frame = createIframe({
+      _frame = createIframe({
         id: "external_" + randId(),
         type: "window",
         base_frame: src,
         permissions: [],
       });
       _frame.style.display = "none";
-      document.body.appendChild(_frame);
+      container.appendChild(_frame);
       _connection = new BasicConnection(_frame);
       url = src;
     } else {
@@ -738,6 +739,7 @@ function getExternalPluginConfig(src) {
     }, 15000);
     initializeIfNeeded(_connection, {});
     _connection.once("initialized", async data => {
+      if (_frame) container.removeChild(_frame);
       clearTimeout(connection_timer);
       const pluginConfig = data.config;
       if (data.error) {
@@ -761,10 +763,12 @@ function getExternalPluginConfig(src) {
       )}\n</config>`;
       pluginConfig.uri = url;
       pluginConfig.origin = url;
+
       resolve(pluginConfig);
     });
     _connection.once("failed", e => {
       clearTimeout(connection_timer);
+      if (_frame) container.removeChild(_frame);
       reject(e);
     });
     _connection.connect();
