@@ -51,13 +51,13 @@ export class BasicConnection extends MessageEmitter {
     // TODO: remove listener when disconnected
     window.addEventListener("message", e => {
       if (this._frame.contentWindow && e.source === this._frame.contentWindow) {
-        const peer_id = e.data.peer_id;
-        if (peer_id && this._peer_id && peer_id !== this._peer_id) {
-          const conn = all_connections[peer_id];
+        const target_id = e.data.target_id;
+        if (target_id && this._peer_id && target_id !== this._peer_id) {
+          const conn = all_connections[target_id];
           if (conn) conn._fire(e.data.type, e.data);
           else
             console.warn(
-              `connection with peer_id ${peer_id} not found, discarding data: `,
+              `connection with target_id ${target_id} not found, discarding data: `,
               e.data
             );
         } else {
