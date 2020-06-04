@@ -715,7 +715,7 @@ function initializeIfNeeded(connection, default_config) {
   });
 }
 
-function getExternalPluginConfig(src, container) {
+function getExternalPluginConfig(src, container, show) {
   return new Promise((resolve, reject) => {
     let _connection, url, _frame;
     container = container || document.body;
@@ -726,7 +726,7 @@ function getExternalPluginConfig(src, container) {
         base_frame: src,
         permissions: [],
       });
-      _frame.style.display = "none";
+      if (!show) _frame.style.display = "none";
       container.appendChild(_frame);
       _connection = new BasicConnection(_frame);
       url = src;
