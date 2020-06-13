@@ -55,6 +55,7 @@ export function createIframe(config) {
   var perm = [
     "allow-scripts",
     "allow-forms",
+    "allow-downloads",
     "allow-modals",
     "allow-popups",
     "allow-same-origin",
