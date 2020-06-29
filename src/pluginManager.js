@@ -2211,6 +2211,9 @@ export class PluginManager {
       plugin.on("close", () => {
         this.em.unregister(config);
       });
+    } else if (config.type === "plugin") {
+      assert(config.connection, "Please specify a connection for the plugin.");
+      await this.connectPlugin(config.connection);
     } else if (config.type === "engine-factory") {
       assert(
         plugin.config.flags &&
