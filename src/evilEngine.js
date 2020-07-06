@@ -133,6 +133,7 @@ export const evil_engine = {
   name: "imjoy engine",
   url: "https://imjoy.io",
   config: {},
+  hide: true,
   connect() {
     this._disconnected = false;
     return true;

@@ -7,7 +7,6 @@ import yaml from "js-yaml";
 import { Joy } from "./joy.js";
 import { saveAs } from "file-saver";
 import { getExternalPluginConfig } from "./jailedPlugin.js";
-import { getConnection } from "./connection.js";
 import { getBackendByType } from "./api.js";
 
 import {
@@ -55,6 +54,7 @@ export class PluginManager {
   }) {
     this.event_bus = event_bus;
     this.em = engine_manager;
+    this.em.setPluginManager(this);
     this.wm = window_manager;
     this.fm = file_manager;
     this.config_db = config_db;
@@ -197,6 +197,8 @@ export class PluginManager {
     this.event_bus.on("engine_connected", async engine => {
       for (let k in this.plugins) {
         const plugin = this.plugins[k];
+        // skip connection based plugins
+        if (plugin._initialized_from_connection) continue;
         try {
           if (plugin.engine === engine) {
             await this.reloadPlugin(plugin);
@@ -1253,6 +1255,8 @@ export class PluginManager {
     return new Promise((resolve, reject) => {
       getExternalPluginConfig(connection)
         .then(config => {
+          config.runnable = config.runnable === false ? false : true;
+          config.badges = this.getBadges(config);
           this.unloadPlugin(config, true);
           this.loadPlugin(config, { id: config.id }, false, connection)
             .then(p => {
@@ -2216,13 +2220,6 @@ export class PluginManager {
       plugin.on("close", () => {
         this.em.unregister(config);
       });
-    } else if (config.type === "plugin") {
-      let connection = config.connection;
-      if (!connection) {
-        connection = await getConnection(config);
-      }
-      assert(connection, "Please specify a connection for the plugin.");
-      await this.connectPlugin(connection);
     } else if (config.type === "engine-factory") {
       assert(
         plugin.config.flags &&

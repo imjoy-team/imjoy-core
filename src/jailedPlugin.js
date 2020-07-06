@@ -156,6 +156,7 @@ class DynamicPlugin {
 
       if (connection) {
         this._setupRPC(connection, config);
+        this._initialized_from_connection = true;
       } else {
         if (!this.backend) {
           this._setupViaEngine();
@@ -765,7 +766,6 @@ function getExternalPluginConfig(src, container, show) {
       )}\n</config>`;
       pluginConfig.uri = url;
       pluginConfig.origin = url;
-
       resolve(pluginConfig);
     });
     _connection.once("failed", e => {
