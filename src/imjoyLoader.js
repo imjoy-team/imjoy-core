@@ -77,7 +77,11 @@ const _rpc_api_versions = {
   "0.2.0": { from: "0.1.10", to: "0.1.17", skips: [] },
   "0.2.1": { from: "0.1.18", to: "0.2.5", skips: [] },
   "0.2.2": { from: "0.2.6", to: "0.2.6", skips: [] },
-  "0.2.3": { from: "0.2.7", to: latest_rpc_version, skips: ["0.2.9"] },
+  "0.2.3": {
+    from: "0.2.7",
+    to: latest_rpc_version,
+    skips: ["0.2.9", "0.2.15", "0.2.16", "0.2.18"],
+  },
 };
 
 // specify an api version and this function will return the actual imjoy-rpc version

@@ -1,4 +1,6 @@
 import { MessageEmitter } from "./utils.js";
+import io from "socket.io-client";
+
 const all_connections = {};
 export class BasicConnection extends MessageEmitter {
   constructor(sourceIframe) {
@@ -125,5 +127,55 @@ export class BasicConnection extends MessageEmitter {
     }
     if (this._peer_id && all_connections[this._peer_id])
       delete all_connections[this._peer_id];
+  }
+}
+
+class SocketIOConnection extends MessageEmitter {
+  constructor(config) {
+    super();
+    this._event_handlers = {};
+    this._once_handlers = {};
+    this._disconnected = false;
+    this.channel = config.channel;
+    const url = config.url.replace("//localhost", "//127.0.0.1");
+    // TODO: share the socketio client between many connections
+    this._socket = io(url, { forceNew: true });
+
+    this._socket.on("connect", () => {
+      this._socket.emit("join_rpc_channel", { channel: this.channel });
+      this._socket.on("imjoy_rpc", data => {
+        if (data.type === "log" || data.type === "info") {
+          console.log(data.message);
+        } else if (data.type === "error") {
+          console.error(data.message);
+        } else {
+          if (data.peer_id) {
+            this._peer_id = data.peer_id;
+          }
+          this._fire(data.type, data);
+        }
+      });
+    });
+  }
+  connect() {}
+  disconnect() {
+    if (this._socket) {
+      this._socket.close();
+      this._socket = null;
+    }
+  }
+  emit(data) {
+    data.peer_id = this._peer_id;
+    if (this._socket) {
+      this._socket.emit("imjoy_rpc", data);
+    } else {
+      throw "socketio disconnected.";
+    }
+  }
+}
+
+export function getConnection(config) {
+  if (config.connection_type === "socketio") {
+    return new SocketIOConnection(config);
   }
 }

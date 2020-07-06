@@ -7,6 +7,7 @@ import yaml from "js-yaml";
 import { Joy } from "./joy.js";
 import { saveAs } from "file-saver";
 import { getExternalPluginConfig } from "./jailedPlugin.js";
+import { getConnection } from "./connection.js";
 import { getBackendByType } from "./api.js";
 
 import {
@@ -50,6 +51,7 @@ export class PluginManager {
     imjoy_api = {},
     default_base_frame = null,
     default_rpc_base_url = null,
+    debug = false,
   }) {
     this.event_bus = event_bus;
     this.em = engine_manager;
@@ -64,6 +66,7 @@ export class PluginManager {
 
     this.default_base_frame = default_base_frame;
     this.default_rpc_base_url = default_rpc_base_url;
+    this.debug = debug;
     this._allowed_evil_plugin = {};
     this.internal_plugins = INTERNAL_PLUGINS;
 
@@ -304,6 +307,7 @@ export class PluginManager {
     if (this.default_rpc_base_url) {
       config.default_rpc_base_url = this.default_rpc_base_url;
     }
+    config.debug = this.debug;
 
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.ready.then(() => {
@@ -1249,6 +1253,7 @@ export class PluginManager {
     return new Promise((resolve, reject) => {
       getExternalPluginConfig(connection)
         .then(config => {
+          this.unloadPlugin(config, true);
           this.loadPlugin(config, { id: config.id }, false, connection)
             .then(p => {
               resolve(p);
@@ -2212,8 +2217,12 @@ export class PluginManager {
         this.em.unregister(config);
       });
     } else if (config.type === "plugin") {
-      assert(config.connection, "Please specify a connection for the plugin.");
-      await this.connectPlugin(config.connection);
+      let connection = config.connection;
+      if (!connection) {
+        connection = await getConnection(config);
+      }
+      assert(connection, "Please specify a connection for the plugin.");
+      await this.connectPlugin(connection);
     } else if (config.type === "engine-factory") {
       assert(
         plugin.config.flags &&
