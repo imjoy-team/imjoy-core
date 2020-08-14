@@ -173,14 +173,15 @@ export class WindowManager {
       w.api.emit("hide");
     };
 
-    w.api.close = w.close = async () => {
-      try {
+    w.api.close = w.close = () => {
+      return new Promise(resolve => {
         w.api.emit("close");
-      } catch (es) {
-        console.error(es);
-      } finally {
-        this.closeWindow(w);
-      }
+        // leave 800ms for handling close events
+        setTimeout(() => {
+          this.closeWindow(w);
+          resolve();
+        }, 800);
+      });
     };
   }
 
