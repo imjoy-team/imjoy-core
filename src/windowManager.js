@@ -179,7 +179,10 @@ export class WindowManager {
       } catch (es) {
         console.error(es);
       } finally {
-        this.closeWindow(w);
+        // leave 800ms for handling close events
+        setTimeout(() => {
+          this.closeWindow(w);
+        }, 800);
       }
     };
   }
