@@ -1410,7 +1410,7 @@ export class PluginManager {
       config.links = pluginComp.link || null;
       config.windows = pluginComp.window || null;
       config.styles = pluginComp.style || null;
-      config.docs = pluginComp.docs || null;
+      config.docs = pluginComp.docs || config.docs;
       config.attachments = pluginComp.attachment || null;
 
       config._id = overwrite_config._id || config.name.replace(/ /g, "_");
