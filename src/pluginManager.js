@@ -1186,9 +1186,8 @@ export class PluginManager {
       this.db
         .get(plugin_id)
         .then(doc => {
-          const pluginComp = parseComponent(doc.code);
-          const docs =
-            pluginComp.docs && pluginComp.docs[0] && pluginComp.docs[0].content;
+          const config = this.parsePluginCode(doc.code);
+          const docs = config.docs;
           resolve(docs);
         })
         .catch(err => {
@@ -1410,7 +1409,7 @@ export class PluginManager {
       config.links = pluginComp.link || null;
       config.windows = pluginComp.window || null;
       config.styles = pluginComp.style || null;
-      config.docs = pluginComp.docs || null;
+      config.docs = (pluginComp.docs && pluginComp.docs[0]) || config.docs;
       config.attachments = pluginComp.attachment || null;
 
       config._id = overwrite_config._id || config.name.replace(/ /g, "_");

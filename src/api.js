@@ -406,6 +406,7 @@ export const CONFIG_SCHEMA = ajv.compile({
     type: { type: "string", enum: Object.keys(_backends) },
     ui: { type: "string", maxLength: 2048 },
     version: { type: "string", maxLength: 32 },
+    docs: { type: ["string", "object"] },
   },
   required: [
     "name",
