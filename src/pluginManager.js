@@ -2429,9 +2429,14 @@ export class PluginManager {
         );
         console.log(`${p.name} loaded.`);
         return p.api;
+      } else {
+        // try to load from plugin uri
+        const p = await this.reloadPluginRecursively({
+          uri: plugin_name,
+        });
+        console.log(`${p.name} loaded from ${plugin_name}`);
+        return p.api;
       }
-
-      throw `plugin with type ${plugin_name} not found.`;
     }
   }
 
