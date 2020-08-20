@@ -2243,7 +2243,8 @@ export class PluginManager {
     }
   }
   createWindow(_plugin, wconfig) {
-    return new Promise((resolve, reject) => {
+    // eslint-disable-next-line no-async-promise-executor
+    return new Promise(async (resolve, reject) => {
       if (!wconfig.type) {
         if (wconfig.ui) {
           wconfig.type = "imjoy/joy";
@@ -2266,7 +2267,7 @@ export class PluginManager {
         wconfig.id = "imjoy_" + randId();
         this.wm
           .addWindow(wconfig)
-          .then(wid => {
+          .then(() => {
             wconfig.api.on(
               "ready",
               () => {
@@ -2288,24 +2289,48 @@ export class PluginManager {
           .catch(reject);
       } else {
         let window_config;
-        // load rpc-window if src presents
+
         if (wconfig.src) {
-          wconfig.type = wconfig.type || wconfig.src.split("?")[0];
-          wconfig.name = wconfig.name || wconfig.type;
-          window_config = Object.assign({}, wconfig);
-          delete window_config.data;
-          delete window_config.config;
-          // copy valid config options as external window plugin <config> block
-          if (typeof wconfig.config === "object") {
-            for (let k of PLUGIN_CONFIG_FIELDS) {
-              if (wconfig.config[k]) {
-                window_config[k] = wconfig.config[k];
+          // load window plugin from source code
+          if (wconfig.src.includes("\n")) {
+            const wplugin = await this.reloadPlugin({ code: wconfig.src });
+            window_config = wplugin.config;
+            wconfig.type = wplugin.config.type;
+            wconfig.name = wconfig.name || wplugin.name || wconfig.type;
+          }
+          // load window plugin from source code url
+          else if (
+            wconfig.src.endsWith(".imjoy.html") ||
+            (wconfig.src.includes("github.com") &&
+              wconfig.src.includes("/blob/")) ||
+            wconfig.src.includes("gist.github.com")
+          ) {
+            const wplugin = await this.reloadPluginRecursively({
+              uri: wconfig.src,
+            });
+            window_config = wplugin.config;
+            wconfig.type = wplugin.config.type;
+            wconfig.name = wconfig.name || wplugin.name || wconfig.type;
+          }
+          // load as rpc-window
+          else {
+            wconfig.type = wconfig.type || wconfig.src.split("?")[0];
+            wconfig.name = wconfig.name || wconfig.type;
+            window_config = Object.assign({}, wconfig);
+            delete window_config.data;
+            delete window_config.config;
+            // copy valid config options as external window plugin <config> block
+            if (typeof wconfig.config === "object") {
+              for (let k of PLUGIN_CONFIG_FIELDS) {
+                if (wconfig.config[k]) {
+                  window_config[k] = wconfig.config[k];
+                }
               }
             }
+            window_config.type = "rpc-window";
+            window_config.base_frame = wconfig.src;
+            window_config.id = "rpc_window_" + randId();
           }
-          window_config.type = "rpc-window";
-          window_config.base_frame = wconfig.src;
-          window_config.id = "rpc_window_" + randId();
         } else {
           window_config = this.registered.windows[wconfig.type];
         }
@@ -2414,15 +2439,18 @@ export class PluginManager {
     return ps;
   }
 
-  async getPlugin(_plugin, plugin_name) {
-    const target_plugin = this.plugin_names[plugin_name];
-    if (target_plugin) {
-      return target_plugin.api;
+  async getPlugin(_plugin, src) {
+    if (src.includes("\n")) {
+      const p = await this.reloadPlugin({ code: src });
+      console.log(`${p.name} loaded from source code`);
+      return p.api;
+    } else if (this.plugin_names[src]) {
+      return this.plugin_names[src].api;
     } else {
-      if (this.internal_plugins[plugin_name]) {
+      if (this.internal_plugins[src]) {
         const p = await this.reloadPluginRecursively(
           {
-            uri: this.internal_plugins[plugin_name].uri,
+            uri: this.internal_plugins[src].uri,
           },
           null,
           "eval is evil"
@@ -2432,9 +2460,9 @@ export class PluginManager {
       } else {
         // try to load from plugin uri
         const p = await this.reloadPluginRecursively({
-          uri: plugin_name,
+          uri: src,
         });
-        console.log(`${p.name} loaded from ${plugin_name}`);
+        console.log(`${p.name} loaded from ${src}`);
         return p.api;
       }
     }

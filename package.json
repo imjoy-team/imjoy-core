@@ -1,6 +1,6 @@
 {
   "name": "imjoy-core",
-  "version": "0.13.24",
+  "version": "0.13.30",
   "private": false,
   "description": "The core library for ImJoy -- a sandboxed plugin framework for computational web applications.",
   "author": "imjoy-team <imjoy.team@gmail.com>",
@@ -102,6 +102,7 @@
     ],
     "rules": {
       "no-console": "off",
+      "no-debugger": "off",
       "no-empty": [
         "error",
         {
