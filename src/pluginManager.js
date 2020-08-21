@@ -1256,59 +1256,73 @@ export class PluginManager {
     });
   }
 
-  reloadPlugin(pconfig, allow_evil) {
-    return new Promise((resolve, reject) => {
-      try {
-        if (pconfig instanceof DynamicPlugin) {
-          pconfig = pconfig.config;
-        }
-        this.unloadPlugin(pconfig, true);
-        const template = this.parsePluginCode(pconfig.code, {
-          engine_mode: pconfig.engine_mode,
-          tag: pconfig.tag,
-          _id: pconfig._id,
-          origin: pconfig.origin,
-        });
-        template.engine = null;
-
-        if (template.type === "collection") {
-          return;
-        }
-        this.unloadPlugin(template, true);
-        let p;
-
-        if (
-          template.type === "rpc-window" ||
-          template.type === "window" ||
-          template.type === "web-python-window"
-        ) {
-          p = this.loadProxyPlugin(template);
-        } else {
-          if (allow_evil === "eval is evil") {
-            this._allowed_evil_plugin[template.name] = template.code;
-          } else {
-            if (this._allowed_evil_plugin[template.name] === template.code) {
-              allow_evil = "eval is evil";
-            }
-          }
-          p = this.loadPlugin(template, null, allow_evil);
-        }
-        p.then(plugin => {
-          plugin._id = pconfig._id;
-          pconfig.name = plugin.name;
-          pconfig.type = plugin.type;
-          pconfig.plugin = plugin;
-          this.event_bus.emit("update_ui");
-          resolve(plugin);
-        }).catch(e => {
-          pconfig.plugin = null;
-          reject(e);
-        });
-      } catch (e) {
-        this.showMessage(e || "Error.", 15);
-        reject(e);
+  async reloadPlugin(pconfig, allow_evil) {
+    try {
+      if (pconfig instanceof DynamicPlugin) {
+        pconfig = pconfig.config;
       }
-    });
+      this.unloadPlugin(pconfig, true);
+      const template = this.parsePluginCode(pconfig.code, {
+        engine_mode: pconfig.engine_mode,
+        tag: pconfig.tag,
+        _id: pconfig._id,
+        origin: pconfig.origin,
+      });
+      template.engine = null;
+      this.unloadPlugin(template, true);
+      // if it's a collection, we only load the dependencies
+      if (pconfig.load_dependencies || template.type === "collection") {
+        template.dependencies = template.dependencies || [];
+
+        for (let i = 0; i < template.dependencies.length; i++) {
+          await this.reloadPluginRecursively(
+            {
+              uri: template.dependencies[i],
+            },
+            null,
+            allow_evil
+          );
+        }
+      }
+
+      if (template.type === "collection") {
+        return;
+      }
+
+      let p;
+
+      if (
+        template.type === "rpc-window" ||
+        template.type === "window" ||
+        template.type === "web-python-window"
+      ) {
+        p = this.loadProxyPlugin(template);
+      } else {
+        if (allow_evil === "eval is evil") {
+          this._allowed_evil_plugin[template.name] = template.code;
+        } else {
+          if (this._allowed_evil_plugin[template.name] === template.code) {
+            allow_evil = "eval is evil";
+          }
+        }
+        p = this.loadPlugin(template, null, allow_evil);
+      }
+      try {
+        const plugin = await p;
+        plugin._id = pconfig._id;
+        pconfig.name = plugin.name;
+        pconfig.type = plugin.type;
+        pconfig.plugin = plugin;
+        this.event_bus.emit("update_ui");
+        return plugin;
+      } catch (e) {
+        pconfig.plugin = null;
+        throw e;
+      }
+    } catch (e) {
+      this.showMessage(e || "Error.", 15);
+      throw e;
+    }
   }
 
   savePlugin(pconfig) {
@@ -2293,7 +2307,10 @@ export class PluginManager {
         if (wconfig.src) {
           // load window plugin from source code
           if (wconfig.src.includes("\n")) {
-            const wplugin = await this.reloadPlugin({ code: wconfig.src });
+            const wplugin = await this.reloadPlugin({
+              code: wconfig.src,
+              load_dependencies: true,
+            });
             window_config = wplugin.config;
             wconfig.type = wplugin.config.type;
             wconfig.name = wconfig.name || wplugin.name || wconfig.type;
@@ -2441,7 +2458,7 @@ export class PluginManager {
 
   async getPlugin(_plugin, src) {
     if (src.includes("\n")) {
-      const p = await this.reloadPlugin({ code: src });
+      const p = await this.reloadPlugin({ code: src, load_dependencies: true });
       console.log(`${p.name} loaded from source code`);
       return p.api;
     } else if (this.plugin_names[src]) {
