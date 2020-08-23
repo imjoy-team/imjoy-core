@@ -100,7 +100,10 @@ export class PluginManager {
         return window.alert(msg.content || msg);
       },
       prompt: (plugin, msg, default_value) => {
-        return window.prompt(msg.content || msg, msg.placeholder || default_value);
+        return window.prompt(
+          msg.content || msg,
+          msg.placeholder || default_value
+        );
       },
       confirm: (plugin, msg) => {
         return window.confirm(msg.content || msg);
