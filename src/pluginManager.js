@@ -50,9 +50,11 @@ export class PluginManager {
     imjoy_api = {},
     default_base_frame = null,
     default_rpc_base_url = null,
+    debug = false,
   }) {
     this.event_bus = event_bus;
     this.em = engine_manager;
+    this.em.setPluginManager(this);
     this.wm = window_manager;
     this.fm = file_manager;
     this.config_db = config_db;
@@ -64,6 +66,7 @@ export class PluginManager {
 
     this.default_base_frame = default_base_frame;
     this.default_rpc_base_url = default_rpc_base_url;
+    this.debug = debug;
     this._allowed_evil_plugin = {};
     this.internal_plugins = INTERNAL_PLUGINS;
 
@@ -194,6 +197,8 @@ export class PluginManager {
     this.event_bus.on("engine_connected", async engine => {
       for (let k in this.plugins) {
         const plugin = this.plugins[k];
+        // skip connection based plugins
+        if (plugin._initialized_from_connection) continue;
         try {
           if (plugin.engine === engine) {
             await this.reloadPlugin(plugin);
@@ -304,6 +309,7 @@ export class PluginManager {
     if (this.default_rpc_base_url) {
       config.default_rpc_base_url = this.default_rpc_base_url;
     }
+    config.debug = this.debug;
 
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.ready.then(() => {
@@ -1249,6 +1255,9 @@ export class PluginManager {
     return new Promise((resolve, reject) => {
       getExternalPluginConfig(connection)
         .then(config => {
+          config.runnable = config.runnable === false ? false : true;
+          config.badges = this.getBadges(config);
+          this.unloadPlugin(config, true);
           this.loadPlugin(config, { id: config.id }, false, connection)
             .then(p => {
               resolve(p);

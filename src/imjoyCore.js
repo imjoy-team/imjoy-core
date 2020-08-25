@@ -27,6 +27,7 @@ export class ImJoy {
     config_db = null,
     default_base_frame = null,
     default_rpc_base_url = null,
+    debug = false,
   }) {
     this.config_db =
       config_db ||
@@ -61,6 +62,7 @@ export class ImJoy {
       imjoy_api: this.imjoy_api,
       default_base_frame: default_base_frame,
       default_rpc_base_url: default_rpc_base_url,
+      debug: debug,
     });
   }
 

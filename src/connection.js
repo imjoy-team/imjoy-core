@@ -1,4 +1,5 @@
 import { MessageEmitter } from "./utils.js";
+
 const all_connections = {};
 export class BasicConnection extends MessageEmitter {
   constructor(sourceIframe) {

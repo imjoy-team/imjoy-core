@@ -156,6 +156,7 @@ class DynamicPlugin {
 
       if (connection) {
         this._setupRPC(connection, config);
+        this._initialized_from_connection = true;
       } else {
         if (!this.backend) {
           this._setupViaEngine();
@@ -321,6 +322,7 @@ class DynamicPlugin {
       const imjoyRPC = await loadImJoyRPC({
         base_url: JailedConfig.default_rpc_base_url,
         api_version: pluginConfig.api_version,
+        debug: JailedConfig.debug,
       });
       console.log(
         `loaded imjoy-rpc v${imjoyRPC.VERSION} for ${pluginConfig.name}`
@@ -764,7 +766,6 @@ function getExternalPluginConfig(src, container, show) {
       )}\n</config>`;
       pluginConfig.uri = url;
       pluginConfig.origin = url;
-
       resolve(pluginConfig);
     });
     _connection.once("failed", e => {
