@@ -68,8 +68,23 @@ export function makeSocketIOEngine(pm, config) {
         socket = null;
       }
     },
-    async startPlugin() {
-      throw new Error("Starting plugin is not supported.");
+    async startPlugin(config) {
+      return new Promise((resolve, reject) => {
+        socket.emit("start_plugin", config, cfg => {
+          if (cfg && cfg.channel) {
+            const connection = new SocketIOConnection(socket, cfg.channel);
+            connection.connect();
+            pm.connectPlugin(connection)
+              .then(p => {
+                resolve(p.api);
+              })
+              .catch(reject);
+          } else {
+            console.error("Failed to start plugin: " + cfg.error);
+            reject(cfg && cfg.error);
+          }
+        });
+      });
     },
     heartbeat: () => {
       return socket && socket.connected;
