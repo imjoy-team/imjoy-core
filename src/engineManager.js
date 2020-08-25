@@ -1,6 +1,6 @@
 import { randId, assert } from "./utils.js";
 import { evil_engine } from "./evilEngine.js";
-import { makeSocketIOEngine } from "./socketioEngine";
+import { makeSocketIOEngine } from "./socketioEngine.js";
 
 export class EngineManager {
   constructor({ event_bus = null, config_db = null, client_id = null }) {
