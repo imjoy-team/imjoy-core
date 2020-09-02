@@ -157,6 +157,7 @@ export class PluginManager {
       call: this.callPlugin,
       // getPlugins: this.getPlugins,
       getPlugin: this.getPlugin,
+      getWindow: this.getWindow,
       getFileManager: this.getFileManager,
       getEngineFactory: this.getEngineFactory,
       getEngine: this.getEngine,
@@ -2495,6 +2496,15 @@ export class PluginManager {
         return p.api;
       }
     }
+  }
+
+  async getWindow(_plugin, name) {
+    for(let w of this.wm.windows){
+      if(w.name === name){
+        return w.plugin.api
+      }
+    }
+    return null
   }
 
   async getFileManager(_plugin, file_manager_url) {
