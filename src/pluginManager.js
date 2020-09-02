@@ -2498,13 +2498,27 @@ export class PluginManager {
     }
   }
 
-  async getWindow(_plugin, name) {
-    for(let w of this.wm.windows){
-      if(w.name === name){
-        return w.plugin.api
-      }
+  async getWindow(_plugin, config) {
+    if (typeof config === "string") {
+      config = { name: config };
     }
-    return null
+    if (!config.name && !config.type) {
+      return null;
+    }
+    for (let w of this.wm.windows) {
+      if (config.name) {
+        if (w.name !== config.name) {
+          continue;
+        }
+      }
+      if (config.type) {
+        if (w.type !== config.type) {
+          continue;
+        }
+      }
+      return w.plugin.api;
+    }
+    return null;
   }
 
   async getFileManager(_plugin, file_manager_url) {
