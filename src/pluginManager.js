@@ -2512,7 +2512,7 @@ export class PluginManager {
         }
       }
       if (config.type) {
-        if (w.type !== config.type) {
+        if (w.window_type !== config.type) {
           continue;
         }
       }

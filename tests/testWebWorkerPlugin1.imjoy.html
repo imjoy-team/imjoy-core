@@ -154,6 +154,18 @@ class ImJoyPlugin {
     })
   }
 
+  async test_get_window() {
+    const win = await api.createWindow({ name: 'new window-339',
+      type: 'Test Window Plugin',
+      data: {}
+    })
+    const win2 = await api.getWindow('new window-339')
+    assert(typeof win2.add2 === 'function')
+    const win3 = await api.getWindow({type: 'Test Window Plugin'})
+    assert(typeof win3.add2 === 'function')
+    return true
+  }
+
   async test_run() {
     const ret = await api.run('Test Web Worker Plugin 2', 199)
     assert(ret === 199)

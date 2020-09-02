@@ -200,6 +200,10 @@ describe("ImJoy Core", async () => {
       expect(await plugin1.api.test_close_window()).to.be.true;
     });
 
+    it("should get window", async () => {
+      expect(await plugin1.api.test_get_window()).to.be.true;
+    });
+
     it("should run plugin", async () => {
       expect(await plugin1.api.test_run()).to.be.true;
     });
