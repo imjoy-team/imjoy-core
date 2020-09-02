@@ -157,6 +157,7 @@ export class PluginManager {
       call: this.callPlugin,
       // getPlugins: this.getPlugins,
       getPlugin: this.getPlugin,
+      getWindow: this.getWindow,
       getFileManager: this.getFileManager,
       getEngineFactory: this.getEngineFactory,
       getEngine: this.getEngine,
@@ -2495,6 +2496,29 @@ export class PluginManager {
         return p.api;
       }
     }
+  }
+
+  async getWindow(_plugin, config) {
+    if (typeof config === "string") {
+      config = { name: config };
+    }
+    if (!config.name && !config.type) {
+      return null;
+    }
+    for (let w of this.wm.windows) {
+      if (config.name) {
+        if (w.name !== config.name) {
+          continue;
+        }
+      }
+      if (config.type) {
+        if (w.window_type !== config.type) {
+          continue;
+        }
+      }
+      return w.plugin.api;
+    }
+    return null;
   }
 
   async getFileManager(_plugin, file_manager_url) {
