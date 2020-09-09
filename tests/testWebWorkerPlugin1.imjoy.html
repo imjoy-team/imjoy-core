@@ -135,6 +135,22 @@ class ImJoyPlugin {
     })
   }
 
+  async test_close_rpc_window() {
+    return new Promise(async (resolve)=>{
+      const win = await api.createWindow({ __test__mode__: true, name: 'untitled', src: "https://oeway.github.io/itk-vtk-viewer/"})
+      win.on('close', ()=>{
+        console.log('closing window')
+        resolve(true)
+      })
+      setTimeout(()=>{
+        win.close()
+      }, 500)
+      setTimeout(()=>{
+        resolve(false)
+      }, 800)
+    })
+  }
+
   async test_close_window() {
     return new Promise(async (resolve)=>{
       const win = await api.createWindow({ name: 'new window',

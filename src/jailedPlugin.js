@@ -676,7 +676,11 @@ function initializeIfNeeded(connection, default_config) {
   connection.once("imjoyRPCReady", async data => {
     const config = data.config || {};
     let forwarding_functions = ["close", "on", "off", "emit"];
-    if (["rpc-window", "window", "web-python-window"].includes(config.type)) {
+    if (
+      ["rpc-window", "window", "web-python-window"].includes(
+        config.type || default_config.type
+      )
+    ) {
       forwarding_functions = forwarding_functions.concat([
         "resize",
         "show",
