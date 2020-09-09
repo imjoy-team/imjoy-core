@@ -196,6 +196,10 @@ describe("ImJoy Core", async () => {
       expect(await plugin1.api.test_close_imjoy_window()).to.be.true;
     });
 
+    it("should close imjoy window", async () => {
+      expect(await plugin1.api.test_close_rpc_window()).to.be.true;
+    });
+
     it("should close window", async () => {
       expect(await plugin1.api.test_close_window()).to.be.true;
     });

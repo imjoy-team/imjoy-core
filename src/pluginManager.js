@@ -1750,11 +1750,13 @@ export class PluginManager {
         const plugin = new DynamicPlugin(tconfig, _interface);
 
         plugin.onConnected(() => {
-          if (!pconfig.standalone && pconfig.focus) pconfig.focus();
-          if (!plugin.api) {
-            console.error("the window plugin has no api exported.");
-            reject("the window plugin has no api exported.");
-            return;
+          if (!pconfig.standalone && pconfig.api.focus) pconfig.api.focus();
+          // copy window api to the plugin
+          plugin.api = plugin.api || {};
+          for (let k in pconfig.api) {
+            if (Object.prototype.hasOwnProperty.call(pconfig.api, k)) {
+              plugin.api[k] = pconfig.api[k];
+            }
           }
           (plugin.api.setup || async function() {})()
             .then(() => {
