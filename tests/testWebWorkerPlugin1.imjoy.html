@@ -79,6 +79,7 @@ class ImJoyPlugin {
 
   async test_register() {
     await api.register({
+         "type": "operator",
          "name": "LUT",
          "ui": [{
             "apply LUT": {
@@ -95,7 +96,25 @@ class ImJoyPlugin {
   }
 
   async test_unregister() {
-    await api.unregister('LUT')
+    await api.unregister({'type': 'operator', 'name': 'LUT'})
+    return true
+  }
+
+  async test_register_services() {
+    const id = await api.register({
+      type: 'model',
+      predict: function() {}
+    })
+
+    const services = await api.getServices({type: 'model'})
+    assert(services.length === 1);
+    assert(typeof services[0].predict === 'function')
+
+    await api.unregister({id: id});
+
+    const services2 = await api.getServices({type: 'model'})
+    assert(services2.length === 0);
+
     return true
   }
 

@@ -95,6 +95,7 @@ export class PluginManager {
     this.selected_workspace = null;
     this.selected_repository = null;
     this.workflow_list = [];
+    this.service_registry = {};
 
     this.db = null;
     const api_utils_ = imjoy_api.utils;
@@ -2208,7 +2209,11 @@ export class PluginManager {
 
   //#################ImJoy API functions##################
   async register(plugin, config) {
-    if (config.type === "engine") {
+    config.id = config.id || randId();
+    if (!config.type || config.type === "operator") {
+      config.type = "operator";
+      this.registerOp(plugin, config);
+    } else if (config.type === "engine") {
       assert(
         plugin.config.flags && plugin.config.flags.indexOf("engine") >= 0,
         "Please add `engine` to `config.flags` before registering an engine."
@@ -2222,6 +2227,7 @@ export class PluginManager {
       this.registered.engines[config.name] = config;
       plugin.on("close", () => {
         this.em.unregister(config);
+        this.service_registry[config.id];
       });
     } else if (config.type === "engine-factory") {
       assert(
@@ -2242,6 +2248,7 @@ export class PluginManager {
       this.registered.engine_factories[config.name] = config;
       plugin.on("close", () => {
         this.em.unregisterFactory(config);
+        delete this.service_registry[config.id];
       });
     } else if (config.type === "file-manager") {
       assert(
@@ -2254,23 +2261,42 @@ export class PluginManager {
         throw error;
       }
       await this.fm.register(config);
-    } else {
-      this.registerOp(plugin, config);
     }
+    this.service_registry[config.id] = config;
+    return config.id;
   }
 
   unregister(plugin, config) {
     config = config || plugin;
-    if (config.type === "engine") {
+    if (
+      typeof config === "string" ||
+      !config.type ||
+      config.type === "operator"
+    ) {
+      this.unregisterOp(plugin, config);
+    } else if (config.type === "engine") {
       this.em.unregister(config);
     } else if (config.type === "engine-factory") {
       this.em.unregisterFactory(config);
     } else if (config.type === "file-manager") {
       this.fm.unregister(config);
-    } else {
-      this.unregisterOp(plugin, config);
     }
+    delete this.service_registry[config.id];
   }
+
+  getServices(_plugin, sconfig) {
+    return this.service_registry.values().filter(s => {
+      let match = true;
+      for (let k of sconfig.keys()) {
+        if (s[k] && sconfig[k] !== s[k]) {
+          match = false;
+          break;
+        }
+      }
+      return match;
+    });
+  }
+
   createWindow(_plugin, wconfig) {
     // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve, reject) => {
