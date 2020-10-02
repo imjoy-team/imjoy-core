@@ -28,9 +28,6 @@ import { parseComponent } from "./pluginParser.js";
 
 import {
   OP_SCHEMA,
-  ENGINE_SCHEMA,
-  ENGINE_FACTORY_SCHEMA,
-  FILE_MANAGER_SCHEMA,
   JOY_SCHEMA,
   WINDOW_SCHEMA,
   PLUGIN_SCHEMA,
@@ -57,6 +54,7 @@ export class PluginManager {
     this.em.setPluginManager(this);
     this.wm = window_manager;
     this.fm = file_manager;
+    this.fm.setPluginManager(this);
     this.config_db = config_db;
 
     assert(this.event_bus, "event bus is not available");
@@ -355,8 +353,6 @@ export class PluginManager {
       outputs: {},
       loaders: {},
       engines: {},
-      engine_factories: {},
-      file_managers: {},
     };
   }
 
@@ -2214,86 +2210,39 @@ export class PluginManager {
     if (!config.type || config._id || config.type === "operator") {
       this.registerOp(plugin, config);
       this.service_registry[config.name] = {
+        id: config.name,
+        type: "operator",
         name: config.name,
         ui: config.ui,
         inputs: config.inputs,
         outputs: config.outputs,
         run: config.run,
+        provider: plugin.name,
       };
+      this.event_bus.emit("register", { config, plugin });
       return config.name;
     }
 
     config.id = config.id || randId();
-    if (config.type === "engine") {
-      assert(
-        plugin.config.flags && plugin.config.flags.indexOf("engine") >= 0,
-        "Please add `engine` to `config.flags` before registering an engine."
-      );
-      if (!ENGINE_SCHEMA(config)) {
-        const error = ENGINE_SCHEMA.errors;
-        console.error("Error occured registering engine ", config, error);
-        throw error;
-      }
-      await this.em.register(config);
-      this.registered.engines[config.name] = config;
-      plugin.on("close", () => {
-        this.em.unregister(config);
-        this.service_registry[config.id];
-      });
-    } else if (config.type === "engine-factory") {
-      assert(
-        plugin.config.flags &&
-          plugin.config.flags.indexOf("engine-factory") >= 0,
-        "Please add `engine-factory` to `config.flags` before registering an engine factory."
-      );
-      if (!ENGINE_FACTORY_SCHEMA(config)) {
-        const error = ENGINE_FACTORY_SCHEMA.errors;
-        console.error(
-          "Error occured registering engine factory",
-          config,
-          error
-        );
-        throw error;
-      }
-      this.em.registerFactory(config);
-      this.registered.engine_factories[config.name] = config;
-      plugin.on("close", () => {
-        this.em.unregisterFactory(config);
-        delete this.service_registry[config.id];
-      });
-    } else if (config.type === "file-manager") {
-      assert(
-        plugin.config.flags && plugin.config.flags.indexOf("file-manager") >= 0,
-        "Please add `file-manager` to `config.flags` before registering a file manager."
-      );
-      if (!FILE_MANAGER_SCHEMA(config)) {
-        const error = FILE_MANAGER_SCHEMA.errors;
-        console.error("Error occured registering file manager", config, error);
-        throw error;
-      }
-      await this.fm.register(config);
-    }
-
+    config.provider = plugin.name;
     this.service_registry[config.id] = config;
+    this.event_bus.emit("register", { config, plugin });
     return config.id;
   }
 
   unregister(plugin, config) {
     if (!config || typeof config === "string" || config.type === "operator") {
+      if (!config) {
+        const services = this.getServices(plugin, { provider: plugin.name });
+        for (let s of services) {
+          this.unregister(plugin, s);
+        }
+      }
       config = config || plugin;
       this.unregisterOp(plugin, config);
       delete this.service_registry[config.name];
-      return;
-    }
-
-    if (config.type === "engine") {
-      this.em.unregister(config);
-    } else if (config.type === "engine-factory") {
-      this.em.unregisterFactory(config);
-    } else if (config.type === "file-manager") {
-      this.fm.unregister(config);
-    }
-    delete this.service_registry[config.id];
+    } else delete this.service_registry[config.id];
+    this.event_bus.emit("unregister", { config, plugin });
   }
 
   getServices(_plugin, sconfig) {
