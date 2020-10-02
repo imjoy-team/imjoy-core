@@ -1,4 +1,5 @@
 import { randId, assert } from "./utils.js";
+import { FILE_MANAGER_SCHEMA } from "./api.js";
 
 export class FileManager {
   constructor({ event_bus = null, client_id = null }) {
@@ -6,9 +7,48 @@ export class FileManager {
     assert(this.event_bus);
     this.client_id = client_id || randId();
     this.fileManagers = [];
+    this.pm = null;
   }
 
-  async init() {}
+  setPluginManager(pm) {
+    this.pm = pm;
+  }
+
+  async init() {
+    this.event_bus.on("register", async ({ plugin, config }) => {
+      if (config.type === "file-manager") {
+        try {
+          assert(
+            plugin.config.flags &&
+              plugin.config.flags.indexOf("file-manager") >= 0,
+            "Please add `file-manager` to `config.flags` before registering a file manager."
+          );
+          if (!FILE_MANAGER_SCHEMA(config)) {
+            const error = FILE_MANAGER_SCHEMA.errors;
+            console.error(
+              "Error occured registering file manager",
+              config,
+              error
+            );
+            throw error;
+          }
+          await this.register(config);
+          plugin.on("close", () => {
+            this.unregister(config);
+          });
+        } catch (e) {
+          this.pm.unregister(config);
+          throw e;
+        }
+      }
+    });
+
+    this.event_bus.on("register", async ({ config }) => {
+      if (config.type === "file-manager") {
+        this.unregister(config);
+      }
+    });
+  }
 
   getFileManagerByName(name) {
     for (let fm of this.fileManagers) {

@@ -957,15 +957,17 @@ api.progress(85)
 
 ### api.register
 ```javascript
-await api.register(config)
+const service_id = await api.register(config)
 ```
 
-Register plugin service with different types.
+Register a plugin service.
 
 **Arguments**
 
 * **config**: Object (JavaScript) or dictionary (Python). It should contain a `type` key and other keys depends on the type (See below).
 
+**Returns**
+* **service_id**: String. A service id which can be used to get or unregister the service.
 
 #### plugin operators (type=`operator`)
 register new plugin operator (**op**) to perform a specific task.
@@ -995,27 +997,12 @@ as a `Plugin API` function. This is because a arbitrary function transferred by 
 If you want to change your interface dynamically, you can run `api.register`
 multiple times to overwrite the previous version. `api.register` can also be used to overwrite the default ui string of the plugin defined in `<config>`, just set the plugin name as the op name (or without setting a name).
 
-#### custom plugin service types
-
-You can register custom plugin services by specifying your own type.
-
-This is listed of registered service types:
- * type=`transformation`: [scikit-learn compatible dataset transformations](https://scikit-learn.org/stable/data_transforms.html)
-   - `transform(data)`: applies this transformation model to unseen data
-   - `fit(data)`: learns model parameters from data
-   - `fit_transform(data)`: modelling and transforming the training data simultaneously
- * type=`model`: keras compatible model service
-   - `predict(data)`: make predictions on data (see [here](https://keras.io/api/models/model_training_apis/#predict-method))
-   - `fit(data)`: train model on data (see [here](https://keras.io/api/models/model_training_apis/#fit-method))
- * [...contribute your service type here...]
-
-  To avoid conflictions, please check this list before defining your own service type. If you don't find it here, please register your type definition by editing this page, adding it to the above list and submitting a PR.
-
 **Examples**
 
 ```javascript
 // JavaScript
 await api.register({
+     "type": "operator",
      "name": "LUT",
      "ui": [{
         "apply LUT": {
@@ -1040,6 +1027,21 @@ update_lut(ctx) {
 ```
 [**Try yourself >>**](https://imjoy.io/#/app?plugin=imjoy-team/imjoy-demo-plugins:register&w=examples) Compare how the ops for favourite number and animal are implemented.
 
+#### custom plugin service types
+
+You can register custom plugin services by specifying your own type.
+
+This is listed of registered service types:
+ * type=`transformation`: [scikit-learn compatible dataset transformations](https://scikit-learn.org/stable/data_transforms.html)
+   - `transform(data)`: applies this transformation model to unseen data
+   - `fit(data)`: learns model parameters from data
+   - `fit_transform(data)`: modelling and transforming the training data simultaneously
+ * type=`model`: keras compatible model service
+   - `predict(data)`: make predictions on data (see [here](https://keras.io/api/models/model_training_apis/#predict-method))
+   - `fit(data)`: train model on data (see [here](https://keras.io/api/models/model_training_apis/#fit-method))
+ * [...contribute your service type here...]
+
+  To avoid conflictions, please check this list before defining your own service type. If you don't find it here, please register your type definition by editing this page, adding it to the above list and submitting a PR.
 
 ### api.run
 ```javascript
@@ -1294,7 +1296,7 @@ Updates the status text on the Imjoy GUI.
 **Examples**
 
 ```javascript
-api.showStatus('processing...')
+await api.showStatus('processing...')
 ```
 
 [Try yourself >>](https://imjoy.io/#/app?plugin=imjoy-team/imjoy-demo-plugins:showStatus&w=examples)
@@ -1306,14 +1308,24 @@ The current tag chosen by the user during installation.
 
 ### api.unregister
 ```javascript
-await api.unregister(op_name)
+await api.unregister(config)
 ```
 
-Unregister an existing operator (**op**).
+Unregister a plugin service.
 
 **Arguments**
 
-* **op_name**: String. The name of the op to be removed.
+* **config**: Object. It must contain the `id` of the plugin service.
+
+**Examples**
+
+```javascript
+
+const sid = await api.register({type: 'my-service', my_data: 123})
+
+await api.unregister({id: sid})
+```
+
 
 
 

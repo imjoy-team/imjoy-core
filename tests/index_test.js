@@ -160,6 +160,28 @@ describe("ImJoy Core", async () => {
       });
     });
 
+    after(function(done) {
+      plugin1.api
+        .test_register_service()
+        .then(async () => {
+          const services = Object.values(pm.service_registry).filter(s => {
+            return s.provider === "Test Web Worker Plugin 1";
+          });
+          // there should be an operator and a model service
+          expect(services.length).to.equal(2);
+          pm.unloadPlugin({ name: "Test Web Worker Plugin 1" });
+          const services2 = Object.values(pm.service_registry).filter(s => {
+            return s.provider === "Test Web Worker Plugin 1";
+          });
+          expect(services2.length).to.equal(0);
+          done();
+        })
+        .catch(e => {
+          console.error("failed to run `after`", e);
+        });
+      // runs once after the last test in this block
+    });
+
     it("should register and unregister", async () => {
       expect(Object.keys(plugin1.ops).length).to.equal(1);
       expect(await plugin1.api.test_register()).to.be.true;
@@ -175,7 +197,9 @@ describe("ImJoy Core", async () => {
     });
 
     it("should register services and unregister", async () => {
-      expect(await plugin1.api.test_register_services()).to.be.true;
+      const id = await plugin1.api.test_register_service();
+      expect(id).to.be.a("string");
+      expect(await plugin1.api.test_unregister_service(id)).to.be.true;
     });
 
     it("should create imjoy window", async () => {

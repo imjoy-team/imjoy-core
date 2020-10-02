@@ -1,6 +1,7 @@
 import { randId, assert } from "./utils.js";
 import { evil_engine } from "./evilEngine.js";
 import { makeSocketIOEngine } from "./socketioEngine.js";
+import { ENGINE_SCHEMA, ENGINE_FACTORY_SCHEMA } from "./api.js";
 
 export class EngineManager {
   constructor({ event_bus = null, config_db = null, client_id = null }) {
@@ -35,6 +36,56 @@ export class EngineManager {
         }
       },
       removeEngine: () => {},
+    });
+
+    this.event_bus.on("register", async ({ plugin, config }) => {
+      try {
+        if (config.type === "engine-factory") {
+          assert(
+            plugin.config.flags &&
+              plugin.config.flags.indexOf("engine-factory") >= 0,
+            "Please add `engine-factory` to `config.flags` before registering an engine factory."
+          );
+          if (!ENGINE_FACTORY_SCHEMA(config)) {
+            const error = ENGINE_FACTORY_SCHEMA.errors;
+            console.error(
+              "Error occured registering engine factory",
+              config,
+              error
+            );
+            throw error;
+          }
+          this.registerFactory(config);
+          plugin.on("close", () => {
+            this.unregisterFactory(config);
+          });
+        } else if (config.type === "engine") {
+          assert(
+            plugin.config.flags && plugin.config.flags.indexOf("engine") >= 0,
+            "Please add `engine` to `config.flags` before registering an engine."
+          );
+          if (!ENGINE_SCHEMA(config)) {
+            const error = ENGINE_SCHEMA.errors;
+            console.error("Error occured registering engine ", config, error);
+            throw error;
+          }
+          await this.register(config);
+          plugin.on("close", () => {
+            this.unregister(config);
+          });
+        }
+      } catch (e) {
+        this.pm.unregister(plugin, config);
+        throw e;
+      }
+    });
+
+    this.event_bus.on("unregister", async ({ config }) => {
+      if (config.type === "engine") {
+        this.unregister(config);
+      } else if (config.type === "engine-factory") {
+        this.unregisterFactory(config);
+      }
     });
   }
 

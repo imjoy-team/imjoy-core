@@ -100,7 +100,7 @@ class ImJoyPlugin {
     return true
   }
 
-  async test_register_services() {
+  async test_register_service() {
     const id = await api.register({
       type: 'model',
       predict: function() {}
@@ -109,13 +109,17 @@ class ImJoyPlugin {
     const services = await api.getServices({type: 'model'})
     assert(services.length === 1, "failed to register model");
     assert(typeof services[0].predict === 'function', "model has no prediction function")
+    return id
+  }
 
+  async test_unregister_service(id) {
     await api.unregister({id: id});
 
     const services2 = await api.getServices({type: 'model'})
     assert(services2.length === 0, "failed to unregister model");
 
     return true
+
   }
 
   async test_create_imjoy_window() {
