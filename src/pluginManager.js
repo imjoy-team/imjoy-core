@@ -158,6 +158,7 @@ export class PluginManager {
       call: this.callPlugin,
       // getPlugins: this.getPlugins,
       getPlugin: this.getPlugin,
+      getServices: this.getServices,
       getWindow: this.getWindow,
       getFileManager: this.getFileManager,
       getEngineFactory: this.getEngineFactory,
@@ -2209,11 +2210,21 @@ export class PluginManager {
 
   //#################ImJoy API functions##################
   async register(plugin, config) {
-    config.id = config.id || randId();
-    if (!config.type || config.type === "operator") {
-      config.type = "operator";
+    // config._id means this is a plugin config
+    if (!config.type || config._id || config.type === "operator") {
       this.registerOp(plugin, config);
-    } else if (config.type === "engine") {
+      this.service_registry[config.name] = {
+        name: config.name,
+        ui: config.ui,
+        inputs: config.inputs,
+        outputs: config.outputs,
+        run: config.run,
+      };
+      return config.name;
+    }
+
+    config.id = config.id || randId();
+    if (config.type === "engine") {
       assert(
         plugin.config.flags && plugin.config.flags.indexOf("engine") >= 0,
         "Please add `engine` to `config.flags` before registering an engine."
@@ -2262,19 +2273,20 @@ export class PluginManager {
       }
       await this.fm.register(config);
     }
+
     this.service_registry[config.id] = config;
     return config.id;
   }
 
   unregister(plugin, config) {
-    config = config || plugin;
-    if (
-      typeof config === "string" ||
-      !config.type ||
-      config.type === "operator"
-    ) {
+    if (!config || typeof config === "string" || config.type === "operator") {
+      config = config || plugin;
       this.unregisterOp(plugin, config);
-    } else if (config.type === "engine") {
+      delete this.service_registry[config.name];
+      return;
+    }
+
+    if (config.type === "engine") {
       this.em.unregister(config);
     } else if (config.type === "engine-factory") {
       this.em.unregisterFactory(config);
@@ -2285,10 +2297,11 @@ export class PluginManager {
   }
 
   getServices(_plugin, sconfig) {
-    return this.service_registry.values().filter(s => {
+    sconfig = sconfig || {};
+    return Object.values(this.service_registry).filter(s => {
       let match = true;
-      for (let k of sconfig.keys()) {
-        if (s[k] && sconfig[k] !== s[k]) {
+      for (let k of Object.keys(sconfig)) {
+        if (sconfig[k] !== s[k]) {
           match = false;
           break;
         }
