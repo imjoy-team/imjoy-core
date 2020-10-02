@@ -174,6 +174,10 @@ describe("ImJoy Core", async () => {
       }).to.throw();
     });
 
+    it("should register services and unregister", async () => {
+      expect(await plugin1.api.test_register_services()).to.be.true;
+    });
+
     it("should create imjoy window", async () => {
       const count = wm.windows.length;
       expect(await plugin1.api.test_create_imjoy_window()).to.be.true;
