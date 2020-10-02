@@ -19,6 +19,10 @@ Or, you can inject the ImJoy runtime into your web application, such that it can
 
 See [integration with ImJoy-Core](https://github.com/imjoy-team/imjoy-core/blob/master/docs/integration.md) for more details.
 
+## ImJoy Core API
+
+See [api](https://github.com/imjoy-team/imjoy-core/blob/master/docs/api.md).
+
 ## Development
 
 ```
