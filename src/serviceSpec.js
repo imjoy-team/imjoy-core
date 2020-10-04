@@ -6,9 +6,6 @@ export const serviceSpec = {
             name: {
                 type: "string"
             },
-            type: {
-                enum: ["operator"]
-            },
             ui: {
                 type: ["null", "string", "array", "object"]
             },
