@@ -324,13 +324,13 @@ export const WINDOW_SCHEMA = ajv.compile({
   },
 });
 
-export const OP_SCHEMA = ajv.compile(serviceSpec['operator']);
+export const OP_SCHEMA = ajv.compile(serviceSpec["operator"]);
 
-export const ENGINE_FACTORY_SCHEMA = ajv.compile(serviceSpec['engine-factory']);
+export const ENGINE_FACTORY_SCHEMA = ajv.compile(serviceSpec["engine-factory"]);
 
-export const ENGINE_SCHEMA = ajv.compile(serviceSpec['engine']);
+export const ENGINE_SCHEMA = ajv.compile(serviceSpec["engine"]);
 
-export const FILE_MANAGER_SCHEMA = ajv.compile(serviceSpec['file-manager']);
+export const FILE_MANAGER_SCHEMA = ajv.compile(serviceSpec["file-manager"]);
 
 export const CONFIG_SCHEMA = ajv.compile({
   properties: {
