@@ -197,6 +197,8 @@ describe("ImJoy Core", async () => {
     });
 
     it("should register services and unregister", async () => {
+      expect(await plugin1.api.test_register_nonexist_service()).to.be.false;
+      expect(await plugin1.api.test_register_underscore_service()).to.be.true;
       const id = await plugin1.api.test_register_service();
       expect(id).to.be.a("string");
       expect(await plugin1.api.test_unregister_service(id)).to.be.true;

@@ -7,7 +7,8 @@ import yaml from "js-yaml";
 import { Joy } from "./joy.js";
 import { saveAs } from "file-saver";
 import { getExternalPluginConfig } from "./jailedPlugin.js";
-import { getBackendByType } from "./api.js";
+import { getBackendByType, ajv } from "./api.js";
+import { serviceSpec } from "./serviceSpec.js";
 
 import {
   _clone,
@@ -34,8 +35,17 @@ import {
   CONFIGURABLE_FIELDS,
   PLUGIN_CONFIG_FIELDS,
   upgradePluginAPI,
-  ajv,
 } from "./api.js";
+
+const compiledServiceSpec = {};
+for (let k of Object.keys(serviceSpec)) {
+  try {
+    compiledServiceSpec[k] = ajv.compile(serviceSpec[k]);
+  } catch (e) {
+    console.error(e);
+    throw new Error(`Failed to compile service spec for ${k}, error: ${e}`);
+  }
+}
 
 export class PluginManager {
   constructor({
@@ -149,12 +159,13 @@ export class PluginManager {
       showMessage: (plugin, info, duration) => {
         console.log("api.showMessage: ", info, duration);
       },
-      register: this.register,
-      unregister: this.unregister,
+      register: this.register, // deprecated
+      unregister: this.unregister, // deprecated
+      registerService: this.registerService,
+      unregisterService: this.unregisterService,
       createWindow: this.createWindow,
       run: this.runPlugin,
       call: this.callPlugin,
-      // getPlugins: this.getPlugins,
       getPlugin: this.getPlugin,
       getServices: this.getServices,
       getWindow: this.getWindow,
@@ -1228,7 +1239,7 @@ export class PluginManager {
             delete this.plugin_names[name];
           }
           plugin._unloaded = true;
-          this.unregister(plugin);
+          this._unregister(plugin);
           if (typeof plugin.terminate === "function") {
             plugin.terminate().then(() => {
               this.event_bus.emit("update_ui");
@@ -1240,7 +1251,7 @@ export class PluginManager {
         }
       }
     }
-    this.unregister(_plugin);
+    this._unregister(_plugin);
     if (typeof _plugin.terminate === "function") {
       _plugin.terminate().finally(() => {
         this.event_bus.emit("update_ui");
@@ -1558,7 +1569,7 @@ export class PluginManager {
           },
         };
 
-        this.register(plugin, config);
+        this._register(plugin, config);
         this.plugins[plugin.id] = plugin;
         this.plugin_names[plugin.name] = plugin;
         this.event_bus.emit("plugin_loaded", plugin);
@@ -1648,7 +1659,7 @@ export class PluginManager {
           }
 
           if (template.type) {
-            this.register(plugin, template);
+            this._register(plugin, template);
           }
           // if (template.extensions && template.extensions.length > 0) {
           //   this.registerExtension(template.extensions, plugin);
@@ -2204,8 +2215,7 @@ export class PluginManager {
     }
   }
 
-  //#################ImJoy API functions##################
-  async register(plugin, config) {
+  async _register(plugin, config) {
     // config._id means this is a plugin config
     if (!config.type || config._id || config.type === "operator") {
       this.registerOp(plugin, config);
@@ -2230,12 +2240,12 @@ export class PluginManager {
     return config.id;
   }
 
-  unregister(plugin, config) {
+  _unregister(plugin, config) {
     if (!config || typeof config === "string" || config.type === "operator") {
       if (!config) {
         const services = this.getServices(plugin, { provider: plugin.name });
         for (let s of services) {
-          this.unregister(plugin, s);
+          this._unregister(plugin, s);
         }
       }
       config = config || plugin;
@@ -2243,6 +2253,44 @@ export class PluginManager {
       delete this.service_registry[config.name];
     } else delete this.service_registry[config.id];
     this.event_bus.emit("unregister", { config, plugin });
+  }
+
+  //#################ImJoy API functions##################
+  async register(plugin, config) {
+    console.warn(
+      "api.register is deprecated, please use `api.registerService` instead."
+    );
+    return await this.registerService(plugin, config);
+  }
+
+  async unregister(plugin, config) {
+    console.warn(
+      "api.unregister is deprecated, please use `api.registerService` instead."
+    );
+    return await this.unregisterService(plugin, config);
+  }
+
+  async registerService(plugin, config) {
+    if (!config.type || !config.name) {
+      throw new Error("you must specify the service `type` and `name`.");
+    }
+    if (compiledServiceSpec[config.type]) {
+      const schema = compiledServiceSpec[config.type];
+      if (!schema(config)) {
+        const error = schema.errors;
+        console.error("Failed to register service " + config.name || "", error);
+        throw error;
+      }
+    } else if (!config.type.startsWith("_")) {
+      throw new Error(
+        "Unregistered service type name should start with `_`, please consider submit your type definition to the imjoy-core repo, see https://imjoy.io/docs/#/api?id=apiregisterservice for more details"
+      );
+    }
+    return this._register(plugin, config);
+  }
+
+  async unregisterService(plugin, config) {
+    return this._unregister(plugin, config);
   }
 
   getServices(_plugin, sconfig) {

@@ -78,7 +78,7 @@ class ImJoyPlugin {
   }
 
   async test_register() {
-    await api.register({
+    await api.registerService({
          "type": "operator",
          "name": "LUT",
          "ui": [{
@@ -96,13 +96,49 @@ class ImJoyPlugin {
   }
 
   async test_unregister() {
-    await api.unregister({'type': 'operator', 'name': 'LUT'})
+    await api.unregisterService({'type': 'operator', 'name': 'LUT'})
     return true
   }
 
+  async test_register_underscore_service() {
+    try{
+      const id = await api.registerService({
+        type: '_model123',
+        name: "my model",
+        predict: function() {}
+      })
+      await api.unregisterService({
+        id: id
+      })
+      return true
+    }
+    catch(e){
+      return false
+    } 
+  }
+  
+  async test_register_nonexist_service() {
+    try{
+      // this should throw an error
+      const id = await api.registerService({
+        type: 'model123',
+        name: "my model",
+        predict: function() {}
+      })
+      await api.unregisterService({
+        id: id
+      })
+      return true
+    }
+    catch(e){
+      return false
+    } 
+  }
+
   async test_register_service() {
-    const id = await api.register({
+    const id = await api.registerService({
       type: 'model',
+      name: 'my-model',
       predict: function() {}
     })
 
@@ -113,7 +149,7 @@ class ImJoyPlugin {
   }
 
   async test_unregister_service(id) {
-    await api.unregister({id: id});
+    await api.unregisterService({id: id});
 
     const services2 = await api.getServices({type: 'model'})
     assert(services2.length === 0, "failed to unregister model");

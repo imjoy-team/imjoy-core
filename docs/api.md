@@ -763,7 +763,7 @@ await pluginX.funcX()
 services = await api.getServices(config)
 ```
 
-Gets a list of plugin services (registered with `api.register()`) by specifying their `name`, `type`, `id` etc.
+Gets a list of plugin services (registered with `api.registerService()`) by specifying their `name`, `type`, `id` etc.
 
 
 **Arguments**
@@ -955,24 +955,26 @@ api.progress(85)
 [Try yourself >>](https://imjoy.io/#/app?plugin=imjoy-team/imjoy-demo-plugins:progress&w=examples)
 
 
-### api.register
+### api.registerService
 ```javascript
-const service_id = await api.register(config)
+const service_id = await api.registerService(config)
 ```
 
 Register a plugin service.
 
 **Arguments**
 
-* **config**: Object (JavaScript) or dictionary (Python). It should contain a `type` key and other keys depends on the type (See below).
+* **config**: Object (JavaScript) or dictionary (Python). It must contain a least a `type` key and a `name` key. Other keys depend on the corresponding type definition (See below).
 
 **Returns**
 * **service_id**: String. A service id which can be used to get or unregister the service.
 
-#### plugin operators (type=`operator`)
-register new plugin operator (**op**) to perform a specific task.
 
-For the `config`, several fields are allowed:
+#### Built-in plugin services
+
+operator service (type=`operator`) is a type of built-in service that used to extend the plugin menu to perform a specific task.
+
+For the service `config`, several fields are allowed:
   - `name`: String. Name of op.
   - `ui`: Object (JavaScript) or dictionary (Python). Rendered interface. Defined
        with the same rule as the `ui` field in `<config>`.
@@ -985,23 +987,19 @@ For the `config`, several fields are allowed:
 
 (Please also consult [this section](api?id=input-arguments) for how arguments can be set.)
 
-An op can have its own GUI defined by the `ui` string.
+An op can have its own GUI defined by the `ui` string. By default, all ops of a plugin will call the `run` function of the plugin. You can use `ctx.config.type` in the `run` function to differentiate which op was called.
 
-By default, all ops of a plugin will call the `run` function of the plugin.
-You can use `ctx.config.type` in the `run` function to differentiate which op was called.
+If you want to change your interface dynamically, you can run `api.registerService`
+multiple times to overwrite the previous version. `api.registerService` can also be used to overwrite the default ui string of the plugin defined in `<config>`, just set the plugin name as the op name (or without setting a name).
 
-Alternatively, you can define another `Plugin API` function in the `run` field.
-The function must be a member of the plugin class or being exported (with `api.export`)
-as a `Plugin API` function. This is because a arbitrary function transferred by ImJoy will be treated as `callback` function, thus only allowed to run once.
-
-If you want to change your interface dynamically, you can run `api.register`
-multiple times to overwrite the previous version. `api.register` can also be used to overwrite the default ui string of the plugin defined in `<config>`, just set the plugin name as the op name (or without setting a name).
+[TODO: finalize `engine`, `engine-factory` and `file-manager` service api and add the docs here ]
 
 **Examples**
 
+Example for registering a new plugin operator:
 ```javascript
 // JavaScript
-await api.register({
+await api.registerService({
      "type": "operator",
      "name": "LUT",
      "ui": [{
@@ -1016,22 +1014,12 @@ await api.register({
       "update": this.update_lut
 });
 
-apply_lut(ctx) {
-    ...
- };
-
-update_lut(ctx) {
-     ...
-};
-
 ```
 [**Try yourself >>**](https://imjoy.io/#/app?plugin=imjoy-team/imjoy-demo-plugins:register&w=examples) Compare how the ops for favourite number and animal are implemented.
 
-#### custom plugin service types
+#### Contributed plugin services
 
-You can register custom plugin services by specifying your own type.
-
-This is listed of registered service types:
+You can use plugin services the following service types:
  * type=`transformation`: [scikit-learn compatible dataset transformations](https://scikit-learn.org/stable/data_transforms.html)
    - `transform(data)`: applies this transformation model to unseen data
    - `fit(data)`: learns model parameters from data
@@ -1041,7 +1029,14 @@ This is listed of registered service types:
    - `fit(data)`: train model on data (see [here](https://keras.io/api/models/model_training_apis/#fit-method))
  * [...contribute your service type here...]
 
-  To avoid conflictions, please check this list before defining your own service type. If you don't find it here, please register your type definition by editing this page, adding it to the above list and submitting a PR.
+#### Define a new plugin service type
+If both the built-in and contributed service types do not meet your requirements, you can define a new plugin service type. The easest way is to start by defining a type name starts with `_`, for example: `api.registerService({"type": "_my-awesome-service", ...})`. You can use this to develop and test your service. Once your service type definition is stable, you can submit your type to imjoy-core repo such that you can remove the leading `_` from the type name.
+
+Here are the steps for submitting your type definition:
+ 1. fork the [imjoy-core repo](https://github.com/imjoy-team/imjoy-core)
+ 1. editing [this page](https://github.com/imjoy-team/imjoy-core/blob/master/docs/api.md) add the new type to the above list with detailed description
+ 2. define the schema in the [serviceSpec.js](https://github.com/imjoy-team/imjoy-core/blob/master/src/serviceSpec.js) file.
+ 3. submit a PR to the [imjoy-core repo](https://github.com/imjoy-team/imjoy-core).
 
 ### api.run
 ```javascript
@@ -1306,9 +1301,9 @@ await api.showStatus('processing...')
 The current tag chosen by the user during installation.
 
 
-### api.unregister
+### api.unregisterService
 ```javascript
-await api.unregister(config)
+await api.unregisterService(config)
 ```
 
 Unregister a plugin service.
@@ -1321,9 +1316,9 @@ Unregister a plugin service.
 
 ```javascript
 
-const sid = await api.register({type: 'my-service', my_data: 123})
+const sid = await api.registerService({type: 'my-service', my_data: 123})
 
-await api.unregister({id: sid})
+await api.unregisterService({id: sid})
 ```
 
 
@@ -1526,6 +1521,7 @@ Also notice that the content shown inside a `window` plugin do not have these re
 ### API change log
 
 #### api_version: 0.1.8
+ * deprecate `api.register` and `api.unregister`, use `api.registerService` and `api.unregisterService` instead.
  * add `api.getWindow` to obtain an existing window instance.
  * `api.showFileDialog`:
    - if the file manager provide `showFileDialog` function, then ImJoy will use it.

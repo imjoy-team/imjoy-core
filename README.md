@@ -21,7 +21,7 @@ See [integration with ImJoy-Core](https://github.com/imjoy-team/imjoy-core/blob/
 
 ## ImJoy Core API
 
-See [api](https://github.com/imjoy-team/imjoy-core/blob/master/docs/api.md).
+See [imjoy-core api](https://github.com/imjoy-team/imjoy-core/blob/master/docs/api.md) for the detailed definition.
 
 ## Development
 

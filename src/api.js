@@ -1,4 +1,5 @@
 import { compareVersions } from "./utils.js";
+import { serviceSpec } from "./serviceSpec.js";
 
 import Ajv from "ajv";
 export const ajv = new Ajv();
@@ -323,68 +324,13 @@ export const WINDOW_SCHEMA = ajv.compile({
   },
 });
 
-export const OP_SCHEMA = ajv.compile({
-  properties: {
-    name: { type: "string" },
-    type: { type: "string" },
-    ui: { type: ["null", "string", "array", "object"] },
-    run: { instanceof: Function },
-    inputs: { type: ["null", "object"] },
-    outputs: { type: ["null", "object"] },
-  },
-});
+export const OP_SCHEMA = ajv.compile(serviceSpec["operator"]);
 
-export const ENGINE_FACTORY_SCHEMA = ajv.compile({
-  properties: {
-    name: { type: "string" },
-    type: { enum: ["engine-factory"] },
-    icon: { type: "string" },
-    url: { type: "string" },
-    config: { type: "object" },
-    addEngine: { instanceof: Function },
-    removeEngine: { instanceof: Function },
-  },
-});
+export const ENGINE_FACTORY_SCHEMA = ajv.compile(serviceSpec["engine-factory"]);
 
-export const ENGINE_SCHEMA = ajv.compile({
-  properties: {
-    name: { type: "string" },
-    type: { enum: ["engine"] },
-    pluginType: { type: "string" },
-    factory: { type: "string" },
-    icon: { type: "string" },
-    url: { type: "string" },
-    config: { type: "object" },
-    connect: { instanceof: Function },
-    disconnect: { instanceof: Function },
-    listPlugins: { instanceof: Function },
-    startPlugin: { instanceof: Function },
-    getPlugin: { instanceof: Function },
-    getEngineStatus: { instanceof: Function },
-    getEngineConfig: { instanceof: [Function, null] },
-    heartbeat: { instanceof: [Function, null] },
-    killPlugin: { instanceof: [Function, null] },
-    killPluginProcess: { instanceof: [Function, null] },
-    restartPlugin: { instanceof: [Function, null] },
-    about: { instanceof: [Function, null] },
-  },
-});
+export const ENGINE_SCHEMA = ajv.compile(serviceSpec["engine"]);
 
-export const FILE_MANAGER_SCHEMA = ajv.compile({
-  properties: {
-    name: { type: "string" },
-    type: { enum: ["file-manager"] },
-    url: { type: "string" },
-    shwoFileDialog: { instanceof: Function },
-    listFiles: { instanceof: Function },
-    getFile: { instanceof: Function },
-    putFile: { instanceof: Function },
-    requestUploadUrl: { instanceof: Function },
-    getFileUrl: { instanceof: Function },
-    removeFile: { instanceof: Function },
-    heartbeat: { instanceof: [Function, null] },
-  },
-});
+export const FILE_MANAGER_SCHEMA = ajv.compile(serviceSpec["file-manager"]);
 
 export const CONFIG_SCHEMA = ajv.compile({
   properties: {
