@@ -128,13 +128,15 @@ class ImJoyPlugin():
     def run(self, ctx):
         api.XXXXX().then(self.callback)
 
-        # optionally, you can catch an error
+        # this function will be called when we get results from api.XXXXX()
+        def result_callback(result):
+            print(result)
+
+        # optionally, you can catch an error for the call
         def error_callback(error):
             print(error)
-        api.XXXXX().then(self.callback).catch(error_callback)
 
-     def callback(result):
-        print(result)
+        api.XXXXX().then(result_callback).catch(error_callback)
 ```
 <!-- tabs:end -->
 
