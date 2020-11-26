@@ -245,6 +245,17 @@ class DynamicPlugin {
         }
         this.api = remote;
         this.api._rintf = true;
+        this.api.config = {
+          id: this.id,
+          name: this.config.name,
+          workspace: this.config.workspace,
+          type: this.config.type,
+          namespace: this.config.namespace,
+          tag: this.config.tag,
+        };
+        if (this.window_id) {
+          this.api.config.window_id = this.config.window_id;
+        }
         this._disconnected = false;
         this.initializing = false;
         this._updateUI();
@@ -339,6 +350,17 @@ class DynamicPlugin {
         await this._executePlugin();
       }
       this.api = await this._requestRemote();
+      this.api.config = {
+        id: this.id,
+        name: this.config.name,
+        workspace: this.config.workspace,
+        type: this.config.type,
+        namespace: this.config.namespace,
+        tag: this.config.tag,
+      };
+      if (this.window_id) {
+        this.api.config.window_id = this.config.window_id;
+      }
       this._disconnected = false;
       this.initializing = false;
       this._updateUI();

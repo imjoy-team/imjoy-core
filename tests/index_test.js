@@ -122,7 +122,6 @@ describe("ImJoy Core", async () => {
   describe("ImJoy API", async () => {
     let plugin1;
     let plugin2;
-    let pluginw;
     before(function(done) {
       this.timeout(20000);
       pm.reloadPlugin({ code: _.clone(TEST_WEB_WORKER_PLUGIN_1) }).then(p1 => {
@@ -133,30 +132,30 @@ describe("ImJoy Core", async () => {
           "op-ui-option1"
         );
         expect(typeof plugin1.api.run).to.equal("function");
-        pm.reloadPlugin({ code: _.clone(TEST_WEB_WORKER_PLUGIN_2) }).then(
-          p2 => {
-            plugin2 = p2;
-            expect(plugin2.name).to.equal("Test Web Worker Plugin 2");
-            expect(plugin2.type).to.equal("web-worker");
-            expect(typeof plugin2.api.run).to.equal("function");
+        pm.reloadPlugin({
+          code: _.clone(TEST_WEB_WORKER_PLUGIN_2),
+          namespace: "my-namespace",
+        }).then(p2 => {
+          plugin2 = p2;
+          expect(plugin2.name).to.equal("Test Web Worker Plugin 2");
+          expect(plugin2.type).to.equal("web-worker");
+          expect(typeof plugin2.api.run).to.equal("function");
+          expect(plugin2.config.namespace).to.equal("my-namespace");
+          expect(plugin2.api.config.name).to.equal("Test Web Worker Plugin 2");
+          expect(plugin2.api.config.namespace).to.equal("my-namespace");
 
-            pm.reloadPlugin({ code: _.clone(TEST_WINDOW_PLUGIN_1) }).then(
-              pw => {
-                pluginw = pw;
-                expect(pluginw.name).to.equal("Test Window Plugin");
-                expect(pluginw.type).to.equal("window");
-                expect(typeof pluginw.api.run).to.equal("function");
-                pm.createWindow(null, {
-                  name: "new window",
-                  type: "Test Window Plugin",
-                }).then(wplugin => {
-                  expect(typeof wplugin.add2).to.equal("function");
-                  done();
-                });
-              }
-            );
-          }
-        );
+          pm.createWindow(null, {
+            name: "New Window 998",
+            src: TEST_WINDOW_PLUGIN_1,
+            window_id: "my-window-998",
+          }).then(wplugin => {
+            expect(wplugin.config.name).to.equal("New Window 998");
+            expect(wplugin.config.type).to.equal("window");
+            expect(wplugin.config.window_id).to.equal("my-window-998");
+            expect(typeof wplugin.add2).to.equal("function");
+            done();
+          });
+        });
       });
     });
 
