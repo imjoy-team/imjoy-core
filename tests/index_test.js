@@ -237,6 +237,20 @@ describe("ImJoy Core", async () => {
       expect(await plugin1.api.test_get_window()).to.be.true;
     });
 
+    it("should install and uninstall plugin", async () => {
+      expect(await plugin1.api.test_install_plugin()).to.be.true;
+      const ps = pm.installed_plugins.filter(p => {
+        return "ExamplePlugin" === p.name;
+      });
+      expect(ps.length).to.equal(1);
+      expect(await plugin1.api.test_uninstall_plugin("ExamplePlugin")).to.be
+        .true;
+      const ps2 = pm.installed_plugins.filter(p => {
+        return "ExamplePlugin" === p.name;
+      });
+      expect(ps2.length).to.equal(0);
+    });
+
     it("should run plugin", async () => {
       expect(await plugin1.api.test_run()).to.be.true;
     });

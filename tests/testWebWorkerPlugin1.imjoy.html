@@ -274,6 +274,20 @@ class ImJoyPlugin {
     return true
   }
 
+  async test_install_plugin() {
+    await api.installPlugin({
+      code: await api.getAttachment("example_plugin")
+    })
+    return true
+  }
+
+  async test_uninstall_plugin(name) {
+    await api.uninstallPlugin({
+      name
+    })
+    return true
+  }
+
   async test_fs() {
     const fp = await api.getPlugin('BrowserFS')
     const fs = fp.fs;
@@ -337,4 +351,44 @@ api.export(new ImJoyPlugin())
 
 <attachment name='some_text_data'>
 hello world!
+</attachment>
+
+<attachment name='example_plugin'>
+<docs>
+[TODO: write documentation for this plugin.]
+</docs>
+
+<config lang="json">
+{
+  "name": "ExamplePlugin",
+  "type": "web-worker",
+  "tags": [],
+  "ui": "",
+  "version": "0.1.0",
+  "cover": "",
+  "description": "[TODO: describe this plugin with one sentence.]",
+  "icon": "extension",
+  "inputs": null,
+  "outputs": null,
+  "api_version": "0.1.8",
+  "env": "",
+  "permissions": [],
+  "requirements": [],
+  "dependencies": []
+}
+</config>
+
+<script lang="javascript">
+class ImJoyPlugin {
+  async setup() {
+    api.log('initialized')
+  }
+
+  async run(ctx) {
+    api.alert('hello world.')
+  }
+}
+
+api.export(new ImJoyPlugin())
+</script>    
 </attachment>
