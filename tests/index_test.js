@@ -150,6 +150,7 @@ describe("ImJoy Core", async () => {
             window_id: "my-window-998",
           }).then(wplugin => {
             expect(wplugin.config.name).to.equal("New Window 998");
+            expect(wplugin.config.type).to.equal("window");
             expect(wplugin.config.window_id).to.equal("my-window-998");
             expect(typeof wplugin.add2).to.equal("function");
             done();
