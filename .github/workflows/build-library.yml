@@ -53,6 +53,8 @@ jobs:
           path: ./dist
       - name: Deploy imjoy-core to https://lib.imjoy.io
         uses: peaceiris/actions-gh-pages@v3.5.0
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
         with:
           deploy_key: ${{ secrets.ACTION_DEPLOY_KEY_FOR_LIB }}
           external_repository: imjoy-team/lib.imjoy.io

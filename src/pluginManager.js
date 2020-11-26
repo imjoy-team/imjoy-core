@@ -999,6 +999,7 @@ export class PluginManager {
             }
           }
           config.origin = pconfig.origin || uri;
+          config.namespace = pconfig.namespace;
           if (!config) {
             console.error(`Failed to fetch the plugin from "${uri}".`);
             reject(`Failed to fetch the plugin from "${uri}".`);
@@ -1035,6 +1036,7 @@ export class PluginManager {
                 {
                   uri: config.dependencies[i],
                   scoped_plugins: config.scoped_plugins || scoped_plugins,
+                  namespace: pconfig.namespace,
                 },
                 null,
                 allow_evil
@@ -1289,6 +1291,7 @@ export class PluginManager {
         tag: pconfig.tag,
         _id: pconfig._id,
         origin: pconfig.origin,
+        namespace: pconfig.namespace,
       });
       template.engine = null;
       this.unloadPlugin(template, true);
@@ -1451,6 +1454,7 @@ export class PluginManager {
       config._id = overwrite_config._id || config.name.replace(/ /g, "_");
       config.uri = overwrite_config.uri;
       config.origin = overwrite_config.origin;
+      config.namespace = overwrite_config.namespace;
       config.code = code;
       config.id = config.name.trim().replace(/ /g, "_") + "_" + randId();
       config.runnable = config.runnable === false ? false : true;
@@ -1536,6 +1540,7 @@ export class PluginManager {
         config.initialized = true;
       }
       const tconfig = _.assign({}, template, config);
+      tconfig.workspace = this.selected_workspace;
       const _interface = _.assign(
         { TAG: tconfig.tag, WORKSPACE: this.selected_workspace },
         this.imjoy_api
@@ -1606,7 +1611,6 @@ export class PluginManager {
       }
 
       const tconfig = _.assign({}, template, config);
-
       tconfig.workspace = this.selected_workspace;
       const _interface = _.assign(
         {
@@ -2361,6 +2365,8 @@ export class PluginManager {
             const wplugin = await this.reloadPlugin({
               code: wconfig.src,
               load_dependencies: true,
+              namespace: wconfig.namespace,
+              tag: wconfig.tag,
             });
             window_config = wplugin.config;
             wconfig.type = wplugin.config.type;
@@ -2507,9 +2513,15 @@ export class PluginManager {
     return ps;
   }
 
-  async getPlugin(_plugin, src) {
+  async getPlugin(_plugin, src, config) {
+    config = config || {};
     if (src.includes("\n")) {
-      const p = await this.reloadPlugin({ code: src, load_dependencies: true });
+      const p = await this.reloadPlugin({
+        code: src,
+        load_dependencies: true,
+        namespace: config.namespace,
+        tag: config.tag,
+      });
       console.log(`${p.name} loaded from source code`);
       return p.api;
     } else if (this.plugin_names[src]) {
@@ -2519,6 +2531,7 @@ export class PluginManager {
         const p = await this.reloadPluginRecursively(
           {
             uri: this.internal_plugins[src].uri,
+            namespace: config.namespace,
           },
           null,
           "eval is evil"
@@ -2527,9 +2540,13 @@ export class PluginManager {
         return p.api;
       } else {
         // try to load from plugin uri
-        const p = await this.reloadPluginRecursively({
-          uri: src,
-        });
+        const p = await this.reloadPluginRecursively(
+          {
+            uri: src,
+            namespace: config.namespace,
+          },
+          config.tag
+        );
         console.log(`${p.name} loaded from ${src}`);
         return p.api;
       }
