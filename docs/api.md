@@ -590,7 +590,7 @@ otherwise, it will cause memory leak since the object will remain in its object 
 
 ### api.export
 
-Exports funcstions defined by the plugin as `Plugin API`.
+Exports funcstions defined by the plugin as `Plugin API`. Every imjoy plugin should export its plugin api functions, except when `passive` key under `<config>` is set to `true`.
 
 `Plugin API` can be exported as a plugin class or an object/dictionary contains all the api functions:
 
@@ -1580,6 +1580,7 @@ Also notice that the content shown inside a `window` plugin do not have these re
  * support passing `tag` and `namespace` to `api.getPlugin` and `api.createWindow` when constructing plugin or window from source code
  * The plugin api object (returned from api.getPlugin, api.getWindow, api.createWindow, api.showDialog) will also include a config object which contains id, name, namespace, workspace, tag (and window_id for window plugin instance).
  * support `api.installPlugin` and `api.uninstallPlugin`.
+ * support setting `passive` key in `<config>`.
  
 #### api_version: 0.1.7
  * `api.fs` has been deprecated, the browser file system is moved to a separate plugin `BrowserFS`, to use the file system, you can do `const bfs_plugin = await api.getPlugin('BrowserFS'); const bfs = bfs_plugin.fs;`, now `fs` will be equivalent to `api.fs`. Notice: the data saved with `api.fs` will not be accessible with the new API, to get access the old data, please change `api_version` in the plugin config to `0.1.6`.

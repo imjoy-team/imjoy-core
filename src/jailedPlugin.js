@@ -229,7 +229,7 @@ class DynamicPlugin {
       },
     };
 
-    function ready(remote) {
+    const ready = remote => {
       this.api = remote;
       this.api._rintf = true;
       this.api.config = {
@@ -248,7 +248,7 @@ class DynamicPlugin {
       this._updateUI();
       this._connected.emit();
       this.engine.registerPlugin(this);
-    }
+    };
     if (this.config.passive) {
       this.engine.startPlugin(
         this.config,
@@ -263,28 +263,29 @@ class DynamicPlugin {
         off: async function() {},
         emit: async function() {},
       });
+    } else {
+      this.engine
+        .startPlugin(this.config, this._initialInterface, engine_utils)
+        .then(remote => {
+          // check if the plugin is terminated during startup
+          if (!this.engine) {
+            console.warn(
+              "Plugin " + this.id + " is ready, but it was termianted."
+            );
+            if (this.engine && this.engine.killPlugin)
+              this.engine.killPlugin({
+                id: this.config.id,
+                name: this.config.name,
+              });
+            return;
+          }
+          ready(remote);
+        })
+        .catch(e => {
+          this.error(e);
+          this._set_disconnected();
+        });
     }
-    this.engine
-      .startPlugin(this.config, this._initialInterface, engine_utils)
-      .then(remote => {
-        // check if the plugin is terminated during startup
-        if (!this.engine) {
-          console.warn(
-            "Plugin " + this.id + " is ready, but it was termianted."
-          );
-          if (this.engine && this.engine.killPlugin)
-            this.engine.killPlugin({
-              id: this.config.id,
-              name: this.config.name,
-            });
-          return;
-        }
-        ready(remote);
-      })
-      .catch(e => {
-        this.error(e);
-        this._set_disconnected();
-      });
   }
 
   _setupViaIframe() {
