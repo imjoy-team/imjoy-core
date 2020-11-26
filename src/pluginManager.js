@@ -1054,10 +1054,6 @@ export class PluginManager {
         })
         .catch(e => {
           console.error(e);
-          this.showMessage(
-            "Failed to download, if you download from github, please use the url to the raw file",
-            10
-          );
           reject(e);
         });
     });
@@ -1150,10 +1146,6 @@ export class PluginManager {
         })
         .catch(e => {
           console.error(e);
-          this.showMessage(
-            "Failed to download, if you download from github, please use the url to the raw file",
-            10
-          );
           reject(e);
         });
     });
