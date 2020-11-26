@@ -949,10 +949,10 @@ Filters.lut = function(pixels, lut) {
  * Use two levels of REs to avoid REDOS.
  */
 
-const protocolAndDomainRE = /^(?:\w+:)?\/\/(\S+)$/;
+const protocolAndDomainRE = /^(?:\w+:)?\/\/([\s\S]+)$/;
 
-const localhostDomainRE = /^localhost[\:?\d]*(?:[^\:?\d]\S*)?$/;
-const nonLocalhostDomainRE = /^[^\s\.]+\.\S{2,}$/;
+const localhostDomainRE = /^localhost[\:?\d]*(?:[^\:?\d][\s\S]*)?$/;
+const nonLocalhostDomainRE = /^[^\s\.]+\.[\s\S]{2,}$/;
 
 /**
  * Loosely validate a URL `string`.
@@ -1038,7 +1038,7 @@ export function githubUrlToObject(repoUrl, opts) {
       return null;
 
     var parts = pathname.match(
-      /^\/([\w-_]+)\/([\w-_\.]+)(\/tree\/[\w-_\.\/]+)?(\/blob\/[\w-_\.\/]+)?/
+      /^\/([\w-_]+)\/([\w-_\.]+)(\/tree\/[\w-_\.\/]+)?(\/blob\/[\s\w-_\.\/]+)?/
     );
     // ([\w-_\.]+)
     if (!parts) return null;
