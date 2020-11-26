@@ -228,6 +228,42 @@ class DynamicPlugin {
         }
       },
     };
+
+    function ready(remote) {
+      this.api = remote;
+      this.api._rintf = true;
+      this.api.config = {
+        id: this.id,
+        name: this.config.name,
+        workspace: this.config.workspace,
+        type: this.config.type,
+        namespace: this.config.namespace,
+        tag: this.config.tag,
+      };
+      if (this.window_id) {
+        this.api.config.window_id = this.config.window_id;
+      }
+      this._disconnected = false;
+      this.initializing = false;
+      this._updateUI();
+      this._connected.emit();
+      this.engine.registerPlugin(this);
+    }
+    if (this.config.passive) {
+      this.engine.startPlugin(
+        this.config,
+        this._initialInterface,
+        engine_utils
+      );
+      ready({
+        passive: true,
+        _rintf: true,
+        setup: async function() {},
+        on: async function() {},
+        off: async function() {},
+        emit: async function() {},
+      });
+    }
     this.engine
       .startPlugin(this.config, this._initialInterface, engine_utils)
       .then(remote => {
@@ -243,24 +279,7 @@ class DynamicPlugin {
             });
           return;
         }
-        this.api = remote;
-        this.api._rintf = true;
-        this.api.config = {
-          id: this.id,
-          name: this.config.name,
-          workspace: this.config.workspace,
-          type: this.config.type,
-          namespace: this.config.namespace,
-          tag: this.config.tag,
-        };
-        if (this.window_id) {
-          this.api.config.window_id = this.config.window_id;
-        }
-        this._disconnected = false;
-        this.initializing = false;
-        this._updateUI();
-        this._connected.emit();
-        this.engine.registerPlugin(this);
+        ready(remote);
       })
       .catch(e => {
         this.error(e);
@@ -349,7 +368,19 @@ class DynamicPlugin {
       if (pluginConfig.allow_execution) {
         await this._executePlugin();
       }
-      this.api = await this._requestRemote();
+      if (this.config.passive) {
+        this.api = {
+          passive: true,
+          _rintf: true,
+          setup: async function() {},
+          on: async function() {},
+          off: async function() {},
+          emit: async function() {},
+        };
+      } else {
+        this.api = await this._requestRemote();
+      }
+
       this.api.config = {
         id: this.id,
         name: this.config.name,

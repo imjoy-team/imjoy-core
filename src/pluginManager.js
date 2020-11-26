@@ -1079,6 +1079,7 @@ export class PluginManager {
       if (pconfig.code) {
         const config = this.parsePluginCode(pconfig.code);
         const ps = [];
+        config.dependencies = config.dependencies || [];
         for (let i = 0; i < config.dependencies.length; i++) {
           ps.push(
             this.installPlugin(
@@ -1586,7 +1587,7 @@ export class PluginManager {
         const plugin = new DynamicPlugin(tconfig, _interface, null, true);
         plugin.api = {
           _rintf: true,
-          setup: async () => {},
+          setup: async function() {},
           run: async my => {
             const c = _clone(template.defaults) || {};
             c.type = template.name;
@@ -2493,9 +2494,12 @@ export class PluginManager {
             }
             if (pconfig.passive || window_config.passive) {
               resolve({
+                passive: true,
                 _rintf: true,
-                setup: () => {},
-                on: () => {},
+                setup: async function() {},
+                on: async function() {},
+                off: async function() {},
+                emit: async function() {},
               });
               return;
             }
