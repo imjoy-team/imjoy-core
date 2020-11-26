@@ -1540,7 +1540,7 @@ Also notice that the content shown inside a `window` plugin do not have these re
  * fix `api.alert` display when passing an object
  * support passing plugin url or source code to `api.getPlugin`, `api.createWindow`, `api.showDialog`, which enables dynamic plugin loading
  * support passing `tag` and `namespace` to `api.getPlugin` and `api.createWindow` when constructing plugin or window from source code
- * exposing `config` to the plugin api object
+ * The plugin api object (returned from api.getPlugin, api.getWindow, api.createWindow, api.showDialog) will also include a config object which contains id, name, namespace, workspace, tag (and window_id for window plugin instance).
  
 #### api_version: 0.1.7
  * `api.fs` has been deprecated, the browser file system is moved to a separate plugin `BrowserFS`, to use the file system, you can do `const bfs_plugin = await api.getPlugin('BrowserFS'); const bfs = bfs_plugin.fs;`, now `fs` will be equivalent to `api.fs`. Notice: the data saved with `api.fs` will not be accessible with the new API, to get access the old data, please change `api_version` in the plugin config to `0.1.6`.
