@@ -724,6 +724,44 @@ sigma = await api.getConfig('sigma')
 [Try yourself in the setConfig example >>](https://imjoy.io/#/app?plugin=imjoy-team/imjoy-demo-plugins:setConfig&w=examples)
 
 
+### api.installPlugin
+```javascript
+plugin = await api.installPlugin(config)
+```
+
+Install a plugin by passing a plugin URI or source code, the plugin source code will be saved to the browser database ( in the current workspace).
+
+**Arguments**
+* **config**: Object. configuration object. Currently, you can pass the following config:
+  - `code`: String. The source code of the plugin to be installed.
+  - `uri`: String. The URI of the plugin to be installed. Note: if `src` is set, `uri` will be ignored.
+  - `tag`: String, optional. The selected plugin tag if the plugin has multiple tags.
+  - `namespace`: String, optional. The namespace of the plugin.
+
+**Examples**
+
+```javascript
+await api.installPlugin({uri: "https://raw.githubusercontent.com/imjoy-team/imjoy-core/master/src/plugins/webWorkerTemplate.imjoy.html"})
+```
+
+### api.uninstallPlugin
+```javascript
+plugin = await api.uninstallPlugin(config)
+```
+
+Uninstall an installed plugin.
+
+**Arguments**
+* **config**: Object. configuration object. Currently, you can pass the following config:
+  - `name`: String. The name of the plugin to be uninstalled.
+
+**Examples**
+
+```javascript
+await api.uninstallPlugin({name: "MyAwesomePlugin"})
+```
+
+
 ### api.getPlugin
 ```javascript
 plugin = await api.getPlugin(src, config)
@@ -1541,6 +1579,7 @@ Also notice that the content shown inside a `window` plugin do not have these re
  * support passing plugin url or source code to `api.getPlugin`, `api.createWindow`, `api.showDialog`, which enables dynamic plugin loading
  * support passing `tag` and `namespace` to `api.getPlugin` and `api.createWindow` when constructing plugin or window from source code
  * The plugin api object (returned from api.getPlugin, api.getWindow, api.createWindow, api.showDialog) will also include a config object which contains id, name, namespace, workspace, tag (and window_id for window plugin instance).
+ * support `api.installPlugin` and `api.uninstallPlugin`.
  
 #### api_version: 0.1.7
  * `api.fs` has been deprecated, the browser file system is moved to a separate plugin `BrowserFS`, to use the file system, you can do `const bfs_plugin = await api.getPlugin('BrowserFS'); const bfs = bfs_plugin.fs;`, now `fs` will be equivalent to `api.fs`. Notice: the data saved with `api.fs` will not be accessible with the new API, to get access the old data, please change `api_version` in the plugin config to `0.1.6`.

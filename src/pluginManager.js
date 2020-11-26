@@ -167,6 +167,16 @@ export class PluginManager {
       run: this.runPlugin,
       call: this.callPlugin,
       getPlugin: this.getPlugin,
+      installPlugin: (_plugin, config) => {
+        const tag = config.tag;
+        const do_not_load = config.do_not_load;
+        delete config.tag;
+        delete config.do_not_load;
+        return this.installPlugin(config, tag, do_not_load);
+      },
+      uninstallPlugin: (_plugin, config) => {
+        return this.removePlugin(config);
+      },
       getServices: this.getServices,
       getWindow: this.getWindow,
       getFileManager: this.getFileManager,
@@ -1061,12 +1071,43 @@ export class PluginManager {
 
   installPlugin(pconfig, tag, do_not_load) {
     return new Promise((resolve, reject) => {
-      let uri = typeof pconfig === "string" ? pconfig : pconfig.uri;
       let scoped_plugins = this.available_plugins;
       if (pconfig.scoped_plugins) {
         scoped_plugins = pconfig.scoped_plugins;
         delete pconfig.scoped_plugins;
       }
+      if (pconfig.code) {
+        const config = this.parsePluginCode(pconfig.code);
+        const ps = [];
+        for (let i = 0; i < config.dependencies.length; i++) {
+          ps.push(
+            this.installPlugin(
+              {
+                uri: config.dependencies[i],
+                scoped_plugins: config.scoped_plugins || scoped_plugins,
+              },
+              null,
+              do_not_load
+            )
+          );
+        }
+        Promise.all(ps)
+          .then(() => {
+            this.savePlugin(pconfig)
+              .then(async template => {
+                this.showMessage(
+                  `Plugin "${template.name}" has been successfully installed.`
+                );
+                this.event_bus.emit("plugin_installed", template);
+                resolve(template);
+                if (!do_not_load) this.reloadPlugin(template);
+              })
+              .catch(reject);
+          })
+          .catch(reject);
+        return;
+      }
+      let uri = typeof pconfig === "string" ? pconfig : pconfig.uri;
       //use the has tag in the uri if no hash tag is defined.
       if (!uri) {
         reject("No url found for plugin " + pconfig.name);
@@ -1153,6 +1194,8 @@ export class PluginManager {
 
   removePlugin(plugin_config) {
     return new Promise((resolve, reject) => {
+      plugin_config._id =
+        plugin_config._id || plugin_config.name.replace(/ /g, "_");
       // remove if exists
       this.db
         .get(plugin_config._id)
@@ -1350,6 +1393,7 @@ export class PluginManager {
           tag: pconfig.tag,
           origin: pconfig.origin,
           engine_mode: pconfig.engine_mode,
+          namespace: pconfig.namespace,
         });
         template.code = code;
         template._id = template.name.replace(/ /g, "_");
