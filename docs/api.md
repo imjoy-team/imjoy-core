@@ -352,11 +352,13 @@ It contains the following fields:
     If the external web page has the ImJoy plugin api loaded, you can interact with the external website like a normal ImJoy plugin. However, if the external web page does not support ImJoy, you need to set `passive=true` to tell ImJoy that there will be no plugin api from this window.
   
   - **src**: String, specify source code to the window plugin, the url to the window plugin source code, or a url to a web app that optionally support `imjoy-rpc`. The url will treated as source code if the url ends with `.imjoy.html`, is a `gist` url or a github source code page url. Passing source code to create a window allows, for example store the source code of a window plugin inside a Python plugin, and instantiate it when needed.
+  - **tag**: String. Used with `src` to specify the tag of the plugin if the plugin support several `tags`.
+  - **namespace**: String. Used with `src` to specify the namespace of the plugin.
   - **passive**: Boolean, only used when `src` is specified. Mark whether the plugin is a passive web page (no ImJoy api exposed). Default value is `false`. 
   - **w**: Integer. Window width in grid columns (1 column = 30 pixels).
   - **h**: Integer. Window height in grid rows (1 row = 30 pixels).
-  - **data**: Object (JavaScript) or dictionary (Python). Contains data to be transferred to the window.
   - **config**: Object (JavaScript) or dictionary (Python).
+  - **data**: Object (JavaScript) or dictionary (Python). Contains data to be transferred to the window.
 
 **Returns**
 
@@ -724,7 +726,7 @@ sigma = await api.getConfig('sigma')
 
 ### api.getPlugin
 ```javascript
-plugin = await api.getPlugin(src)
+plugin = await api.getPlugin(src, config)
 ```
 
 Gets the API object of another plugin by its name, url or plugin source code.
@@ -742,6 +744,10 @@ plugin occasionally, you can also use `api.call`
 * **src**: String. Name, url or source code of another plugin. If the plugin is already loaded, then use its name, otherwise, pass a valid plugin URI or its source code. By passing the source code, it allows the flexibility of 
 embedding one or more plugin source code inside another plugin. For example, a Python plugin can dynamically populate 
 a window plugin in HTML.
+
+* **config**: Object, optional. configuration object. Currently, you can pass the following config:
+  - `tag`: String. Specify the tag of the plugin if the plugin support several `tags`, only used when `src` is the source code of the plugin.
+  - `namespace`: String. Specify the namespace of the plugin, only used when `src` is the source code of the plugin.
 
 **Returns**
 * **plugin**: Object. An object which can be used to access the plugin API functions.
@@ -1533,6 +1539,8 @@ Also notice that the content shown inside a `window` plugin do not have these re
  * support creating window or dialog from an external web page, for example:  `api.createWindow({type: "external", src: "https://kitware.github.io/itk-vtk-viewer/app", passive: true})`.
  * fix `api.alert` display when passing an object
  * support passing plugin url or source code to `api.getPlugin`, `api.createWindow`, `api.showDialog`, which enables dynamic plugin loading
+ * support passing `tag` and `namespace` to `api.getPlugin` and `api.createWindow` when constructing plugin or window from source code
+ * exposing `config` to the plugin api object
  
 #### api_version: 0.1.7
  * `api.fs` has been deprecated, the browser file system is moved to a separate plugin `BrowserFS`, to use the file system, you can do `const bfs_plugin = await api.getPlugin('BrowserFS'); const bfs = bfs_plugin.fs;`, now `fs` will be equivalent to `api.fs`. Notice: the data saved with `api.fs` will not be accessible with the new API, to get access the old data, please change `api_version` in the plugin config to `0.1.6`.
