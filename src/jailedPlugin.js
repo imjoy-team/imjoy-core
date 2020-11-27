@@ -369,6 +369,7 @@ class DynamicPlugin {
       if (pluginConfig.allow_execution) {
         await this._executePlugin();
       }
+      this.config.passive = this.config.passive || pluginConfig.passive;
       if (this.config.passive) {
         this.api = {
           passive: true,
