@@ -168,6 +168,10 @@ class ImJoyPlugin {
     return true
   }
 
+  async test_create_passive_window() {
+    return await api.createWindow({name: 'my passive window', src: 'https://imjoy.io/static/img/loader.gif', passive: true})
+  }
+
   async test_create_window() {
     await api.createWindow({
       name: 'new window',
@@ -281,6 +285,10 @@ class ImJoyPlugin {
     return true
   }
 
+  async test_get_passive_plugin() {
+    return await api.getPlugin(await api.getAttachment("example_passive_plugin"))
+  }
+
   async test_uninstall_plugin(name) {
     await api.uninstallPlugin({
       name
@@ -392,3 +400,30 @@ class ImJoyPlugin {
 api.export(new ImJoyPlugin())
 </script>    
 </attachment>
+
+<attachment name='example_passive_plugin'>
+  <config lang="json">
+  {
+    "name": "ExamplePassivePlugin",
+    "type": "web-worker",
+    "tags": [],
+    "ui": "",
+    "version": "0.1.0",
+    "cover": "",
+    "description": "[TODO: describe this plugin with one sentence.]",
+    "icon": "extension",
+    "inputs": null,
+    "outputs": null,
+    "api_version": "0.1.8",
+    "env": "",
+    "permissions": [],
+    "requirements": [],
+    "dependencies": [],
+    "passive": true
+  }
+  </config>
+  
+  <script lang="javascript">
+  api.alert("hello");
+  </script>    
+  </attachment>

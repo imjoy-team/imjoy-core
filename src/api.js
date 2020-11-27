@@ -200,6 +200,7 @@ export const CONFIGURABLE_FIELDS = [
   "labels",
   "cover",
   "base_frame",
+  "passive",
 ];
 
 export const PLUGIN_CONFIG_FIELDS = CONFIGURABLE_FIELDS.concat([

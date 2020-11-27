@@ -212,6 +212,18 @@ describe("ImJoy Core", async () => {
       expect(wm.windows.length).to.equal(count);
     });
 
+    it("should create passive window", async () => {
+      const count = wm.windows.length;
+      const w = await plugin1.api.test_create_passive_window();
+      expect(w.passive).to.be.true;
+      expect(wm.windows.length).to.equal(count + 1);
+      expect(wm.windows[wm.windows.length - 1].name).to.equal(
+        "my passive window"
+      );
+      await wm.windows[wm.windows.length - 1].close();
+      expect(wm.windows.length).to.equal(count);
+    });
+
     it("should create window", async () => {
       const count = wm.windows.length;
       expect(await plugin1.api.test_create_window()).to.be.true;
@@ -261,6 +273,11 @@ describe("ImJoy Core", async () => {
 
     it("should get plugin", async () => {
       expect(await plugin1.api.test_get_plugin()).to.be.true;
+    });
+
+    it("should get passive plugin", async () => {
+      const p = await plugin1.api.test_get_passive_plugin();
+      expect(p.passive).to.be.true;
     });
 
     it("should set/get config", async () => {
