@@ -89,6 +89,7 @@ export class FileManager {
 
   unregister(manager) {
     manager = this.getFileManagerByUrl(manager.url);
+    if (!manager) return false;
     const index = this.fileManagers.indexOf(manager);
     if (index > -1) {
       this.fileManagers.splice(index, 1);
@@ -96,6 +97,7 @@ export class FileManager {
     if (manager.heart_beat_timer) {
       clearInterval(manager.heart_beat_timer);
     }
+    return true;
   }
 
   destroy() {

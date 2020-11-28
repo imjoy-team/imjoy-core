@@ -2294,6 +2294,7 @@ export class PluginManager {
       delete this.service_registry[config.name];
     } else delete this.service_registry[config.id];
     this.event_bus.emit("unregister", { config, plugin });
+    return true;
   }
 
   //#################ImJoy API functions##################

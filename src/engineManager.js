@@ -226,7 +226,7 @@ export class EngineManager {
   async unregister(engine) {
     const url = engine.url;
     engine = this.getEngineByUrl(url);
-    if (!engine) throw `Engine ${url} not found.`;
+    if (!engine) return false;
     const index = this.engines.indexOf(engine);
     for (let p of engine._plugins) {
       p.terminate();
@@ -238,6 +238,7 @@ export class EngineManager {
     await engine.disconnect();
     engine.connected = false;
     this.event_bus.emit("engine_disconnected", engine);
+    return true;
   }
 
   registerFactory(factory_) {
@@ -255,10 +256,12 @@ export class EngineManager {
 
   unregisterFactory(factory) {
     factory = this.getFactory(factory.name);
+    if (!factory) return false;
     const index = this.engine_factories.indexOf(factory);
     if (index > -1) {
       this.engine_factories.splice(index, 1);
     }
+    return true;
   }
 
   getFactory(name) {
