@@ -5,12 +5,12 @@ import _ from "lodash";
 import WEB_WORKER_PLUGIN_TEMPLATE from "../src/plugins/webWorkerTemplate.imjoy.html";
 import WINDOW_PLUGIN_TEMPLATE from "../src/plugins/windowTemplate.imjoy.html";
 // import NATIVE_PYTHON_PLUGIN_TEMPLATE from '../src/plugins/nativePythonTemplate.imjoy.html';
-import WEB_PYTHON_PLUGIN_TEMPLATE from "../src/plugins/webPythonTemplate.imjoy.html";
 import WEB_PYTHON_WINDOW_PLUGIN_TEMPLATE from "../src/plugins/webPythonWindowTemplate.imjoy.html";
 
 import TEST_WEB_WORKER_PLUGIN_1 from "./testWebWorkerPlugin1.imjoy.html";
 import TEST_WEB_WORKER_PLUGIN_2 from "./testWebWorkerPlugin2.imjoy.html";
 import TEST_WINDOW_PLUGIN_1 from "./testWindowPlugin1.imjoy.html";
+import WEB_PYTHON_PLUGIN_TEMPLATE from "./testWebPythonPlugin1.imjoy.html";
 
 import * as imjoyCore from "../src/imjoyCore.js";
 
@@ -86,10 +86,10 @@ describe("ImJoy Core", async () => {
   it("should load the new web-python plugin", async () => {
     const code = _.clone(WEB_PYTHON_PLUGIN_TEMPLATE);
     const plugin = await pm.reloadPlugin({ code: code });
-    expect(plugin.name).to.equal("Untitled Plugin");
+    expect(plugin.name).to.equal("WebPythonPlugin1");
     expect(plugin.type).to.equal("web-python");
     expect(typeof plugin.api.run).to.equal("function");
-    await plugin.api.run({});
+    expect(await plugin.api.run({})).to.equal(998);
     plugin.terminate();
   }).timeout(100000);
 
