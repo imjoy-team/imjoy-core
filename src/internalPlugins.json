@@ -7,6 +7,10 @@
     "uri": "https://imjoy-team.github.io/jupyter-engine-manager/Jupyter-Engine-Manager.imjoy.html",
     "startup": true
   },
+  "WebPythonWorker": {
+    "uri": "https://gist.githubusercontent.com/oeway/76f853a8e547e223a177bb549603393b/raw/WebPythonWorker.imjoy.html",
+    "startup": false
+  },
   "Jupyter-Notebook": {
     "uri": "https://imjoy-team.github.io/jupyter-engine-manager/Jupyter-Notebook.imjoy.html",
     "startup": false
