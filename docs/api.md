@@ -497,6 +497,8 @@ api.registerCodec(config)
 
 Register a custom codec for sending and receiving remote object.
 
+!> Note: not supported in `web-python` plugins yet.
+
 **Arguments**
 
 * **config**: Object (JavaScript) or dictionary (Python). Options for the codec.
@@ -1401,39 +1403,6 @@ URL of the current plugin engine.
 
 URL of the file manager registered by the current plugin engine.
 
-## Experimental APIs
-
-### `_rpcEncode` and `_rpcDecode`
-Remote Procedure Calls (RPC) in ImJoy allows isolated plugins communcate via functions calls and transmit data by passing augments, however, not all the data types are supported. It only support primitive types (number, string, bytes) and basic array/list, object/dictionary. To extend the supported types, one can provide custom encoding and decoding functions (as the plugin API).
-
-
-```javascript
-class ImJoyPlugin {
-  async setup() {
-  }
-
-  async run(ctx) {
-
-  }
-
-  _rpcEncode(d){
-    if(d === 998 ){
-      return {__rpc_dtype__: 'a_special_number'}
-    }
-    else
-      return d
-  }
-
-  _rpcDecode(d){
-    if(d.__rpc_dtype__ === 'a_special_number'){
-      return 998
-    }
-  }
-}
-```
-NOTE: this only works inside plugins with `window`, `iframe`, `web-worker`, it doesn't not work directly for e.g. `native-python` unless the coresponding plugin engine support it.
-
-
 ## Internal plugins
 
 Besides the default ImJoy api, we provide a set of internally supported plugins which can be used directly. These plugins will be loaded only if the plugin is requested by another plugin via `api.getPlugin(...)`.
@@ -1581,6 +1550,7 @@ Also notice that the content shown inside a `window` plugin do not have these re
  * The plugin api object (returned from api.getPlugin, api.getWindow, api.createWindow, api.showDialog) will also include a config object which contains id, name, namespace, workspace, tag (and window_id for window plugin instance).
  * support `api.installPlugin` and `api.uninstallPlugin`.
  * support setting `passive` key in `<config>`.
+ * remove `_rpcEncode` and `_rpcDecode` (use `api.registerCodec` instead)
  
 #### api_version: 0.1.7
  * `api.fs` has been deprecated, the browser file system is moved to a separate plugin `BrowserFS`, to use the file system, you can do `const bfs_plugin = await api.getPlugin('BrowserFS'); const bfs = bfs_plugin.fs;`, now `fs` will be equivalent to `api.fs`. Notice: the data saved with `api.fs` will not be accessible with the new API, to get access the old data, please change `api_version` in the plugin config to `0.1.6`.
