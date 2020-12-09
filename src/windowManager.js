@@ -25,10 +25,14 @@ export class WindowManager {
     config.index = this.default_window_pos.index;
     config.w = config.w || this.default_window_pos.w;
     config.h = config.h || this.default_window_pos.h;
-    config.x = this.default_window_pos.x;
-    config.y = this.default_window_pos.y;
-    this.default_window_pos.x =
-      this.default_window_pos.x + this.default_window_pos.w;
+    if (config.x === undefined) {
+      config.x = this.default_window_pos.x;
+      this.default_window_pos.x =
+        this.default_window_pos.x + this.default_window_pos.w;
+    }
+    if (config.y === undefined) {
+      config.y = this.default_window_pos.y;
+    }
     if (this.default_window_pos.x >= 20) {
       this.default_window_pos.x = 0;
       this.default_window_pos.y =
