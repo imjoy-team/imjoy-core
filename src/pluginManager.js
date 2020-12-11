@@ -58,6 +58,7 @@ export class PluginManager {
     default_base_frame = null,
     default_rpc_base_url = null,
     debug = false,
+    flags = [],
   }) {
     this.event_bus = event_bus;
     this.em = engine_manager;
@@ -66,6 +67,7 @@ export class PluginManager {
     this.fm = file_manager;
     this.fm.setPluginManager(this);
     this.config_db = config_db;
+    this.flags = flags;
 
     assert(this.event_bus, "event bus is not available");
     assert(this.em, "engine manager is not available");
@@ -753,23 +755,20 @@ export class PluginManager {
       });
   }
 
-  removeWorkflow(w) {
-    this.db
-      .get(w._id)
-      .then(doc => {
-        return this.db.remove(doc);
-      })
-      .then(() => {
-        var index = this.workflow_list.indexOf(w);
-        if (index > -1) {
-          this.workflow_list.splice(index, 1);
-        }
-        this.showMessage(`Workflow "${w.name}" has been successfully removed.`);
-      })
-      .catch(err => {
-        this.showMessage("Failed to remove the workflow.");
-        console.error(err);
-      });
+  async removeWorkflow(w) {
+    try {
+      const doc = await this.db.get(w._id);
+      await this.db.remove(doc);
+      var index = this.workflow_list.indexOf(w);
+      if (index > -1) {
+        this.workflow_list.splice(index, 1);
+      }
+      this.showMessage(`Workflow "${w.name}" has been successfully removed.`);
+    } catch (err) {
+      this.showMessage("Failed to remove the workflow.");
+      console.error(err);
+      throw err;
+    }
   }
 
   reloadDB() {
@@ -783,7 +782,30 @@ export class PluginManager {
                 auto_compaction: true,
               });
               if (this.db) {
-                resolve();
+                if (this.selected_workspace === "sandbox") {
+                  console.warn(
+                    "All data in the sandbox stored workspace is going to be destroyed."
+                  );
+                  if (!this.flags.includes("quite")) debugger;
+                  this.db
+                    .destroy()
+                    .then(() => {
+                      this.db = new PouchDB(
+                        this.selected_workspace + "_workspace",
+                        {
+                          revs_limit: 2,
+                          auto_compaction: true,
+                        }
+                      );
+                      resolve();
+                    })
+                    .catch(e => {
+                      console.error(e);
+                      reject(e);
+                    });
+                } else {
+                  resolve();
+                }
               } else {
                 reject("Failed to reload database.");
               }
@@ -795,7 +817,30 @@ export class PluginManager {
               auto_compaction: true,
             });
             if (this.db) {
-              resolve();
+              if (this.selected_workspace === "sandbox") {
+                console.warn(
+                  "All data in the sandbox stored workspace is going to be destroyed."
+                );
+                if (!this.flags.includes("quite")) debugger;
+                this.db
+                  .destroy()
+                  .then(() => {
+                    this.db = new PouchDB(
+                      this.selected_workspace + "_workspace",
+                      {
+                        revs_limit: 2,
+                        auto_compaction: true,
+                      }
+                    );
+                    resolve();
+                  })
+                  .catch(e => {
+                    console.error(e);
+                    reject(e);
+                  });
+              } else {
+                resolve();
+              }
             } else {
               reject("Failed to reload database.");
             }
