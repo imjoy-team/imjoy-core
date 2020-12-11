@@ -263,6 +263,10 @@ describe("ImJoy Core", async () => {
       expect(ps2.length).to.equal(0);
     });
 
+    it("should run utils", async () => {
+      expect(await plugin1.api.test_utils()).to.be.true;
+    });
+
     it("should run plugin", async () => {
       expect(await plugin1.api.test_run()).to.be.true;
     });

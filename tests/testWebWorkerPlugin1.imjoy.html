@@ -296,6 +296,13 @@ class ImJoyPlugin {
     return true
   }
 
+  async test_utils(name) {
+    await api.utils.sleep(0.01);
+    await api.utils.openUrl('http://google.com');
+    await api.utils.$forceUpdate();
+    return true
+  }
+
   async test_fs() {
     const fp = await api.getPlugin('BrowserFS')
     const fs = fp.fs;

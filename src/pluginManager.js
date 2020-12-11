@@ -214,6 +214,27 @@ export class PluginManager {
         this.imjoy_api.utils[k] = api_utils_[k];
       }
     }
+    this.imjoy_api.utils = this.imjoy_api.utils || {};
+    this.imjoy_api.utils.openUrl =
+      this.imjoy_api.utils.openUrl ||
+      ((_plugin, url) => {
+        assert(url);
+        Object.assign(document.createElement("a"), {
+          target: "_blank",
+          href: url,
+        }).click();
+      });
+    this.imjoy_api.utils.sleep =
+      this.imjoy_api.utils.sleep ||
+      ((_plugin, seconds) => {
+        assert(seconds);
+        return new Promise(resolve =>
+          setTimeout(resolve, Math.round(seconds * 1000))
+        );
+      });
+    this.imjoy_api.utils.$forceUpdate =
+      this.imjoy_api.utils.$forceUpdate || function() {};
+
     //expose api to window for debugging
     window.api = this.imjoy_api;
     this.event_bus.on("engine_connected", async engine => {
