@@ -21,6 +21,7 @@ import {
   githubUrlRaw,
   randId,
   url_regex,
+  html2string,
 } from "./utils.js";
 
 import INTERNAL_PLUGINS from "./internalPlugins.json";
@@ -111,16 +112,16 @@ export class PluginManager {
     const api_utils_ = imjoy_api.utils;
     this.imjoy_api = {
       alert: (plugin, msg) => {
-        return window.alert(msg.content || msg);
+        return window.alert(html2string(msg.content) || msg);
       },
       prompt: (plugin, msg, default_value) => {
         return window.prompt(
-          msg.content || msg,
+          html2string(msg.content) || msg,
           msg.placeholder || default_value
         );
       },
       confirm: (plugin, msg) => {
-        return window.confirm(msg.content || msg);
+        return window.confirm(html2string(msg.content) || msg);
       },
       requestUploadUrl: this.requestUploadUrl,
       getFileUrl: this.getFileUrl,
