@@ -106,7 +106,7 @@ describe("ImJoy Core", async () => {
     );
     expect(config2.name).to.equal("My Awesome App");
     expect(config2.type).to.equal("rpc-window");
-  });
+  }).timeout(10000);
 
   describe("ImJoy API", async () => {
     let plugin1;
