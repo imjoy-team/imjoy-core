@@ -25,11 +25,11 @@
 <script lang="javascript">
 class ImJoyPlugin {
   async setup() {
-    api.log('initialized')
+    await api.log('initialized')
   }
 
   async run(ctx) {
-    api.alert('hello world.')
+    await api.alert('hello world.')
   }
 }
 
