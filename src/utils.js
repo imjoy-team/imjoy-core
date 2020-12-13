@@ -33,10 +33,13 @@ export function cacheUrlInServiceWorker(url) {
 }
 
 export function html2string(input) {
-  return input
-    .replace(/\n/gm, "")
-    .replace(/<br>/gm, "\n")
-    .replace(/<[^>]*>?/gm, "");
+  return (
+    input &&
+    input
+      .replace(/\n/gm, "")
+      .replace(/<br>/gm, "\n")
+      .replace(/<[^>]*>?/gm, "")
+  );
 }
 export function assert(condition, message) {
   if (!condition) {
