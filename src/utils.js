@@ -32,6 +32,15 @@ export function cacheUrlInServiceWorker(url) {
   });
 }
 
+export function html2string(input) {
+  return (
+    input &&
+    input
+      .replace(/\n/gm, "")
+      .replace(/<br>/gm, "\n")
+      .replace(/<[^>]*>?/gm, "")
+  );
+}
 export function assert(condition, message) {
   if (!condition) {
     message = message || "Assertion failed";
