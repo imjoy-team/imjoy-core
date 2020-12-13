@@ -340,6 +340,7 @@ class ImJoyPlugin {
                         console.log('err : ' +  err);
                         stopReadding = true
                         reject(err)
+                        return
                     }
                     const bytes = read_buffer.slice(0, bytesRead)
                     console.log('new chunk:', bytes)
