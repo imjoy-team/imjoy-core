@@ -22,7 +22,7 @@ def setup_imjoy(_):
     except Exception as e:
         js.__reject(traceback.format_exc())
 
-micropip.install("imjoy-rpc>=0.2.53").then(setup_imjoy).catch(js.__reject)
+micropip.install("imjoy-rpc>=0.2.54").then(setup_imjoy).catch(js.__reject)
 `;
 
 function installPackage() {
