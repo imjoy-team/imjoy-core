@@ -1551,7 +1551,10 @@ Also notice that the content shown inside a `window` plugin do not have these re
  * support `api.installPlugin` and `api.uninstallPlugin`.
  * support setting `passive` key in `<config>`.
  * remove `_rpcEncode` and `_rpcDecode` (use `api.registerCodec` instead)
- 
+ * more complete web-python implementation: using imjoy-rpc library from pip in pyodide; switch to web-worker mode
+ * deprecate web-python-window
+ * support `base_worker` for specifying a web-worker script for `web-python` plugins.
+
 #### api_version: 0.1.7
  * `api.fs` has been deprecated, the browser file system is moved to a separate plugin `BrowserFS`, to use the file system, you can do `const bfs_plugin = await api.getPlugin('BrowserFS'); const bfs = bfs_plugin.fs;`, now `fs` will be equivalent to `api.fs`. Notice: the data saved with `api.fs` will not be accessible with the new API, to get access the old data, please change `api_version` in the plugin config to `0.1.6`.
  * added `_rpcEncode` and `_rpcDecode` to support custom encoding and decoding

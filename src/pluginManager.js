@@ -1418,11 +1418,7 @@ export class PluginManager {
 
       let p;
 
-      if (
-        template.type === "rpc-window" ||
-        template.type === "window" ||
-        template.type === "web-python-window"
-      ) {
+      if (template.type === "rpc-window" || template.type === "window") {
         p = this.loadProxyPlugin(template);
       } else {
         if (allow_evil === "eval is evil") {
@@ -2122,8 +2118,6 @@ export class PluginManager {
         joy_template.tags.push("web-worker");
       } else if (config.type === "web-python") {
         joy_template.tags.push("web-python");
-      } else if (config.type === "web-python-window") {
-        joy_template.tags.push("web-python-window");
       } else if (config.type === "iframe") {
         joy_template.tags.push("iframe");
       }
@@ -2526,11 +2520,7 @@ export class PluginManager {
 
         // assign plugin type ('window')
         pconfig.type = window_config.type;
-        if (
-          pconfig.type !== "rpc-window" &&
-          pconfig.type !== "window" &&
-          pconfig.type !== "web-python-window"
-        ) {
+        if (pconfig.type !== "rpc-window" && pconfig.type !== "window") {
           throw 'Window plugin must be with type "window"';
         }
 

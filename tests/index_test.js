@@ -93,16 +93,6 @@ describe("ImJoy Core", async () => {
     plugin.terminate();
   }).timeout(100000);
 
-  it("should load the new web-python-window plugin", async () => {
-    const code = _.clone(WEB_PYTHON_WINDOW_PLUGIN_TEMPLATE);
-    const plugin = await pm.reloadPlugin({ code: code });
-    expect(plugin.name).to.equal("Untitled Plugin");
-    expect(plugin.type).to.equal("web-python-window");
-    expect(typeof plugin.api.run).to.equal("function");
-    await plugin.api.run({});
-    plugin.terminate();
-  }).timeout(100000);
-
   it("should get plugin config from github", async () => {
     const config1 = await pm.getPluginFromUrl(
       "https://github.com/imjoy-team/ImJoy/blob/master/web/src/plugins/windowTemplate.imjoy.html"
