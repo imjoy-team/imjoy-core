@@ -58,6 +58,7 @@ export class PluginManager {
     default_base_frame = null,
     default_rpc_base_url = null,
     debug = false,
+    flags = [],
   }) {
     this.event_bus = event_bus;
     this.em = engine_manager;
@@ -66,6 +67,7 @@ export class PluginManager {
     this.fm = file_manager;
     this.fm.setPluginManager(this);
     this.config_db = config_db;
+    this.flags = flags;
 
     assert(this.event_bus, "event bus is not available");
     assert(this.em, "engine manager is not available");
@@ -214,6 +216,27 @@ export class PluginManager {
         this.imjoy_api.utils[k] = api_utils_[k];
       }
     }
+    this.imjoy_api.utils = this.imjoy_api.utils || {};
+    this.imjoy_api.utils.openUrl =
+      this.imjoy_api.utils.openUrl ||
+      ((_plugin, url) => {
+        assert(url);
+        Object.assign(document.createElement("a"), {
+          target: "_blank",
+          href: url,
+        }).click();
+      });
+    this.imjoy_api.utils.sleep =
+      this.imjoy_api.utils.sleep ||
+      ((_plugin, seconds) => {
+        assert(seconds);
+        return new Promise(resolve =>
+          setTimeout(resolve, Math.round(seconds * 1000))
+        );
+      });
+    this.imjoy_api.utils.$forceUpdate =
+      this.imjoy_api.utils.$forceUpdate || function() {};
+
     //expose api to window for debugging
     window.api = this.imjoy_api;
     this.event_bus.on("engine_connected", async engine => {
@@ -732,23 +755,20 @@ export class PluginManager {
       });
   }
 
-  removeWorkflow(w) {
-    this.db
-      .get(w._id)
-      .then(doc => {
-        return this.db.remove(doc);
-      })
-      .then(() => {
-        var index = this.workflow_list.indexOf(w);
-        if (index > -1) {
-          this.workflow_list.splice(index, 1);
-        }
-        this.showMessage(`Workflow "${w.name}" has been successfully removed.`);
-      })
-      .catch(err => {
-        this.showMessage("Failed to remove the workflow.");
-        console.error(err);
-      });
+  async removeWorkflow(w) {
+    try {
+      const doc = await this.db.get(w._id);
+      await this.db.remove(doc);
+      var index = this.workflow_list.indexOf(w);
+      if (index > -1) {
+        this.workflow_list.splice(index, 1);
+      }
+      this.showMessage(`Workflow "${w.name}" has been successfully removed.`);
+    } catch (err) {
+      this.showMessage("Failed to remove the workflow.");
+      console.error(err);
+      throw err;
+    }
   }
 
   reloadDB() {
@@ -762,7 +782,30 @@ export class PluginManager {
                 auto_compaction: true,
               });
               if (this.db) {
-                resolve();
+                if (this.selected_workspace === "sandbox") {
+                  console.warn(
+                    "All data in the sandbox stored workspace is going to be destroyed."
+                  );
+                  if (!this.flags.includes("quite")) debugger;
+                  this.db
+                    .destroy()
+                    .then(() => {
+                      this.db = new PouchDB(
+                        this.selected_workspace + "_workspace",
+                        {
+                          revs_limit: 2,
+                          auto_compaction: true,
+                        }
+                      );
+                      resolve();
+                    })
+                    .catch(e => {
+                      console.error(e);
+                      reject(e);
+                    });
+                } else {
+                  resolve();
+                }
               } else {
                 reject("Failed to reload database.");
               }
@@ -774,7 +817,30 @@ export class PluginManager {
               auto_compaction: true,
             });
             if (this.db) {
-              resolve();
+              if (this.selected_workspace === "sandbox") {
+                console.warn(
+                  "All data in the sandbox stored workspace is going to be destroyed."
+                );
+                if (!this.flags.includes("quite")) debugger;
+                this.db
+                  .destroy()
+                  .then(() => {
+                    this.db = new PouchDB(
+                      this.selected_workspace + "_workspace",
+                      {
+                        revs_limit: 2,
+                        auto_compaction: true,
+                      }
+                    );
+                    resolve();
+                  })
+                  .catch(e => {
+                    console.error(e);
+                    reject(e);
+                  });
+              } else {
+                resolve();
+              }
             } else {
               reject("Failed to reload database.");
             }
@@ -1352,11 +1418,7 @@ export class PluginManager {
 
       let p;
 
-      if (
-        template.type === "rpc-window" ||
-        template.type === "window" ||
-        template.type === "web-python-window"
-      ) {
+      if (template.type === "rpc-window" || template.type === "window") {
         p = this.loadProxyPlugin(template);
       } else {
         if (allow_evil === "eval is evil") {
@@ -2056,8 +2118,6 @@ export class PluginManager {
         joy_template.tags.push("web-worker");
       } else if (config.type === "web-python") {
         joy_template.tags.push("web-python");
-      } else if (config.type === "web-python-window") {
-        joy_template.tags.push("web-python-window");
       } else if (config.type === "iframe") {
         joy_template.tags.push("iframe");
       }
@@ -2460,11 +2520,7 @@ export class PluginManager {
 
         // assign plugin type ('window')
         pconfig.type = window_config.type;
-        if (
-          pconfig.type !== "rpc-window" &&
-          pconfig.type !== "window" &&
-          pconfig.type !== "web-python-window"
-        ) {
+        if (pconfig.type !== "rpc-window" && pconfig.type !== "window") {
           throw 'Window plugin must be with type "window"';
         }
 

@@ -27,11 +27,11 @@
 from imjoy import api
 
 class ImJoyPlugin():
-    def setup(self):
-        api.log('initialized')
+    async def setup(self):
+        await api.log('initialized')
 
-    def run(self, ctx):
-        api.alert('hello world.')
+    async def run(self, ctx):
+        await api.alert('hello world.')
 
 api.export(ImJoyPlugin())
 </script>

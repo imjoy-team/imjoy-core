@@ -200,6 +200,7 @@ export const CONFIGURABLE_FIELDS = [
   "labels",
   "cover",
   "base_frame",
+  "base_worker",
   "passive",
 ];
 
@@ -235,12 +236,6 @@ const _backends = {
   "web-python": {
     type: "internal",
     name: "Web Python",
-    lang: "web-python",
-    icon: "🐍",
-  },
-  "web-python-window": {
-    type: "internal",
-    name: "Web Python (window)",
     lang: "web-python",
     icon: "🐍",
   },

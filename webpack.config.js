@@ -69,8 +69,19 @@ module.exports = {
                 use: 'raw-loader'
             },
             {
+                test: /\.webworker\.js$/,
+                use: [{
+                  loader: 'worker-loader',
+                  options: {
+                    inline: true,
+                    name: '[name].js',
+                    fallback: false
+                  }
+                }, ],
+              },
+            {
                 test: /\.js$/,
-                exclude: /node_modules/,
+                exclude: [/node_modules/, /\.webworker\.js$/],
                 use: [{
                     loader: 'babel-loader',
                     options: {

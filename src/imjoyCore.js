@@ -4,9 +4,9 @@ import { WindowManager } from "./windowManager.js";
 import { EngineManager } from "./engineManager.js";
 
 import { FileManager } from "./fileManager.js";
-
+import { DynamicPlugin } from "./jailedPlugin.js";
 import PouchDB from "pouchdb-browser";
-
+import * as imjoyRPC from "imjoy-rpc";
 import { randId } from "./utils.js";
 
 import Minibus from "minibus";
@@ -27,7 +27,9 @@ export class ImJoy {
     config_db = null,
     default_base_frame = null,
     default_rpc_base_url = null,
+    expose_api = false,
     debug = false,
+    flags = [],
   }) {
     this.config_db =
       config_db ||
@@ -35,10 +37,11 @@ export class ImJoy {
         revs_limit: 2,
         auto_compaction: true,
       });
-
+    this.expose_api = expose_api;
     this.event_bus = event_bus || Minibus.create();
     this.client_id = client_id || "imjoy_web_" + randId();
     this.imjoy_api = imjoy_api || {};
+    this.flags = flags;
     this.em = new EngineManager({
       event_bus: this.event_bus,
       config_db: this.config_db,
@@ -63,13 +66,24 @@ export class ImJoy {
       default_base_frame: default_base_frame,
       default_rpc_base_url: default_rpc_base_url,
       debug: debug,
+      flags: this.flags,
     });
   }
 
   async init() {
     await this.fm.init();
     await this.pm.init();
-    await this.pm.loadWorkspaceList();
+
+    try {
+      await this.pm.loadWorkspaceList();
+    } catch (e) {
+      console.error(e);
+      this.event_bus.emit(
+        "show_message",
+        "Failed to load the workspace list: " + e.toString()
+      );
+    }
+
     try {
       await this.em.init();
       console.log("Successfully initialized the engine manager.");
@@ -79,6 +93,68 @@ export class ImJoy {
         "show_message",
         "Failed to initialize the engine manager: " + e.toString()
       );
+    }
+    // inside an iframe
+    if (this.expose_api && window.self !== window.top) {
+      const api = await imjoyRPC.setupRPC({ name: "ImJoy" });
+      const root_plugin_config = {
+        _id: "root",
+        name: "ImJoy",
+        type: "window",
+        ui: null,
+        tag: null,
+        inputs: null,
+        outputs: null,
+        docs: "https://imjoy.io/docs/",
+        attachments: [],
+      };
+      const imjoy_api = this.pm.imjoy_api;
+      const wrapped_api = {};
+      const rootPlugin = new DynamicPlugin(
+        root_plugin_config,
+        imjoy_api,
+        null,
+        true
+      );
+      for (let k in imjoy_api) {
+        if (typeof imjoy_api[k] === "function") {
+          wrapped_api[k] = function() {
+            return imjoy_api[k].apply(
+              imjoy_api,
+              [rootPlugin].concat(Array.prototype.slice.call(arguments))
+            );
+          };
+        } else if (typeof imjoy_api[k] === "object") {
+          wrapped_api[k] = {};
+          for (let u in imjoy_api[k]) {
+            wrapped_api[k][u] = function() {
+              return imjoy_api[k][u].apply(
+                imjoy_api,
+                [rootPlugin].concat(Array.prototype.slice.call(arguments))
+              );
+            };
+          }
+        }
+      }
+      wrapped_api.setup = function() {
+        api.showMessage("ImJoy App loaded successfully.");
+      };
+
+      // Note: we need to overwrite this run function here, otherwise, api.run function will be called
+      // we need to mask out api.run for the first run to make sure the window plugin runs
+      // then we can restore the actual api.run
+      let firstRun = true;
+      wrapped_api.run = function() {
+        if (firstRun) {
+          firstRun = false;
+          return;
+        }
+        return imjoy_api.run.apply(
+          imjoy_api,
+          [rootPlugin].concat(Array.prototype.slice.call(arguments))
+        );
+      };
+      api.export(wrapped_api);
     }
   }
 

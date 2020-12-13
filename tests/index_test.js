@@ -5,7 +5,6 @@ import _ from "lodash";
 import WEB_WORKER_PLUGIN_TEMPLATE from "../src/plugins/webWorkerTemplate.imjoy.html";
 import WINDOW_PLUGIN_TEMPLATE from "../src/plugins/windowTemplate.imjoy.html";
 // import NATIVE_PYTHON_PLUGIN_TEMPLATE from '../src/plugins/nativePythonTemplate.imjoy.html';
-import WEB_PYTHON_WINDOW_PLUGIN_TEMPLATE from "../src/plugins/webPythonWindowTemplate.imjoy.html";
 
 import TEST_WEB_WORKER_PLUGIN_1 from "./testWebWorkerPlugin1.imjoy.html";
 import TEST_WEB_WORKER_PLUGIN_2 from "./testWebWorkerPlugin2.imjoy.html";
@@ -93,16 +92,6 @@ describe("ImJoy Core", async () => {
     plugin.terminate();
   }).timeout(100000);
 
-  it("should load the new web-python-window plugin", async () => {
-    const code = _.clone(WEB_PYTHON_WINDOW_PLUGIN_TEMPLATE);
-    const plugin = await pm.reloadPlugin({ code: code });
-    expect(plugin.name).to.equal("Untitled Plugin");
-    expect(plugin.type).to.equal("web-python-window");
-    expect(typeof plugin.api.run).to.equal("function");
-    await plugin.api.run({});
-    plugin.terminate();
-  }).timeout(100000);
-
   it("should get plugin config from github", async () => {
     const config1 = await pm.getPluginFromUrl(
       "https://github.com/imjoy-team/ImJoy/blob/master/web/src/plugins/windowTemplate.imjoy.html"
@@ -117,7 +106,7 @@ describe("ImJoy Core", async () => {
     );
     expect(config2.name).to.equal("My Awesome App");
     expect(config2.type).to.equal("rpc-window");
-  });
+  }).timeout(10000);
 
   describe("ImJoy API", async () => {
     let plugin1;
@@ -235,11 +224,11 @@ describe("ImJoy Core", async () => {
 
     it("should close imjoy window", async () => {
       expect(await plugin1.api.test_close_imjoy_window()).to.be.true;
-    });
+    }).timeout(4000);
 
-    it("should close imjoy window", async () => {
+    it("should close rpc window", async () => {
       expect(await plugin1.api.test_close_rpc_window()).to.be.true;
-    });
+    }).timeout(4000);
 
     it("should close window", async () => {
       expect(await plugin1.api.test_close_window()).to.be.true;
@@ -261,6 +250,10 @@ describe("ImJoy Core", async () => {
         return "ExamplePlugin" === p.name;
       });
       expect(ps2.length).to.equal(0);
+    });
+
+    it("should run utils", async () => {
+      expect(await plugin1.api.test_utils()).to.be.true;
     });
 
     it("should run plugin", async () => {
@@ -290,7 +283,7 @@ describe("ImJoy Core", async () => {
 
     it("should read and write with BrowserFS plugin", async () => {
       expect(await plugin1.api.test_fs()).to.be.true;
-    });
+    }).timeout(10000);
 
     it("should work with custom encoding and decoding", async () => {
       expect(await plugin1.api.test_encoding_decoding()).to.be.true;

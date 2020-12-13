@@ -10,8 +10,9 @@
 
 import { randId } from "./utils.js";
 import { getBackendByType, CONFIG_SCHEMA } from "./api.js";
-import { BasicConnection } from "./connection.js";
+import { BasicConnection, WebWorkerConnection } from "./connection.js";
 import { Whenable } from "./utils.js";
+import PyodideWorker from "./pyodide.webworker.js";
 
 import DOMPurify from "dompurify";
 import { loadImJoyRPC, latest_rpc_version } from "./imjoyLoader.js";
@@ -128,11 +129,7 @@ class DynamicPlugin {
     this.backend = getBackendByType(this.type);
     this.engine = engine;
     this.allow_evil = allow_evil;
-    this._hasVisibleWindow = [
-      "window",
-      "web-python-window",
-      "rpc-window",
-    ].includes(this.type);
+    this._hasVisibleWindow = ["window", "rpc-window"].includes(this.type);
 
     this._updateUI =
       (_interface && _interface.utils && _interface.utils.$forceUpdate) ||
@@ -160,6 +157,11 @@ class DynamicPlugin {
       } else {
         if (!this.backend) {
           this._setupViaEngine();
+        } else if (
+          this.type === "web-python" ||
+          (this.type === "web-worker" && this.config.base_worker)
+        ) {
+          this._setupViaWebWorker();
         } else {
           this._setupViaIframe();
         }
@@ -286,6 +288,20 @@ class DynamicPlugin {
           this._set_disconnected();
         });
     }
+  }
+
+  _setupViaWebWorker() {
+    if (!getBackendByType(this.type)) {
+      throw `Unsupported backend type (${this.type})`;
+    }
+    let webworker;
+    if (this.type === "web-python") {
+      webworker = new PyodideWorker({ name: this.id });
+    } else {
+      webworker = new Worker(this.config.base_worker, { name: this.id });
+    }
+    const connection = new WebWorkerConnection(webworker);
+    this._setupConnection(connection);
   }
 
   _setupViaIframe() {
@@ -731,11 +747,7 @@ function initializeIfNeeded(connection, default_config) {
   connection.once("imjoyRPCReady", async data => {
     const config = data.config || {};
     let forwarding_functions = ["close", "on", "off", "emit"];
-    if (
-      ["rpc-window", "window", "web-python-window"].includes(
-        config.type || default_config.type
-      )
-    ) {
+    if (["rpc-window", "window"].includes(config.type || default_config.type)) {
       forwarding_functions = forwarding_functions.concat([
         "resize",
         "show",
