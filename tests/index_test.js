@@ -283,7 +283,7 @@ describe("ImJoy Core", async () => {
 
     it("should read and write with BrowserFS plugin", async () => {
       expect(await plugin1.api.test_fs()).to.be.true;
-    });
+    }).timeout(10000);
 
     it("should work with custom encoding and decoding", async () => {
       expect(await plugin1.api.test_encoding_decoding()).to.be.true;
