@@ -1509,41 +1509,53 @@ function generate_random_data(size){
     return random_data.join('');
 }
 
+function fsRead(fd, buffer, offset, chunkSize, bytesRead) {
+  return new Promise((resolve, reject) => {
+    fs.read(fd, buffer, offset, chunkSize, bytesRead, (err, bytesRead,
+      read_buffer) => {
+      if (err) {
+        console.log('err : ' + err);
+        reject(err)
+        return
+      }
+      const bytes = read_buffer.slice(0, bytesRead)
+      resolve(bytes)
+    });
+  })
+}
 
 bfs.writeFile('/tmp/test.txt', generate_random_data(100000), function(err){
 if (err){
     console.error(err);
 }
 bfs.open('/tmp/test.txt', 'r', function(err, fd) {
-    bfs.fstat(fd, function(err, stats) {
+    bfs.fstat(fd, async function(err, stats) {
       if(err){
-          reject(err)
+          console.error(err)
           return
       }
       var bufferSize = stats.size,
           chunkSize = 512,
           buffer = new Uint8Array(new ArrayBuffer(chunkSize)),
           bytesRead = 0;
-
-      var stopReadding = false
-      var readCallback = function(err, bytesRead, read_buffer){
-          if(err){
-              console.log('err : ' +  err);
-              stopReadding = true
-              reject(err)
-          }
-          const bytes = read_buffer.slice(0, bytesRead)
-          console.log('new chunk:', bytes)
-      };
-      while (bytesRead < bufferSize && !stopReadding) {
-          if ((bytesRead + chunkSize) > bufferSize) {
-              chunkSize = (bufferSize - bytesRead);
-          }
-          bfs.read(fd, buffer, 0, chunkSize, bytesRead, readCallback);
-          bytesRead += chunkSize;
+      try{
+        while (bytesRead < bufferSize) {
+            if ((bytesRead + chunkSize) > bufferSize) {
+                chunkSize = (bufferSize - bytesRead);
+            }
+            const bytes = await fsRead(fd, buffer, 0, chunkSize, bytesRead)
+            console.log(bytes)
+            bytesRead += chunkSize;
+        }
+        console.log("Finished reading.")
       }
-      bfs.close(fd);
-      resolve()
+      catch(e){
+        console.error(e)
+      }
+      finally{
+        bfs.close(fd);
+      }
+
     });
   });
 })
