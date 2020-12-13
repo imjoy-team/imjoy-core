@@ -656,6 +656,30 @@ And if a variable or function has a name start with `_`, it means that's an inte
 instance of a class, while in Python there is no `new` keyword.
 
 
+### api.init
+```javascript
+api.init(config)
+```
+
+Initialize with a minimal plugin interface and config. This can be used as a shortcut for `api.export` when you don't want to export any plugin api.
+
+In Python for example:
+```python
+api.init(config)
+```
+
+Will be equivalent to:
+```
+def setup():
+    pass
+
+api.export({"setup": setup}, config)
+```
+
+**Arguments**
+* **config**: Object, optional. Configuration for the plugin, with all the config fields including `name`, `type` (a full list can be found [here](https://imjoy.io/docs/#/development?id=ltconfiggt-block)).
+
+
 ### api.exportFile
 ```javascript
 api.exportFile(file, name)

@@ -4,11 +4,7 @@ importScripts("https://cdn.jsdelivr.net/pyodide/v0.15.0/full/pyodide.js");
 
 const src = `
 from imjoy import api
-class ImJoyPlugin():
-    def setup(self):
-        pass
-# kickstart the initial connection
-api.export(ImJoyPlugin())
+api.init()
 `;
 
 const startupScript = `
@@ -26,7 +22,7 @@ def setup_imjoy(_):
     except Exception as e:
         js.__reject(traceback.format_exc())
 
-micropip.install("imjoy-rpc>=0.2.52").then(setup_imjoy).catch(js.__reject)
+micropip.install("imjoy-rpc>=0.2.53").then(setup_imjoy).catch(js.__reject)
 `;
 
 function installPackage() {
