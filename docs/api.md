@@ -1428,11 +1428,6 @@ Currently supported functions for **all plugins** are:
  * `api.utils.$forceUpdate()`: refreshes the GUI manually.
  * `api.utils.openUrl(url)`: opens an `url` in a new browser tab.
  * `api.utils.sleep(duration)`: sleeps for the indicated `duration` in seconds. Note for Python plugins, use `time.sleep` instead.)
- 
-Currently supported functions for **Python plugins** are:
- * `api.utils.kill(subprocess)`: kills a `subprocess` in python.
- * `api.utils.ndarray(numpy_array)`: wrapps a ndarray `numpy_array` according to the ImJoy ndarray format.
-
 
 ### api.config
 The configuration information consists of:
@@ -1440,6 +1435,8 @@ The configuration information consists of:
  * `engine`: URL of the current plugin engine. **Only available to native-python plugins**
  * `file_manager`: URL of the file manager registered by the current plugin engine. **Only available to native-python plugins**
 
+For `native-python` plugin, it contains the following additional fields:
+ * `work_dir`: the current working directory
 ### api.WORKSPACE constant
 **Deprecated!** Use `api.config.workspace` instead
 
