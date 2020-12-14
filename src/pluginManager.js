@@ -971,7 +971,11 @@ export class PluginManager {
       uri = await githubUrlRaw(uri);
     }
     // if the uri format is REPO_NAME:PLUGIN_NAME
-    if (!uri.startsWith("http") && uri.includes("/") && uri.includes(":")) {
+    if (
+      !/(http(s?)):\/\//i.test(uri) &&
+      uri.includes("/") &&
+      uri.includes(":")
+    ) {
       let [repo_name, plugin_name] = uri.split(":");
       selected_tag = plugin_name.split("@")[1];
       plugin_name = plugin_name.split("@")[0];
@@ -1641,8 +1645,13 @@ export class PluginManager {
       }
       const tconfig = _.assign({}, template, config);
       tconfig.workspace = this.selected_workspace;
+      // TODO: deprecate TAG and WORKSPACE, use `config.tag` and `config.workspace` instead
       const _interface = _.assign(
-        { TAG: tconfig.tag, WORKSPACE: this.selected_workspace },
+        {
+          TAG: tconfig.tag,
+          WORKSPACE: this.selected_workspace,
+          config: { tag: tconfig.tag, workspace: this.selected_workspace },
+        },
         this.imjoy_api
       );
       try {
@@ -1717,6 +1726,11 @@ export class PluginManager {
           TAG: tconfig.tag,
           WORKSPACE: this.selected_workspace,
           ENGINE_URL: (engine && engine.url) || undefined,
+          config: {
+            tag: tconfig.tag,
+            workspace: this.selected_workspace,
+            engine: (engine && engine.url) || undefined,
+          },
         },
         this.imjoy_api
       );
@@ -1730,9 +1744,7 @@ export class PluginManager {
           connection
         );
         plugin._log_history.push(
-          `Loading plugin ${plugin.id} (TAG=${_interface.TAG}, WORKSPACE=${
-            _interface.WORKSPACE
-          })`
+          `Loading plugin ${plugin.id} (config=${_interface.config})`
         );
         if (_interface.ENGINE_URL)
           plugin._log_history.push(`ENGINE_URL=${_interface.ENGINE_URL}`);
@@ -1856,7 +1868,11 @@ export class PluginManager {
         }
       }
       const _interface = _.assign(
-        { TAG: tconfig.tag, WORKSPACE: this.selected_workspace },
+        {
+          TAG: tconfig.tag,
+          WORKSPACE: this.selected_workspace,
+          config: { tag: tconfig.tag, workspace: this.selected_workspace },
+        },
         imjoy_api
       );
       try {
@@ -2040,7 +2056,7 @@ export class PluginManager {
             manifest.plugins = manifest.plugins.filter(p => {
               return !p.disabled;
             });
-            if (!manifest.uri_root.startsWith("http")) {
+            if (!/(http(s?)):\/\//i.test(manifest.uri_root)) {
               manifest.uri_root = repository_url.replace(
                 new RegExp("manifest.imjoy.json$"),
                 _.trim(manifest.uri_root, "/")
@@ -2052,7 +2068,7 @@ export class PluginManager {
               p.origin = repo_origin + ":" + p.name;
               if (
                 !p.uri.startsWith(manifest.uri_root) &&
-                !p.uri.startsWith("http")
+                !/(http(s?)):\/\//i.test(p.uri)
               ) {
                 p.uri = manifest.uri_root + "/" + p.uri;
               }
@@ -2410,7 +2426,19 @@ export class PluginManager {
     });
   }
 
-  createWindow(_plugin, wconfig) {
+  createWindow(_plugin, cfg) {
+    let wconfig = {};
+    if (typeof cfg === "string") {
+      if (
+        cfg.includes("\n") ||
+        /(http(s?)):\/\//i.test(cfg) ||
+        (cfg.includes("/") && cfg.includes(":"))
+      ) {
+        wconfig = { src: cfg };
+      } else wconfig = { type: cfg };
+    } else {
+      wconfig = cfg;
+    }
     // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve, reject) => {
       if (!wconfig.type) {
@@ -2471,22 +2499,8 @@ export class PluginManager {
             wconfig.type = wplugin.config.type;
             wconfig.name = wconfig.name || wplugin.name || wconfig.type;
           }
-          // load window plugin from source code url
-          else if (
-            wconfig.src.endsWith(".imjoy.html") ||
-            (wconfig.src.includes("github.com") &&
-              wconfig.src.includes("/blob/")) ||
-            wconfig.src.includes("gist.github.com")
-          ) {
-            const wplugin = await this.reloadPluginRecursively({
-              uri: wconfig.src,
-            });
-            window_config = wplugin.config;
-            wconfig.type = wplugin.config.type;
-            wconfig.name = wconfig.name || wplugin.name || wconfig.type;
-          }
           // load as rpc-window
-          else {
+          else if (/(http(s?)):\/\//i.test(wconfig.src)) {
             wconfig.type = wconfig.type || wconfig.src.split("?")[0];
             wconfig.name = wconfig.name || wconfig.type;
             window_config = Object.assign({}, wconfig);
@@ -2503,6 +2517,26 @@ export class PluginManager {
             window_config.type = "rpc-window";
             window_config.base_frame = wconfig.src;
             window_config.id = "rpc_window_" + randId();
+          }
+          // load window plugin from source code url
+          else if (
+            wconfig.src.endsWith(".imjoy.html") ||
+            (wconfig.src.includes("/") && wconfig.src.includes(":")) ||
+            (wconfig.src.includes("github.com") &&
+              wconfig.src.includes("/blob/")) ||
+            wconfig.src.includes("gist.github.com")
+          ) {
+            const wplugin = await this.reloadPluginRecursively({
+              uri: wconfig.src,
+              tag: wconfig.tag,
+              namespace: wconfig.namespace,
+            });
+            window_config = wplugin.config;
+            wconfig.type = wplugin.config.type;
+            wconfig.name = wconfig.name || wplugin.name || wconfig.type;
+          } else {
+            reject(`Unsupported window spec ${wconfig}`);
+            return;
           }
         } else {
           window_config = this.registered.windows[wconfig.type];
@@ -2611,43 +2645,58 @@ export class PluginManager {
     return ps;
   }
 
-  async getPlugin(_plugin, src, config) {
-    config = config || {};
-    if (src.includes("\n")) {
+  async getPlugin(_plugin, cfg) {
+    let config = {};
+    if (typeof cfg === "string") {
+      if (/(http(s?)):\/\//i.test(cfg) || cfg.includes("\n")) {
+        config.src = cfg;
+      } else {
+        config.name = cfg;
+      }
+    } else {
+      config = cfg;
+    }
+    if (config.src && config.src.includes("\n")) {
       const p = await this.reloadPlugin({
-        code: src,
+        code: config.src,
         load_dependencies: true,
         namespace: config.namespace,
         tag: config.tag,
       });
       console.log(`${p.name} loaded from source code`);
       return p.api;
-    } else if (this.plugin_names[src]) {
-      return this.plugin_names[src].api;
+    } else if (
+      config.src &&
+      (/(http(s?)):\/\//i.test(config.src) ||
+        (config.src.includes("/") && config.src.includes(":")))
+    ) {
+      // try to load from plugin uri
+      const p = await this.reloadPluginRecursively(
+        {
+          uri: config.src,
+          tag: config.tag,
+          namespace: config.namespace,
+        },
+        config.tag
+      );
+      console.log(`${p.name} loaded from ${config.src}`);
+      return p.api;
+    } else if (config.name && this.plugin_names[config.name]) {
+      return this.plugin_names[config.name].api;
+    } else if (this.internal_plugins[config.name]) {
+      const p = await this.reloadPluginRecursively(
+        {
+          uri: this.internal_plugins[config.name].uri,
+          tag: config.tag,
+          namespace: config.namespace,
+        },
+        null,
+        "eval is evil"
+      );
+      console.log(`${p.name} loaded.`);
+      return p.api;
     } else {
-      if (this.internal_plugins[src]) {
-        const p = await this.reloadPluginRecursively(
-          {
-            uri: this.internal_plugins[src].uri,
-            namespace: config.namespace,
-          },
-          null,
-          "eval is evil"
-        );
-        console.log(`${p.name} loaded.`);
-        return p.api;
-      } else {
-        // try to load from plugin uri
-        const p = await this.reloadPluginRecursively(
-          {
-            uri: src,
-            namespace: config.namespace,
-          },
-          config.tag
-        );
-        console.log(`${p.name} loaded from ${src}`);
-        return p.api;
-      }
+      throw `Unsupported plugin spec: ${config}`;
     }
   }
 
