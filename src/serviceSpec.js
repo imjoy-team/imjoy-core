@@ -68,6 +68,12 @@ export const serviceSpec = {
       config: {
         type: "object",
       },
+      enable: {
+        instanceof: Function,
+      },
+      disable: {
+        instanceof: Function,
+      },
       connect: {
         instanceof: Function,
       },

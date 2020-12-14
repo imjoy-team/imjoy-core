@@ -319,7 +319,7 @@ be started unless the user clicks the plugin menu or the plugin is called by
 another plugin. Each window in the workspace is then a new instance of the `window` plugin.
 
 When `api.getPlugin` is called, it will return the api of the proxy plugin, e.g.
-`proxy = await api.getPlugin('Image Window')`). Every time the `run` function
+`proxy = await api.getPlugin({'name': 'Image Window'})`). Every time the `run` function
 is executed, a new window will be created. For example, if you run `proxy.run({data: ...})`
 for 10 times, 10 windows will be created. 
 
@@ -333,7 +333,8 @@ Run `win.close()` will close the window.
 
 **Arguments**
 
-* **config**. Object (JavaScript) or dictionary (Python). Options for creating window.
+* **config**. String or Object. Options for creating window. When it's a string, it will be converted into an object. The conversion is done according to the following rule: 1) if the string contains multiple line, is a URL or plugin URI, then it will be treated as window plugin source (see the `src` key below); 2) otherwise it will be treated as the window plugin type (see the `type` key below).
+
 It contains the following fields:
 
   - **name**: String. Specifies the name of new window.
@@ -539,7 +540,7 @@ class Plugin {
     async run(){
         const dirtyCat = new Cat('boboshu', 'mixed', 0.67, false)
         // assuming we have a shower plugin
-        const showerPlugin = await api.getPlugin('catShower')
+        const showerPlugin = await api.getPlugin({'name': 'catShower'})
         // now pass a cat into the shower plugin, and we should get a clean cat, the name should be the same
         // note that the other plugin is running in another sandboxed iframe or in Python
         // because we have the cat codec registered, we can send the Cat object to the other plugin
@@ -790,7 +791,7 @@ await api.uninstallPlugin({name: "MyAwesomePlugin"})
 
 ### api.getPlugin
 ```javascript
-plugin = await api.getPlugin(src, config)
+plugin = await api.getPlugin(config)
 ```
 
 Gets the API object of another plugin by its name, url or plugin source code.
@@ -805,13 +806,14 @@ plugin occasionally, you can also use `api.call`
 
 **Arguments**
 
-* **src**: String. Name, url or source code of another plugin. If the plugin is already loaded, then use its name, otherwise, pass a valid plugin URI or its source code. By passing the source code, it allows the flexibility of 
-embedding one or more plugin source code inside another plugin. For example, a Python plugin can dynamically populate 
-a window plugin in HTML.
+* **config**: String or Object. Configuration for getting the plugin. If it's a string, then depending on the content of the string it will be converted into a config object. The conversion is done according to the following rule: 1) if the string contains multiple line, is a URL or plugin URI, then it will be treated as plugin source (see the `src` key below); 2) otherwise it will be treated as a plugin name (see the `name` key below).
 
-* **config**: Object, optional. configuration object. Currently, you can pass the following config:
-  - `tag`: String. Specify the tag of the plugin if the plugin support several `tags`, only used when `src` is the source code of the plugin.
-  - `namespace`: String. Specify the namespace of the plugin, only used when `src` is the source code of the plugin.
+Currently, you can pass the following config:
+  - **name**: String. Name of the plugin. The plugin must be already loaded into the workspace.
+  - **src**: String. URL or source code of the plugin, in this case it will be instantiate on-the-fly. Otherwise, pass a valid plugin URI or its source code. By passing the source code, it allows the flexibility of embedding one or more plugin source code inside another plugin. For example, a Python plugin can dynamically populate 
+a window plugin in HTML.
+  - **tag**: String, optional. Specify the tag of the plugin if the plugin support several `tags`, only used when `src` is the source code of the plugin.
+  - **namespace**: String, optional. Specify the namespace of the plugin, only used when `src` is the source code of the plugin.
 
 **Returns**
 * **plugin**: Object. An object which can be used to access the plugin API functions.
@@ -965,6 +967,25 @@ Get file URL for downloading (replacement of `api.getFileUrl`)
 ```javascript
 file_manager = await api.getFileManager("https://127.0.0.1:2957")
 await file_manager.getFileUrl({'path': './data/output.png'})
+```
+
+
+If you want to get the file URL of your current file
+<!-- ImJoyPlugin: { "type": "native-python", "name": "my-python-plugin"} -->
+```
+from imjoy import api
+
+
+class ImJoyPlugin():
+    def setup(self):
+        api.log('initialized')
+
+    async def run(self, ctx):
+        file_manager = await api.getFileManager(api.config.file_manager)
+        url = await file_manager.getFileUrl({"path": './screenshot-imjoy-notebook.png'})
+        await api.alert(url)
+
+api.export(ImJoyPlugin())
 ```
 
 Request file URL for uploading (replacement of `api.requestUploadUrl`)
@@ -1236,7 +1257,7 @@ Shows a file dialog to select files or directories.
 
 The function will return a promise from which you can get the file path string.
 
-Depending on the plugin engine implementation, ImJoy will try to select the a file manager specified by the plugin engine via the `api.FILE_MANAGER_URL` constant.
+Depending on the plugin engine implementation, ImJoy will try to select the a file manager specified by the plugin engine via the `api.config.file_manager`.
 
 The file handling is different for the ImJoy app and the plugin engine. We recommend
 reading the dedicated section in the [user manual](development?id=loading-saving-data) to understand the difference.
@@ -1264,7 +1285,7 @@ It contains the following fields:
     - `single`: only a single file or directory can be selected.
     - `multiple`: multiple files or directories are selected and are returned in an array or list.
     - `single|multiple` (default): both single and multiple selection are allowed.
-  - **file_manager**: String. Specify the file manager via url, in a `native-python` plugin for example, you can get the file manager URL via `api.FILE_MANAGER_URL`.
+  - **file_manager**: String. Specify the file manager via url, in a `native-python` plugin for example, you can get the file manager URL via `api.config.file_manager`.
 
 (Please also consult [this section](api?id=input-arguments) for how arguments can be set.)
 
@@ -1413,16 +1434,28 @@ Currently supported functions for **Python plugins** are:
  * `api.utils.ndarray(numpy_array)`: wrapps a ndarray `numpy_array` according to the ImJoy ndarray format.
 
 
+### api.config
+The configuration information consists of:
+ * `workspace`: the current workspace.
+ * `engine`: URL of the current plugin engine. **Only available to native-python plugins**
+ * `file_manager`: URL of the file manager registered by the current plugin engine. **Only available to native-python plugins**
+
 ### api.WORKSPACE constant
+**Deprecated!** Use `api.config.workspace` instead
+
 Name of the current workspace.
 
 
 ### api.ENGINE_URL constant
+**Deprecated!** Use `api.config.engine` instead
+
 **Only available to native-python plugins**
 
 URL of the current plugin engine.
 
 ### api.FILE_MANAGER_URL constant
+**Deprecated!** Use `api.config.file_manager` instead
+
 **Only available to native-python plugins**
 
 URL of the file manager registered by the current plugin engine.
@@ -1588,8 +1621,10 @@ Also notice that the content shown inside a `window` plugin do not have these re
  * support setting `passive` key in `<config>`.
  * remove `_rpcEncode` and `_rpcDecode` (use `api.registerCodec` instead)
  * more complete web-python implementation: using imjoy-rpc library from pip in pyodide; switch to web-worker mode
- * deprecate web-python-window
+ * deprecate plugin type `web-python-window`
  * support `base_worker` for specifying a web-worker script for `web-python` plugins.
+ * add `api.config` and deprecate constants including `api.WORKSPACE`, `api.TAG`, `api.ENGINE_URL`, `api.FILE_MANAGER_URL`.
+ * make the api more consistent for `api.createWindow` and `api.getPlugin`. Allowing passing a string to `api.createWindow` and accepting a `config` object for `api.getPlugin`
 
 #### api_version: 0.1.7
  * `api.fs` has been deprecated, the browser file system is moved to a separate plugin `BrowserFS`, to use the file system, you can do `const bfs_plugin = await api.getPlugin('BrowserFS'); const bfs = bfs_plugin.fs;`, now `fs` will be equivalent to `api.fs`. Notice: the data saved with `api.fs` will not be accessible with the new API, to get access the old data, please change `api_version` in the plugin config to `0.1.6`.
