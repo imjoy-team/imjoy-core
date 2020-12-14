@@ -274,12 +274,6 @@ class DynamicPlugin {
             console.warn(
               "Plugin " + this.id + " is ready, but it was termianted."
             );
-            if (this.engine && this.engine.killPlugin)
-              this.engine.killPlugin({
-                id: this.config.id,
-                name: this.config.name,
-              });
-            return;
           }
           ready(remote);
         })
@@ -326,10 +320,7 @@ class DynamicPlugin {
       this.config.base_frame = frame_url;
     }
     const _frame = createIframe(this.config);
-    const connection = new BasicConnection(_frame);
-
-    this._setupConnection(connection);
-
+    this._frame = _frame;
     if (this._hasVisibleWindow) {
       let window_id = this.config.window_id;
       if (typeof window_id === "string") {
@@ -350,6 +341,9 @@ class DynamicPlugin {
     } else {
       document.body.appendChild(_frame);
     }
+
+    const connection = new BasicConnection(_frame);
+    this._setupConnection(connection);
   }
 
   async _setupRPC(connection, pluginConfig) {
@@ -618,8 +612,6 @@ class DynamicPlugin {
     this._updateUI();
   }
   _forceDisconnect() {
-    if (this.engine && this.engine.killPlugin)
-      this.engine.killPlugin({ id: this.config.id, name: this.config.name });
     this._set_disconnected();
     if (this._rpc) {
       this._rpc.disconnect();

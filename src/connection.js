@@ -48,24 +48,25 @@ export class BasicConnection extends MessageEmitter {
       }
     });
   }
-  connect() {
-    // TODO: remove listener when disconnected
-    window.addEventListener("message", e => {
-      if (this._frame.contentWindow && e.source === this._frame.contentWindow) {
-        const target_id = e.data.target_id;
-        if (target_id && this._peer_id && target_id !== this._peer_id) {
-          const conn = all_connections[target_id];
-          if (conn) conn._fire(e.data.type, e.data);
-          else
-            console.warn(
-              `connection with target_id ${target_id} not found, discarding data: `,
-              e.data
-            );
-        } else {
-          this._fire(e.data.type, e.data);
-        }
+  _messageHandler(e) {
+    if (this._frame.contentWindow && e.source === this._frame.contentWindow) {
+      const target_id = e.data.target_id;
+      if (target_id && this._peer_id && target_id !== this._peer_id) {
+        const conn = all_connections[target_id];
+        if (conn) conn._fire(e.data.type, e.data);
+        else
+          console.warn(
+            `connection with target_id ${target_id} not found, discarding data: `,
+            e.data
+          );
+      } else {
+        this._fire(e.data.type, e.data);
       }
-    });
+    }
+  }
+
+  connect() {
+    window.addEventListener("message", this._messageHandler.bind(this));
     this._fire("connected");
   }
 
@@ -117,6 +118,7 @@ export class BasicConnection extends MessageEmitter {
    * Disconnects the plugin (= kills the frame)
    */
   disconnect(details) {
+    window.removeEventListener("message", this._messageHandler);
     if (!this._disconnected) {
       this._disconnected = true;
       if (typeof this._frame !== "undefined") {
