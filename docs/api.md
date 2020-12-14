@@ -1435,8 +1435,12 @@ The configuration information consists of:
  * `engine`: URL of the current plugin engine. **Only available to native-python plugins**
  * `file_manager`: URL of the file manager registered by the current plugin engine. **Only available to native-python plugins**
 
-For `native-python` plugin, it contains the following additional fields:
- * `work_dir`: the current working directory
+### api.config
+The configuration information consists of:
+ * `workspace`: the current workspace.
+ * `engine`: URL of the current plugin engine. **Only available to native-python plugins**
+ * `file_manager`: URL of the file manager registered by the current plugin engine. **Only available to native-python plugins**
+
 ### api.WORKSPACE constant
 **Deprecated!** Use `api.config.workspace` instead
 
