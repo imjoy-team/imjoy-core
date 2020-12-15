@@ -1118,6 +1118,7 @@ export class PluginManager {
                   uri: config.dependencies[i],
                   scoped_plugins: config.scoped_plugins || scoped_plugins,
                   namespace: pconfig.namespace,
+                  hot_reloading: pconfig.hot_reloading,
                 },
                 null,
                 allow_evil
@@ -1406,6 +1407,7 @@ export class PluginManager {
           _id: pconfig._id,
           origin: pconfig.origin,
           namespace: pconfig.namespace,
+          hot_reloading: pconfig.hot_reloading,
         });
         pconfig.name = pconfig.name || template.name;
         if (!plugin && pconfig.name) {
@@ -1447,6 +1449,7 @@ export class PluginManager {
         _id: pconfig._id,
         origin: pconfig.origin,
         namespace: pconfig.namespace,
+        hot_reloading: pconfig.hot_reloading,
       });
       template.engine = null;
       this.unloadPlugin(template, true);
@@ -1459,6 +1462,7 @@ export class PluginManager {
             {
               uri: template.dependencies[i],
               namespace: pconfig.namespace,
+              hot_reloading: pconfig.hot_reloading,
             },
             null,
             allow_evil
@@ -1579,8 +1583,8 @@ export class PluginManager {
       }
 
       config.tag = overwrite_config.tag || (config.tags && config.tags[0]);
-
-      config.scripts = [];
+      (config.hot_reloading = overwrite_config.hot_reloading),
+        (config.scripts = []);
       // try to match the script with current tag
       for (let i = 0; i < pluginComp.script.length; i++) {
         if (pluginComp.script[i].attrs.tag === config.tag) {
@@ -2548,6 +2552,7 @@ export class PluginManager {
               load_dependencies: true,
               namespace: wconfig.namespace,
               tag: wconfig.tag,
+              hot_reloading: wconfig.hot_reloading,
             });
             window_config = wplugin.config;
             wconfig.type = wplugin.config.type;
@@ -2584,6 +2589,7 @@ export class PluginManager {
               uri: wconfig.src,
               tag: wconfig.tag,
               namespace: wconfig.namespace,
+              hot_reloading: wconfig.hot_reloading,
             });
             window_config = wplugin.config;
             wconfig.type = wplugin.config.type;
@@ -2719,6 +2725,7 @@ export class PluginManager {
         load_dependencies: true,
         namespace: config.namespace,
         tag: config.tag,
+        hot_reloading: config.hot_reloading,
       });
       console.log(`${p.name} loaded from source code`);
       return p.api;
@@ -2733,6 +2740,7 @@ export class PluginManager {
           uri: config.src,
           tag: config.tag,
           namespace: config.namespace,
+          hot_reloading: config.hot_reloading,
         },
         config.tag
       );
@@ -2746,6 +2754,7 @@ export class PluginManager {
           uri: this.internal_plugins[config.name].uri,
           tag: config.tag,
           namespace: config.namespace,
+          hot_reloading: config.hot_reloading,
         },
         null,
         "eval is evil"
