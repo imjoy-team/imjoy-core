@@ -1430,11 +1430,16 @@ export class PluginManager {
             plugin.config.styles = template.styles;
             plugin.config.links = template.links;
             plugin.config.windows = template.windows;
-            await plugin.hotReload();
-            if (template.type) {
-              this._register(plugin, template);
+            try {
+              await plugin.hotReload();
+              if (template.type) {
+                this._register(plugin, template);
+              }
+              return plugin;
+            } catch (e) {
+              console.error("Failed to hot reload: ", e);
+              this.showMessage(`Failed to perform hot reloading, error: ${e}`);
             }
-            return plugin;
           }
         }
       }
@@ -1810,7 +1815,7 @@ export class PluginManager {
           console.warn(`Plugin ${plugin.name} failed to load in 180s.`);
         }, 180000);
 
-        plugin.onConnected(() => {
+        plugin.onConnected(async () => {
           clearTimeout(plugin_loading_timer);
           if (!plugin.api) {
             console.error("Error occured when loading plugin.");
@@ -1835,6 +1840,13 @@ export class PluginManager {
           // if (template.extensions && template.extensions.length > 0) {
           //   this.registerExtension(template.extensions, plugin);
           // }
+          if (
+            plugin.config.flags &&
+            plugin.config.flags.includes("browserfs")
+          ) {
+            const bfs = await this.getPlugin(null, { name: "BrowserFS" });
+            bfs.attachWebWorker(plugin.webworker);
+          }
           if (plugin.config.resumed && plugin.api.resume) {
             plugin._log_history.push(`Resuming plugin.`);
             plugin.api
