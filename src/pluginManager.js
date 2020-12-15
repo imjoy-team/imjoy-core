@@ -2477,7 +2477,7 @@ export class PluginManager {
     });
   }
 
-  createWindow(_plugin, cfg) {
+  createWindow(_plugin, cfg, extra_cfg) {
     let wconfig = {};
     if (typeof cfg === "string") {
       if (
@@ -2489,6 +2489,9 @@ export class PluginManager {
       } else wconfig = { type: cfg };
     } else {
       wconfig = cfg;
+    }
+    if (extra_cfg) {
+      wconfig = Object.assign(wconfig, extra_cfg);
     }
     // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve, reject) => {
