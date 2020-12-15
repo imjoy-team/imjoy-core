@@ -148,7 +148,7 @@ export class PluginManager {
         throw "`api.showDialog` is not implemented.";
       },
       showFileDialog() {
-        throw "`api.showDialog` is not implemented.";
+        throw "`api.showFileDialog` is not implemented.";
       },
       showProgress(_plugin, p) {
         console.log("api.showProgress: ", p);
@@ -2561,11 +2561,16 @@ export class PluginManager {
 
           // load window plugin from source code url
           else if (
-            wconfig.src.endsWith(".imjoy.html") ||
-            (wconfig.src.includes("/") && wconfig.src.includes(":")) ||
-            (wconfig.src.includes("github.com") &&
-              wconfig.src.includes("/blob/")) ||
-            wconfig.src.includes("gist.github.com")
+            // plugin uri
+            (!/(http(s?)):\/\//i.test(wconfig.src) &&
+              wconfig.src.includes("/") &&
+              wconfig.src.includes(":")) ||
+            // plugin source url
+            (/(http(s?)):\/\//i.test(wconfig.src) &&
+              (wconfig.src.endsWith(".imjoy.html") ||
+                (wconfig.src.includes("github.com") &&
+                  wconfig.src.includes("/blob/")) ||
+                wconfig.src.includes("gist.github.com")))
           ) {
             const wplugin = await this.reloadPluginRecursively({
               uri: wconfig.src,
