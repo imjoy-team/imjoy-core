@@ -196,7 +196,34 @@ class DynamicPlugin {
       }
     }
   }
-  _setupViaEngine() {
+  _engineSetRemote(remote) {
+    // check if the plugin is terminated during startup
+    if (!this.engine) {
+      console.warn("Plugin " + this.id + " is ready, but it was termianted.");
+    }
+    this.api = remote;
+    this.api._rintf = true;
+    this.api.config = {
+      id: this.id,
+      name: this.config.name,
+      workspace: this.config.workspace,
+      type: this.config.type,
+      namespace: this.config.namespace,
+      tag: this.config.tag,
+    };
+    if (this.window_id) {
+      this.api.config.window_id = this.config.window_id;
+    }
+    this._disconnected = false;
+    if (this.initializing) {
+      this.initializing = false;
+      this._updateUI();
+      this._connected.emit();
+      this.engine.registerPlugin(this);
+    }
+  }
+
+  async _setupViaEngine() {
     if (
       this.engine &&
       this.engine._is_evil &&
@@ -218,8 +245,12 @@ class DynamicPlugin {
     this.initializing = true;
     this._updateUI();
     const me = this;
+
     const engine_utils = {
       _rintf: true,
+      setPluginAPI(remote) {
+        me._engineSetRemote(remote);
+      },
       terminatePlugin() {
         me.terminate();
       },
@@ -231,33 +262,13 @@ class DynamicPlugin {
       },
     };
 
-    const ready = remote => {
-      this.api = remote;
-      this.api._rintf = true;
-      this.api.config = {
-        id: this.id,
-        name: this.config.name,
-        workspace: this.config.workspace,
-        type: this.config.type,
-        namespace: this.config.namespace,
-        tag: this.config.tag,
-      };
-      if (this.window_id) {
-        this.api.config.window_id = this.config.window_id;
-      }
-      this._disconnected = false;
-      this.initializing = false;
-      this._updateUI();
-      this._connected.emit();
-      this.engine.registerPlugin(this);
-    };
     if (this.config.passive) {
       this.engine.startPlugin(
         this.config,
         this._initialInterface,
         engine_utils
       );
-      ready({
+      this._engineSetRemote({
         passive: true,
         _rintf: true,
         setup: async function() {},
@@ -266,27 +277,21 @@ class DynamicPlugin {
         emit: async function() {},
       });
     } else {
-      this.engine
-        .startPlugin(this.config, this._initialInterface, engine_utils)
-        .then(remote => {
-          // check if the plugin is terminated during startup
-          if (!this.engine) {
-            console.warn(
-              "Plugin " + this.id + " is ready, but it was termianted."
-            );
-            if (this.engine && this.engine.killPlugin)
-              this.engine.killPlugin({
-                id: this.config.id,
-                name: this.config.name,
-              });
-            return;
-          }
-          ready(remote);
-        })
-        .catch(e => {
-          this.error(e);
-          this._set_disconnected();
-        });
+      try {
+        const remote = await this.engine.startPlugin(
+          this.config,
+          this._initialInterface,
+          engine_utils
+        );
+
+        // the plugin can either return the api or call engine_utils.setPluginAPI later
+        if (remote) {
+          this._engineSetRemote(remote);
+        }
+      } catch (e) {
+        this.error(e);
+        this._set_disconnected();
+      }
     }
   }
 
@@ -326,10 +331,6 @@ class DynamicPlugin {
       this.config.base_frame = frame_url;
     }
     const _frame = createIframe(this.config);
-    const connection = new BasicConnection(_frame);
-
-    this._setupConnection(connection);
-
     if (this._hasVisibleWindow) {
       let window_id = this.config.window_id;
       if (typeof window_id === "string") {
@@ -350,6 +351,9 @@ class DynamicPlugin {
     } else {
       document.body.appendChild(_frame);
     }
+
+    const connection = new BasicConnection(_frame);
+    this._setupConnection(connection);
   }
 
   async _setupRPC(connection, pluginConfig) {
@@ -382,6 +386,7 @@ class DynamicPlugin {
         this._rpc.setInterface(this._initialInterface);
       }
       await this._sendInterface();
+      this._allow_execution = pluginConfig.allow_execution;
       if (pluginConfig.allow_execution) {
         await this._executePlugin();
       }
@@ -490,20 +495,47 @@ class DynamicPlugin {
     });
   }
 
+  async hotReload() {
+    if (!this.backend) {
+      this.config.hot_reloading = true;
+      await this._setupViaEngine();
+    } else {
+      if (this._allow_execution) {
+        await this._executePlugin(true);
+        if (!this.config.passive) {
+          this.api = await this._requestRemote();
+        }
+      } else {
+        throw new Error("This plugin does not allow execution.");
+      }
+    }
+  }
+
   /**
    * Loads the plugin body (executes the code in case of the
    * DynamicPlugin)
    */
-  async _executePlugin() {
+  async _executePlugin(hot_reloading) {
+    // if (hot_reloading)
+    //   await this._connection.execute({ type: "start_hot_reloading" });
     if (this.config.requirements) {
-      await this._connection.execute({
+      const requirement = {
         type: "requirements",
         lang: this.config.lang,
         requirements: this.config.requirements,
         env: this.config.env,
-      });
+      };
+      const serialized_requirement = JSON.stringify(requirement);
+      if (
+        !hot_reloading ||
+        this._executed_requirements !== serialized_requirement
+      ) {
+        await this._connection.execute(requirement);
+        this._executed_requirements = JSON.stringify(requirement);
+      }
     }
     if (this._hasVisibleWindow) {
+      // TODO: support hot-reloading of window content
       if (this.config.styles) {
         for (let i = 0; i < this.config.styles.length; i++) {
           await this._connection.execute({
@@ -536,14 +568,24 @@ class DynamicPlugin {
       }
     }
     if (this.config.scripts) {
+      const scripts = [];
+      let serialized_script = "";
       for (let i = 0; i < this.config.scripts.length; i++) {
-        await this._connection.execute({
+        const script = {
           type: "script",
           content: this.config.scripts[i].content,
           lang: this.config.scripts[i].attrs.lang,
           attrs: this.config.scripts[i].attrs,
           src: this.config.scripts[i].attrs.src,
-        });
+        };
+        serialized_script = serialized_script + JSON.stringify(script);
+        scripts.push(script);
+      }
+      if (!hot_reloading || serialized_script !== this._executed_scripts) {
+        for (let script of scripts) {
+          await this._connection.execute(script);
+        }
+        this._executed_scripts = serialized_script;
       }
     }
   }
@@ -618,8 +660,6 @@ class DynamicPlugin {
     this._updateUI();
   }
   _forceDisconnect() {
-    if (this.engine && this.engine.killPlugin)
-      this.engine.killPlugin({ id: this.config.id, name: this.config.name });
     this._set_disconnected();
     if (this._rpc) {
       this._rpc.disconnect();

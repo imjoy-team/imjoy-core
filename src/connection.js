@@ -48,9 +48,9 @@ export class BasicConnection extends MessageEmitter {
       }
     });
   }
+
   connect() {
-    // TODO: remove listener when disconnected
-    window.addEventListener("message", e => {
+    const messageHandler = e => {
       if (this._frame.contentWindow && e.source === this._frame.contentWindow) {
         const target_id = e.data.target_id;
         if (target_id && this._peer_id && target_id !== this._peer_id) {
@@ -65,7 +65,9 @@ export class BasicConnection extends MessageEmitter {
           this._fire(e.data.type, e.data);
         }
       }
-    });
+    };
+    this._messageHandler = messageHandler.bind(this);
+    window.addEventListener("message", this._messageHandler);
     this._fire("connected");
   }
 
@@ -117,6 +119,8 @@ export class BasicConnection extends MessageEmitter {
    * Disconnects the plugin (= kills the frame)
    */
   disconnect(details) {
+    if (this._messageHandler)
+      window.removeEventListener("message", this._messageHandler);
     if (!this._disconnected) {
       this._disconnected = true;
       if (typeof this._frame !== "undefined") {

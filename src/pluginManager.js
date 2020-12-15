@@ -1389,6 +1389,54 @@ export class PluginManager {
 
   async reloadPlugin(pconfig, allow_evil) {
     try {
+      if (pconfig.hot_reloading) {
+        let plugin;
+        if (pconfig.id) {
+          for (let pid of Object.keys(this.plugins)) {
+            if (pid === pconfig.id) {
+              plugin = this.plugins[pid];
+              break;
+            }
+          }
+        }
+
+        const template = this.parsePluginCode(pconfig.code, {
+          engine_mode: pconfig.engine_mode,
+          tag: pconfig.tag,
+          _id: pconfig._id,
+          origin: pconfig.origin,
+          namespace: pconfig.namespace,
+        });
+        pconfig.name = pconfig.name || template.name;
+        if (!plugin && pconfig.name) {
+          for (let pid of Object.keys(this.plugins)) {
+            if (this.plugins[pid].name === pconfig.name) {
+              plugin = this.plugins[pid];
+              break;
+            }
+          }
+        }
+
+        if (plugin && plugin.type !== "window") {
+          if (
+            plugin.config.tag === template.tag &&
+            plugin.config.engine_mode === template.engine_mode &&
+            plugin.config.namespace === template.namespace
+          ) {
+            plugin.config.requirements = template.requirements;
+            plugin.config.scripts = template.scripts;
+            plugin.config.styles = template.styles;
+            plugin.config.links = template.links;
+            plugin.config.windows = template.windows;
+            await plugin.hotReload();
+            if (template.type) {
+              this._register(plugin, template);
+            }
+            return plugin;
+          }
+        }
+      }
+
       if (pconfig instanceof DynamicPlugin) {
         pconfig = pconfig.config;
       }
@@ -1410,6 +1458,7 @@ export class PluginManager {
           await this.reloadPluginRecursively(
             {
               uri: template.dependencies[i],
+              namespace: pconfig.namespace,
             },
             null,
             allow_evil
@@ -1449,6 +1498,7 @@ export class PluginManager {
       }
     } catch (e) {
       this.showMessage(e || "Error.", 15);
+      console.error(e);
       throw e;
     }
   }
@@ -1669,6 +1719,7 @@ export class PluginManager {
             c.data = (my && my.data) || {};
             c.config = (my && my.config) || {};
             c.id = my && my.id;
+            c.window_id = my && my.window_id;
             if (c.as_dialog && this.imjoy_api.showDialog) {
               // make sure there is a header and convert it to fullscreen dialog
               if (c.standalone) {
@@ -2426,7 +2477,7 @@ export class PluginManager {
     });
   }
 
-  createWindow(_plugin, cfg) {
+  createWindow(_plugin, cfg, extra_cfg) {
     let wconfig = {};
     if (typeof cfg === "string") {
       if (
@@ -2438,6 +2489,9 @@ export class PluginManager {
       } else wconfig = { type: cfg };
     } else {
       wconfig = cfg;
+    }
+    if (extra_cfg) {
+      wconfig = Object.assign(wconfig, extra_cfg);
     }
     // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve, reject) => {
@@ -2644,8 +2698,8 @@ export class PluginManager {
     }
     return ps;
   }
-
-  async getPlugin(_plugin, cfg) {
+  // TODO: deprecate the last argument
+  async getPlugin(_plugin, cfg, extra_cfg) {
     let config = {};
     if (typeof cfg === "string") {
       if (/(http(s?)):\/\//i.test(cfg) || cfg.includes("\n")) {
@@ -2655,6 +2709,9 @@ export class PluginManager {
       }
     } else {
       config = cfg;
+    }
+    if (extra_cfg) {
+      config = Object.assign(config, extra_cfg);
     }
     if (config.src && config.src.includes("\n")) {
       const p = await this.reloadPlugin({
@@ -2704,6 +2761,13 @@ export class PluginManager {
     if (typeof config === "string") {
       config = { name: config };
     }
+    if (config.window_id) {
+      for (let w of this.wm.windows) {
+        if (w.window_id === config.window_id) {
+          return w.plugin && w.plugin.api;
+        }
+      }
+    }
     if (!config.name && !config.type) {
       return null;
     }
@@ -2718,7 +2782,7 @@ export class PluginManager {
           continue;
         }
       }
-      return w.plugin.api;
+      return w.plugin && w.plugin.api;
     }
     return null;
   }
