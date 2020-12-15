@@ -1081,7 +1081,6 @@ export class PluginManager {
           }
           config.origin = pconfig.origin || uri;
           config.namespace = pconfig.namespace;
-          config.hot_reloading = pconfig.hot_reloading;
           if (!config) {
             console.error(`Failed to fetch the plugin from "${uri}".`);
             reject(`Failed to fetch the plugin from "${uri}".`);
@@ -1119,7 +1118,6 @@ export class PluginManager {
                   uri: config.dependencies[i],
                   scoped_plugins: config.scoped_plugins || scoped_plugins,
                   namespace: pconfig.namespace,
-                  hot_reloading: pconfig.hot_reloading,
                 },
                 null,
                 allow_evil
@@ -1408,7 +1406,6 @@ export class PluginManager {
           _id: pconfig._id,
           origin: pconfig.origin,
           namespace: pconfig.namespace,
-          hot_reloading: pconfig.hot_reloading,
         });
 
         pconfig.name = pconfig.name || template.name;
@@ -1451,7 +1448,6 @@ export class PluginManager {
         _id: pconfig._id,
         origin: pconfig.origin,
         namespace: pconfig.namespace,
-        hot_reloading: pconfig.hot_reloading,
       });
       template.engine = null;
       this.unloadPlugin(template, true);
@@ -1464,7 +1460,6 @@ export class PluginManager {
             {
               uri: template.dependencies[i],
               namespace: pconfig.namespace,
-              hot_reloading: pconfig.hot_reloading,
             },
             null,
             allow_evil
@@ -1614,7 +1609,6 @@ export class PluginManager {
       config.uri = overwrite_config.uri;
       config.origin = overwrite_config.origin;
       config.namespace = overwrite_config.namespace;
-      config.hot_reloading = overwrite_config.hot_reloading;
       config.code = code;
       config.id = config.name.trim().replace(/ /g, "_") + "_" + randId();
       config.runnable = config.runnable === false ? false : true;
