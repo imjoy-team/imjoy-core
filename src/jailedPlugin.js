@@ -331,7 +331,6 @@ class DynamicPlugin {
       this.config.base_frame = frame_url;
     }
     const _frame = createIframe(this.config);
-    this._frame = _frame;
     if (this._hasVisibleWindow) {
       let window_id = this.config.window_id;
       if (typeof window_id === "string") {
