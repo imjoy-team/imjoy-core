@@ -2695,14 +2695,17 @@ export class PluginManager {
     }
     return ps;
   }
-
-  async getPlugin(_plugin, cfg) {
+  // TODO: deprecate the last argument
+  async getPlugin(_plugin, cfg, extra_cfg) {
     let config = {};
     if (typeof cfg === "string") {
       if (/(http(s?)):\/\//i.test(cfg) || cfg.includes("\n")) {
         config.src = cfg;
       } else {
         config.name = cfg;
+      }
+      if (extra_cfg) {
+        config = Object.assign(config, extra_cfg);
       }
     } else {
       config = cfg;
