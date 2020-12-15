@@ -249,7 +249,7 @@ class DynamicPlugin {
     const engine_utils = {
       _rintf: true,
       setPluginAPI(remote) {
-        this._engineSetRemote(remote);
+        me._engineSetRemote(remote);
       },
       terminatePlugin() {
         me.terminate();
