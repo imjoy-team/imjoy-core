@@ -1391,6 +1391,56 @@ export class PluginManager {
 
   async reloadPlugin(pconfig, allow_evil) {
     try {
+      if (pconfig.hot_reloading) {
+        let plugin;
+        if (pconfig.id) {
+          for (let pid of Object.keys(this.plugins)) {
+            if (pid === pconfig.id) {
+              plugin = this.plugins[pid];
+              break;
+            }
+          }
+        }
+
+        const template = this.parsePluginCode(pconfig.code, {
+          engine_mode: pconfig.engine_mode,
+          tag: pconfig.tag,
+          _id: pconfig._id,
+          origin: pconfig.origin,
+          namespace: pconfig.namespace,
+          hot_reloading: pconfig.hot_reloading,
+        });
+
+        pconfig.name = pconfig.name || template.name;
+        if (!plugin && pconfig.name) {
+          for (let pid of Object.keys(this.plugins)) {
+            if (this.plugins[pid].name === pconfig.name) {
+              plugin = this.plugins[pid];
+              break;
+            }
+          }
+        }
+
+        if (plugin) {
+          if (
+            plugin.config.tag === template.tag &&
+            plugin.config.engine_mode === template.engine_mode &&
+            plugin.config.namespace === template.namespace
+          ) {
+            plugin.config.requirements = template.requirements;
+            plugin.config.scripts = template.scripts;
+            plugin.config.styles = template.styles;
+            plugin.config.links = template.links;
+            plugin.config.windows = template.windows;
+            await plugin.hotReload();
+            if (template.type) {
+              this._register(plugin, template);
+            }
+            return plugin;
+          }
+        }
+      }
+
       if (pconfig instanceof DynamicPlugin) {
         pconfig = pconfig.config;
       }
