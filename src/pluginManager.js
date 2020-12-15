@@ -1407,7 +1407,6 @@ export class PluginManager {
           origin: pconfig.origin,
           namespace: pconfig.namespace,
         });
-
         pconfig.name = pconfig.name || template.name;
         if (!plugin && pconfig.name) {
           for (let pid of Object.keys(this.plugins)) {
@@ -1418,7 +1417,7 @@ export class PluginManager {
           }
         }
 
-        if (plugin) {
+        if (plugin && plugin.type !== "window") {
           if (
             plugin.config.tag === template.tag &&
             plugin.config.engine_mode === template.engine_mode &&
@@ -1719,6 +1718,7 @@ export class PluginManager {
             c.data = (my && my.data) || {};
             c.config = (my && my.config) || {};
             c.id = my && my.id;
+            c.window_id = my && my.window_id;
             if (c.as_dialog && this.imjoy_api.showDialog) {
               // make sure there is a header and convert it to fullscreen dialog
               if (c.standalone) {
