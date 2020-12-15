@@ -305,6 +305,7 @@ class DynamicPlugin {
     } else {
       webworker = new Worker(this.config.base_worker, { name: this.id });
     }
+    this.webworker = webworker;
     const connection = new WebWorkerConnection(webworker);
     this._setupConnection(connection);
   }
@@ -500,6 +501,8 @@ class DynamicPlugin {
       this.config.hot_reloading = true;
       await this._setupViaEngine();
     } else {
+      if (!this._rpc)
+        throw new Error("There is no RPC connection to the plugin.");
       if (this._allow_execution) {
         await this._executePlugin(true);
         if (!this.config.passive) {
