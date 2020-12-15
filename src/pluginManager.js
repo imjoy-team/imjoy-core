@@ -1498,6 +1498,7 @@ export class PluginManager {
       }
     } catch (e) {
       this.showMessage(e || "Error.", 15);
+      console.error(e);
       throw e;
     }
   }
@@ -2754,6 +2755,13 @@ export class PluginManager {
     if (typeof config === "string") {
       config = { name: config };
     }
+    if (config.window_id) {
+      for (let w of this.wm.windows) {
+        if (w.window_id === config.window_id) {
+          return w.plugin && w.plugin.api;
+        }
+      }
+    }
     if (!config.name && !config.type) {
       return null;
     }
@@ -2768,7 +2776,7 @@ export class PluginManager {
           continue;
         }
       }
-      return w.plugin.api;
+      return w.plugin && w.plugin.api;
     }
     return null;
   }
