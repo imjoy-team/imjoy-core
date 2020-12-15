@@ -2704,11 +2704,11 @@ export class PluginManager {
       } else {
         config.name = cfg;
       }
-      if (extra_cfg) {
-        config = Object.assign(config, extra_cfg);
-      }
     } else {
       config = cfg;
+    }
+    if (extra_cfg) {
+      config = Object.assign(config, extra_cfg);
     }
     if (config.src && config.src.includes("\n")) {
       const p = await this.reloadPlugin({
