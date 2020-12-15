@@ -205,10 +205,9 @@
 
     async test_close_imjoy_window() {
       return new Promise(async (resolve) => {
-        const win = await api.createWindow({
+        const win = await api.createWindow('imjoy/image', {
           __test__mode__: true,
           name: 'untitled',
-          type: 'imjoy/image',
           data: {
             src: 'https://imjoy.io/static/img/loader.gif'
           }
@@ -322,7 +321,7 @@
     }
 
     async test_get_passive_plugin() {
-      return await api.getPlugin(await api.getAttachment("example_passive_plugin"))
+      return await api.getPlugin({src: await api.getAttachment("example_passive_plugin")})
     }
 
     async test_uninstall_plugin(name) {
