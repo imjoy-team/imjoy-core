@@ -2558,6 +2558,25 @@ export class PluginManager {
             wconfig.type = wplugin.config.type;
             wconfig.name = wconfig.name || wplugin.name || wconfig.type;
           }
+
+          // load window plugin from source code url
+          else if (
+            wconfig.src.endsWith(".imjoy.html") ||
+            (wconfig.src.includes("/") && wconfig.src.includes(":")) ||
+            (wconfig.src.includes("github.com") &&
+              wconfig.src.includes("/blob/")) ||
+            wconfig.src.includes("gist.github.com")
+          ) {
+            const wplugin = await this.reloadPluginRecursively({
+              uri: wconfig.src,
+              tag: wconfig.tag,
+              namespace: wconfig.namespace,
+              hot_reloading: wconfig.hot_reloading,
+            });
+            window_config = wplugin.config;
+            wconfig.type = wplugin.config.type;
+            wconfig.name = wconfig.name || wplugin.name || wconfig.type;
+          }
           // load as rpc-window
           else if (/(http(s?)):\/\//i.test(wconfig.src)) {
             wconfig.type = wconfig.type || wconfig.src.split("?")[0];
@@ -2576,24 +2595,6 @@ export class PluginManager {
             window_config.type = "rpc-window";
             window_config.base_frame = wconfig.src;
             window_config.id = "rpc_window_" + randId();
-          }
-          // load window plugin from source code url
-          else if (
-            wconfig.src.endsWith(".imjoy.html") ||
-            (wconfig.src.includes("/") && wconfig.src.includes(":")) ||
-            (wconfig.src.includes("github.com") &&
-              wconfig.src.includes("/blob/")) ||
-            wconfig.src.includes("gist.github.com")
-          ) {
-            const wplugin = await this.reloadPluginRecursively({
-              uri: wconfig.src,
-              tag: wconfig.tag,
-              namespace: wconfig.namespace,
-              hot_reloading: wconfig.hot_reloading,
-            });
-            window_config = wplugin.config;
-            wconfig.type = wplugin.config.type;
-            wconfig.name = wconfig.name || wplugin.name || wconfig.type;
           } else {
             reject(`Unsupported window spec ${wconfig}`);
             return;
