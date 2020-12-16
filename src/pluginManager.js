@@ -167,9 +167,11 @@ export class PluginManager {
       registerService: this.registerService,
       unregisterService: this.unregisterService,
       createWindow: this.createWindow,
+      loadPlugin: this.getPlugin,
+      getPlugin: this.getPlugin,
+      getWindow: this.getWindow,
       run: this.runPlugin,
       call: this.callPlugin,
-      getPlugin: this.getPlugin,
       installPlugin: (_plugin, config) => {
         const tag = config.tag;
         const do_not_load = config.do_not_load;
@@ -181,7 +183,6 @@ export class PluginManager {
         return this.removePlugin(config);
       },
       getServices: this.getServices,
-      getWindow: this.getWindow,
       getFileManager: this.getFileManager,
       getEngineFactory: this.getEngineFactory,
       getEngine: this.getEngine,
@@ -1073,7 +1074,9 @@ export class PluginManager {
 
       this.getPluginFromUrl(uri, scoped_plugins)
         .then(async config => {
-          if (config.engine_mode) {
+          if (pconfig.engine_mode) {
+            config.engine_mode = pconfig.engine_mode;
+          } else if (config.engine_mode) {
             const old_plugin = this.plugin_names[config.name];
             if (old_plugin) {
               config.engine_mode = old_plugin.config.engine_mode;
@@ -1402,12 +1405,12 @@ export class PluginManager {
         }
 
         const template = this.parsePluginCode(pconfig.code, {
-          engine_mode: pconfig.engine_mode,
           tag: pconfig.tag,
           _id: pconfig._id,
           origin: pconfig.origin,
           namespace: pconfig.namespace,
           hot_reloading: pconfig.hot_reloading,
+          engine_mode: pconfig.engine_mode,
         });
         pconfig.name = pconfig.name || template.name;
         if (!plugin && pconfig.name) {
@@ -1449,12 +1452,12 @@ export class PluginManager {
       }
       this.unloadPlugin(pconfig, true);
       const template = this.parsePluginCode(pconfig.code, {
-        engine_mode: pconfig.engine_mode,
         tag: pconfig.tag,
         _id: pconfig._id,
         origin: pconfig.origin,
         namespace: pconfig.namespace,
         hot_reloading: pconfig.hot_reloading,
+        engine_mode: pconfig.engine_mode,
       });
       template.engine = null;
       this.unloadPlugin(template, true);
@@ -2722,7 +2725,6 @@ export class PluginManager {
     }
     return ps;
   }
-  // TODO: deprecate the last argument
   async getPlugin(_plugin, cfg, extra_cfg) {
     let config = {};
     if (typeof cfg === "string") {
@@ -2744,6 +2746,7 @@ export class PluginManager {
         namespace: config.namespace,
         tag: config.tag,
         hot_reloading: config.hot_reloading,
+        engine_mode: config.engine_mode,
       });
       console.log(`${p.name} loaded from source code`);
       return p.api;
@@ -2759,11 +2762,14 @@ export class PluginManager {
           tag: config.tag,
           namespace: config.namespace,
           hot_reloading: config.hot_reloading,
+          engine_mode: config.engine_mode,
         },
         config.tag
       );
       console.log(`${p.name} loaded from ${config.src}`);
       return p.api;
+    } else if (config.id && this.plugins[config.id]) {
+      return this.plugins[config.id].api;
     } else if (config.name && this.plugin_names[config.name]) {
       return this.plugin_names[config.name].api;
     } else if (this.internal_plugins[config.name]) {
@@ -2773,6 +2779,7 @@ export class PluginManager {
           tag: config.tag,
           namespace: config.namespace,
           hot_reloading: config.hot_reloading,
+          engine_mode: config.engine_mode,
         },
         null,
         "eval is evil"
@@ -2787,6 +2794,13 @@ export class PluginManager {
   async getWindow(_plugin, config) {
     if (typeof config === "string") {
       config = { name: config };
+    }
+    if (config.plugin_id) {
+      for (let w of this.wm.windows) {
+        if (w.plugin.id === config.plugin_id) {
+          return w.plugin && w.plugin.api;
+        }
+      }
     }
     if (config.window_id) {
       for (let w of this.wm.windows) {
