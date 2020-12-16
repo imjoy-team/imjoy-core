@@ -787,7 +787,7 @@ export class PluginManager {
                   console.warn(
                     "All data in the sandbox stored workspace is going to be destroyed."
                   );
-                  if (!this.flags.includes("quite")) debugger;
+                  if (!this.flags.includes("quiet")) debugger;
                   this.db
                     .destroy()
                     .then(() => {
@@ -822,7 +822,7 @@ export class PluginManager {
                 console.warn(
                   "All data in the sandbox stored workspace is going to be destroyed."
                 );
-                if (!this.flags.includes("quite")) debugger;
+                if (!this.flags.includes("quiet")) debugger;
                 this.db
                   .destroy()
                   .then(() => {
