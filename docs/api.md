@@ -794,7 +794,7 @@ await api.uninstallPlugin({name: "MyAwesomePlugin"})
 plugin = await api.getPlugin(config)
 ```
 
-Gets the API object of another plugin by its name, url or plugin source code.
+Gets the API object of a loaded plugin by its id or name. The plugin must be already loaded into the workspace.
 
 **Note 1:** If the plugin is terminated and you try to call its function, you will get an error. One solution to this is to use `try ... catch `(JavaScript) or `try: ... except: ...`(Python) statement to capture the error. <!--(TODO: this does not work for `native-python` plugin yet.)-->
 
@@ -806,14 +806,11 @@ plugin occasionally, you can also use `api.call`
 
 **Arguments**
 
-* **config**: String or Object. Configuration for getting the plugin. If it's a string, then depending on the content of the string it will be converted into a config object. The conversion is done according to the following rule: 1) if the string contains multiple line, is a URL or plugin URI, then it will be treated as plugin source (see the `src` key below); 2) otherwise it will be treated as a plugin name (see the `name` key below).
+* **config**: String or Object. If it's a string, then it should be the name of the plugin, otherwise, you can pass an object contains the key `id` or `name`.
 
 Currently, you can pass the following config:
-  - **name**: String. Name of the plugin. The plugin must be already loaded into the workspace.
-  - **src**: String. URL or source code of the plugin, in this case it will be instantiate on-the-fly. Otherwise, pass a valid plugin URI or its source code. By passing the source code, it allows the flexibility of embedding one or more plugin source code inside another plugin. For example, a Python plugin can dynamically populate 
-a window plugin in HTML.
-  - **tag**: String, optional. Specify the tag of the plugin if the plugin support several `tags`, only used when `src` is the source code of the plugin.
-  - **namespace**: String, optional. Specify the namespace of the plugin, only used when `src` is the source code of the plugin.
+  - **name**: String. Name of the plugin.
+  - **id**: String. Id of the plugin.
 
 **Returns**
 * **plugin**: Object. An object which can be used to access the plugin API functions.
@@ -832,6 +829,33 @@ await pluginX.funcX()
 [Try yourself >>](https://imjoy.io/#/app?plugin=imjoy-team/imjoy-demo-plugins:getPlugin&w=examples)
 
 
+### api.loadPlugin
+```javascript
+plugin = await api.getPlugin(config)
+```
+
+Load an plugin from source code or URL, then return the plugin API object.
+
+**Arguments**
+
+* **config**: String or Object. Configuration for getting the plugin. If it's a string, then depending on the content of the string it will be converted into a config object. The conversion is done according to the following rule: 1) if the string contains multiple line, is a URL or plugin URI, then it will be treated as plugin source (see the `src` key below); 2) otherwise it will be treated as a plugin name and return the same result as `api.getPlugin`.
+
+Currently, you can pass the following config:
+  - **src**: String. URL or source code of the plugin, in this case it will be instantiate on-the-fly. Otherwise, pass a valid plugin URI or its source code. By passing the source code, it allows the flexibility of embedding one or more plugin source code inside another plugin. For example, a Python plugin can dynamically populate 
+a window plugin in HTML.
+  - **tag**: String, optional. Specify the tag of the plugin if the plugin support several `tags`, only used when `src` is the source code of the plugin.
+  - **namespace**: String, optional. Specify the namespace of the plugin, only used when `src` is the source code of the plugin.
+  - **engine_mode**: String, optional. **Only for plugin that runs via an Engine** Select the default engine mode, it can be `auto` or an engine URL (e.g.: `https://mybinder.org`). 
+
+**Returns**
+* **plugin**: Object. An object which can be used to access the plugin API functions.
+
+**Example**
+
+```javascript
+const pokemonChooser = await api.loadPlugin({src: "https://gist.github.com/oeway/3c2e1ee72c79a6aafd9d6e3b473f0bbf"})
+const result = await pokemonChooser.choosePokemon()
+```
 ### api.getServices
 ```javascript
 services = await api.getServices(config)
@@ -866,7 +890,7 @@ console.log(models)
 w = await api.getWindow(config)
 ```
 
-Get an existing window by its name or type.
+Get an existing window by its id, window_id, name or type.
 
 
 **Arguments**
@@ -874,6 +898,8 @@ Get an existing window by its name or type.
 * **config**: String or Object. It can be a window name string, or an object that optinally consists of the several fields (at least one):
   - `name`: String. Name of window.
   - `type`: String. Type of the window.
+  - `window_id`: String. The id of the window.
+  - `plugin_id`: String. The id of the plugin instance attached to the window.
 
 **Returns**
 * **w**: Object. An windowobject which can be used to access the window API functions.
@@ -1626,6 +1652,7 @@ Also notice that the content shown inside a `window` plugin do not have these re
  * support `base_worker` for specifying a web-worker script for `web-python` plugins.
  * add `api.config` and deprecate constants including `api.WORKSPACE`, `api.TAG`, `api.ENGINE_URL`, `api.FILE_MANAGER_URL`.
  * make the api more consistent for `api.createWindow` and `api.getPlugin`. Allowing passing a string to `api.createWindow` and accepting a `config` object for `api.getPlugin`
+ * added `api.loadPlugin` which is currently directly mapped to `api.getPlugin` but will provide better semantic meaning. Overall, we have `api.getPlugin` and `api.getWindow` for obtain an existing plugin or window, and we have `api.createWindow` and `api.loadPlugin` for creating a new instance of window or plugin.
 
 #### api_version: 0.1.7
  * `api.fs` has been deprecated, the browser file system is moved to a separate plugin `BrowserFS`, to use the file system, you can do `const bfs_plugin = await api.getPlugin('BrowserFS'); const bfs = bfs_plugin.fs;`, now `fs` will be equivalent to `api.fs`. Notice: the data saved with `api.fs` will not be accessible with the new API, to get access the old data, please change `api_version` in the plugin config to `0.1.6`.
