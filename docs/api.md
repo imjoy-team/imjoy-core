@@ -760,8 +760,7 @@ Install a plugin by passing a plugin URI or source code, the plugin source code 
 
 **Arguments**
 * **config**: Object. configuration object. Currently, you can pass the following config:
-  - `code`: String. The source code of the plugin to be installed.
-  - `uri`: String. The URI of the plugin to be installed. Note: if `src` is set, `uri` will be ignored.
+  - `src`: String. The source code, URI of the plugin to be installed. 
   - `tag`: String, optional. The selected plugin tag if the plugin has multiple tags.
   - `namespace`: String, optional. The namespace of the plugin.
 
@@ -781,6 +780,7 @@ Uninstall an installed plugin.
 **Arguments**
 * **config**: Object. configuration object. Currently, you can pass the following config:
   - `name`: String. The name of the plugin to be uninstalled.
+  - `namespace`: String, **TODO: NOT SUPPORTED YET**. The namespace of the plugin.
 
 **Examples**
 
