@@ -1,3 +1,5 @@
+import { dependencies } from "../package.json";
+
 function _injectScript(src) {
   return new Promise((resolve, reject) => {
     const script = document.createElement("script");
@@ -71,7 +73,11 @@ export function loadImJoyCore(config) {
   });
 }
 const _rpc_registry = {};
-export const latest_rpc_version = "0.2.30";
+// get version number from package.json
+export const latest_rpc_version = dependencies["imjoy-rpc"].replace(
+  /[^\d.-]/g,
+  ""
+);
 
 const _rpc_api_versions = {
   "0.2.0": { from: "0.1.10", to: "0.1.17", skips: [] },

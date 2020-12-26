@@ -167,9 +167,11 @@ export class PluginManager {
       registerService: this.registerService,
       unregisterService: this.unregisterService,
       createWindow: this.createWindow,
+      loadPlugin: this.getPlugin,
+      getPlugin: this.getPlugin,
+      getWindow: this.getWindow,
       run: this.runPlugin,
       call: this.callPlugin,
-      getPlugin: this.getPlugin,
       installPlugin: (_plugin, config) => {
         const tag = config.tag;
         const do_not_load = config.do_not_load;
@@ -181,7 +183,6 @@ export class PluginManager {
         return this.removePlugin(config);
       },
       getServices: this.getServices,
-      getWindow: this.getWindow,
       getFileManager: this.getFileManager,
       getEngineFactory: this.getEngineFactory,
       getEngine: this.getEngine,
@@ -917,10 +918,12 @@ export class PluginManager {
                     }
                     config.installed = true;
                     this.installed_plugins.push(config);
-                    this.reloadPlugin(config).catch(e => {
+                    try {
+                      this.reloadPlugin(config);
+                    } catch (e) {
                       console.error(config, e);
                       this.showMessage(`<${config.name}>: ${e}`);
-                    });
+                    }
                   }
                 }
                 this.reloadInternalPlugins(true);
@@ -936,26 +939,25 @@ export class PluginManager {
     });
   }
 
-  reloadInternalPlugins(skip_exist) {
+  async reloadInternalPlugins(skip_exist) {
     for (let pn in this.internal_plugins) {
       if (this.internal_plugins[pn].startup) {
         if (skip_exist && this.plugin_names[pn]) {
           continue;
         }
         console.log(`Loading internal plugin "${pn}"...`);
-        this.reloadPluginRecursively(
-          {
-            uri: this.internal_plugins[pn].uri,
-          },
-          null,
-          "eval is evil"
-        )
-          .then(() => {
-            console.log(`${pn} plugin loaded.`);
-          })
-          .catch(e => {
-            console.error(e);
-          });
+        try {
+          await this.reloadPluginRecursively(
+            {
+              uri: this.internal_plugins[pn].uri,
+            },
+            null,
+            "eval is evil"
+          );
+          console.log(`${pn} plugin loaded.`);
+        } catch (e) {
+          console.error(e);
+        }
       }
     }
   }
@@ -1073,7 +1075,9 @@ export class PluginManager {
 
       this.getPluginFromUrl(uri, scoped_plugins)
         .then(async config => {
-          if (config.engine_mode) {
+          if (pconfig.engine_mode) {
+            config.engine_mode = pconfig.engine_mode;
+          } else if (config.engine_mode) {
             const old_plugin = this.plugin_names[config.name];
             if (old_plugin) {
               config.engine_mode = old_plugin.config.engine_mode;
@@ -1148,15 +1152,22 @@ export class PluginManager {
         scoped_plugins = pconfig.scoped_plugins;
         delete pconfig.scoped_plugins;
       }
-      if (pconfig.code) {
-        const config = this.parsePluginCode(pconfig.code);
+      if (!pconfig.src && !pconfig.uri) {
+        reject("Please provide the source via the `src` key.");
+        return;
+      }
+      tag = tag || pconfig.tag;
+
+      if (pconfig.src.includes("\n")) {
+        const config = this.parsePluginCode(pconfig.src);
         const ps = [];
         config.dependencies = config.dependencies || [];
         for (let i = 0; i < config.dependencies.length; i++) {
           ps.push(
             this.installPlugin(
               {
-                uri: config.dependencies[i],
+                src: config.dependencies[i],
+                namespace: config.namespace,
                 scoped_plugins: config.scoped_plugins || scoped_plugins,
               },
               null,
@@ -1164,6 +1175,7 @@ export class PluginManager {
             )
           );
         }
+        pconfig.code = pconfig.src;
         Promise.all(ps)
           .then(() => {
             this.savePlugin(pconfig)
@@ -1180,92 +1192,95 @@ export class PluginManager {
           .catch(reject);
         return;
       }
-      let uri = typeof pconfig === "string" ? pconfig : pconfig.uri;
-      //use the has tag in the uri if no hash tag is defined.
-      if (!uri) {
-        reject("No url found for plugin " + pconfig.name);
-        return;
-      }
-      // tag = tag || uri.split('@')[1]
-      // uri = uri.split('@')[0]
-
-      this.getPluginFromUrl(uri, scoped_plugins)
-        .then(async config => {
-          if (config.engine_mode) {
-            const old_plugin = this.plugin_names[config.name];
-            if (old_plugin) {
-              config.engine_mode = old_plugin.config.engine_mode;
-            }
-          }
-          config.origin = pconfig.origin || uri;
-          if (!config) {
-            console.error(`Failed to fetch the plugin from "${uri}".`);
-            reject(`Failed to fetch the plugin from "${uri}".`);
-            return;
-          }
-          if (!getBackendByType(config.type)) {
-            console.warn(
-              `Installed plugin ${config.name} with unsupported plugin type: ${
-                config.type
-              }`
-            );
-          }
-          config.tag =
-            tag ||
-            (this.plugin_names[config.name] &&
-              this.plugin_names[config.name].config.tag) ||
-            config.tag;
-          if (config.tag) {
-            // remove existing tag
-            const sp = config.origin.split(":");
-            if (sp[1]) {
-              if (sp[1].split("@")[1])
-                config.origin = sp[0] + ":" + sp[1].split("@")[0];
-            }
-            // add a new tag
-            // config.origin = config.origin + "@" + config.tag;
-          }
-          config._id =
-            (config.name && config.name.replace(/ /g, "_")) || randId();
-          config.dependencies = config.dependencies || [];
-          try {
-            for (let i = 0; i < config.dependencies.length; i++) {
-              await this.installPlugin(
-                {
-                  uri: config.dependencies[i],
-                  scoped_plugins: config.scoped_plugins || scoped_plugins,
-                },
-                null,
-                do_not_load
-              );
-            }
-            const template = await this.savePlugin(config);
-            for (let p of this.available_plugins) {
-              if (p.name === template.name && !p.installed) {
-                p.installed = true;
-                p.tag = tag;
+      if (
+        // plugin URI
+        (!/(http(s?)):\/\//i.test(pconfig.src) &&
+          pconfig.src.includes("/") &&
+          pconfig.src.includes(":")) ||
+        // plugin source url or rpc window
+        /(http(s?)):\/\//i.test(pconfig.src)
+      ) {
+        let uri = pconfig.src;
+        this.getPluginFromUrl(uri, scoped_plugins)
+          .then(async config => {
+            if (config.engine_mode) {
+              const old_plugin = this.plugin_names[config.name];
+              if (old_plugin) {
+                config.engine_mode = old_plugin.config.engine_mode;
               }
             }
-            this.showMessage(
-              `Plugin "${template.name}" has been successfully installed.`
-            );
-            this.event_bus.emit("plugin_installed", template);
-            resolve(template);
-            if (!do_not_load) this.reloadPlugin(template);
-          } catch (error) {
-            reject(
-              `Failed to install dependencies for ${config.name}: ${error}`
-            );
-          }
-        })
-        .catch(e => {
-          console.error(e);
-          reject(e);
-        });
+            config.origin = pconfig.origin || uri;
+            if (!config) {
+              console.error(`Failed to fetch the plugin from "${uri}".`);
+              reject(`Failed to fetch the plugin from "${uri}".`);
+              return;
+            }
+            if (!getBackendByType(config.type)) {
+              console.warn(
+                `Installed plugin ${
+                  config.name
+                } with unsupported plugin type: ${config.type}`
+              );
+            }
+            config.tag =
+              tag ||
+              (this.plugin_names[config.name] &&
+                this.plugin_names[config.name].config.tag) ||
+              config.tag;
+            if (config.tag) {
+              // remove existing tag
+              const sp = config.origin.split(":");
+              if (sp[1]) {
+                if (sp[1].split("@")[1])
+                  config.origin = sp[0] + ":" + sp[1].split("@")[0];
+              }
+              // add a new tag
+              // config.origin = config.origin + "@" + config.tag;
+            }
+            config._id =
+              (config.name && config.name.replace(/ /g, "_")) || randId();
+            config.dependencies = config.dependencies || [];
+            try {
+              for (let i = 0; i < config.dependencies.length; i++) {
+                await this.installPlugin(
+                  {
+                    src: config.dependencies[i],
+                    namespace: config.namespace,
+                    scoped_plugins: config.scoped_plugins || scoped_plugins,
+                  },
+                  null,
+                  do_not_load
+                );
+              }
+              const template = await this.savePlugin(config);
+              for (let p of this.available_plugins) {
+                if (p.name === template.name && !p.installed) {
+                  p.installed = true;
+                  p.tag = tag;
+                }
+              }
+              this.showMessage(
+                `Plugin "${template.name}" has been successfully installed.`
+              );
+              this.event_bus.emit("plugin_installed", template);
+              resolve(template);
+              if (!do_not_load) this.reloadPlugin(template);
+            } catch (error) {
+              reject(
+                `Failed to install dependencies for ${config.name}: ${error}`
+              );
+            }
+          })
+          .catch(e => {
+            console.error(e);
+            reject(e);
+          });
+      }
     });
   }
 
   removePlugin(plugin_config) {
+    // TODO: support removing by namespace
     return new Promise((resolve, reject) => {
       plugin_config._id =
         plugin_config._id || plugin_config.name.replace(/ /g, "_");
@@ -1402,12 +1417,12 @@ export class PluginManager {
         }
 
         const template = this.parsePluginCode(pconfig.code, {
-          engine_mode: pconfig.engine_mode,
           tag: pconfig.tag,
           _id: pconfig._id,
           origin: pconfig.origin,
           namespace: pconfig.namespace,
           hot_reloading: pconfig.hot_reloading,
+          engine_mode: pconfig.engine_mode,
         });
         pconfig.name = pconfig.name || template.name;
         if (!plugin && pconfig.name) {
@@ -1449,12 +1464,12 @@ export class PluginManager {
       }
       this.unloadPlugin(pconfig, true);
       const template = this.parsePluginCode(pconfig.code, {
-        engine_mode: pconfig.engine_mode,
         tag: pconfig.tag,
         _id: pconfig._id,
         origin: pconfig.origin,
         namespace: pconfig.namespace,
         hot_reloading: pconfig.hot_reloading,
+        engine_mode: pconfig.engine_mode,
       });
       template.engine = null;
       this.unloadPlugin(template, true);
@@ -2722,7 +2737,6 @@ export class PluginManager {
     }
     return ps;
   }
-  // TODO: deprecate the last argument
   async getPlugin(_plugin, cfg, extra_cfg) {
     let config = {};
     if (typeof cfg === "string") {
@@ -2744,6 +2758,7 @@ export class PluginManager {
         namespace: config.namespace,
         tag: config.tag,
         hot_reloading: config.hot_reloading,
+        engine_mode: config.engine_mode,
       });
       console.log(`${p.name} loaded from source code`);
       return p.api;
@@ -2759,11 +2774,14 @@ export class PluginManager {
           tag: config.tag,
           namespace: config.namespace,
           hot_reloading: config.hot_reloading,
+          engine_mode: config.engine_mode,
         },
         config.tag
       );
       console.log(`${p.name} loaded from ${config.src}`);
       return p.api;
+    } else if (config.id && this.plugins[config.id]) {
+      return this.plugins[config.id].api;
     } else if (config.name && this.plugin_names[config.name]) {
       return this.plugin_names[config.name].api;
     } else if (this.internal_plugins[config.name]) {
@@ -2773,6 +2791,7 @@ export class PluginManager {
           tag: config.tag,
           namespace: config.namespace,
           hot_reloading: config.hot_reloading,
+          engine_mode: config.engine_mode,
         },
         null,
         "eval is evil"
@@ -2787,6 +2806,13 @@ export class PluginManager {
   async getWindow(_plugin, config) {
     if (typeof config === "string") {
       config = { name: config };
+    }
+    if (config.plugin_id) {
+      for (let w of this.wm.windows) {
+        if (w.plugin.id === config.plugin_id) {
+          return w.plugin && w.plugin.api;
+        }
+      }
     }
     if (config.window_id) {
       for (let w of this.wm.windows) {

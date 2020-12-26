@@ -299,6 +299,13 @@
       return true
     }
 
+    async test_load_plugin() {
+      const p = await api.loadPlugin({src: await api.getAttachment("example_plugin")})
+      const ret = await p.run()
+      assert(ret === 234)
+      return true
+    }
+
     async test_config() {
       await api.setConfig('some_secret', 123)
       assert(await api.getConfig('some_secret') === '123')
@@ -315,13 +322,13 @@
 
     async test_install_plugin() {
       await api.installPlugin({
-        code: await api.getAttachment("example_plugin")
+        src: await api.getAttachment("example_plugin")
       })
       return true
     }
 
     async test_get_passive_plugin() {
-      return await api.getPlugin({src: await api.getAttachment("example_passive_plugin")})
+      return await api.loadPlugin({src: await api.getAttachment("example_passive_plugin")})
     }
 
     async test_uninstall_plugin(name) {
@@ -445,6 +452,7 @@
 
       async run(ctx) {
         api.alert('hello world.')
+        return 234
       }
     }
 
