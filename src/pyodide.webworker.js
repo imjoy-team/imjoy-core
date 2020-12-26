@@ -36,6 +36,6 @@ function installPackage() {
 languagePluginLoader.then(() => {
   self.pyodide.loadPackage(["micropip"]).then(async () => {
     await installPackage();
-    self.pyodide.runPython(src)
+    self.pyodide.runPython(src);
   });
 });
