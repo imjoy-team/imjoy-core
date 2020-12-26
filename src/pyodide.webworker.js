@@ -22,7 +22,7 @@ def setup_imjoy(_):
     except Exception as e:
         js.__reject(traceback.format_exc())
 
-micropip.install(["imjoy-rpc>=0.2.70"]).then(setup_imjoy).catch(js.__reject)
+micropip.install(["imjoy-rpc>=0.2.71"]).then(setup_imjoy).catch(js.__reject)
 `;
 
 function installPackage() {
@@ -36,6 +36,6 @@ function installPackage() {
 languagePluginLoader.then(() => {
   self.pyodide.loadPackage(["micropip"]).then(async () => {
     await installPackage();
-    self.pyodide.runPython(src);
+    self.pyodide.runPython(src)
   });
 });
