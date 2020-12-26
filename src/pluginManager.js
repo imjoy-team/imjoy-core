@@ -918,10 +918,12 @@ export class PluginManager {
                     }
                     config.installed = true;
                     this.installed_plugins.push(config);
-                    this.reloadPlugin(config).catch(e => {
+                    try {
+                      this.reloadPlugin(config);
+                    } catch (e) {
                       console.error(config, e);
                       this.showMessage(`<${config.name}>: ${e}`);
-                    });
+                    }
                   }
                 }
                 this.reloadInternalPlugins(true);
@@ -937,26 +939,25 @@ export class PluginManager {
     });
   }
 
-  reloadInternalPlugins(skip_exist) {
+  async reloadInternalPlugins(skip_exist) {
     for (let pn in this.internal_plugins) {
       if (this.internal_plugins[pn].startup) {
         if (skip_exist && this.plugin_names[pn]) {
           continue;
         }
         console.log(`Loading internal plugin "${pn}"...`);
-        this.reloadPluginRecursively(
-          {
-            uri: this.internal_plugins[pn].uri,
-          },
-          null,
-          "eval is evil"
-        )
-          .then(() => {
-            console.log(`${pn} plugin loaded.`);
-          })
-          .catch(e => {
-            console.error(e);
-          });
+        try {
+          await this.reloadPluginRecursively(
+            {
+              uri: this.internal_plugins[pn].uri,
+            },
+            null,
+            "eval is evil"
+          );
+          console.log(`${pn} plugin loaded.`);
+        } catch (e) {
+          console.error(e);
+        }
       }
     }
   }

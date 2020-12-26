@@ -151,6 +151,13 @@ class DynamicPlugin {
       this._fail = new Whenable(true);
       this._disconnect = new Whenable(true);
 
+      this.connected = new Promise((resolve, reject) => {
+        this._resolveConnected = resolve;
+        this._rejectConnected = reject;
+      });
+      this._connected.whenEmitted(this._resolveConnected);
+      this._fail.whenEmitted(this._rejectConnected);
+
       if (connection) {
         this._setupRPC(connection, config);
         this._initialized_from_connection = true;
@@ -505,12 +512,23 @@ class DynamicPlugin {
     } else {
       if (!this._rpc)
         throw new Error("There is no RPC connection to the plugin.");
+      this.initializing = true;
+      this._updateUI();
       if (this._allow_execution) {
-        await this._executePlugin(true);
-        if (!this.config.passive) {
-          this.api = await this._requestRemote();
+        try {
+          await this._executePlugin(true);
+          if (!this.config.passive) {
+            this.api = await this._requestRemote();
+          }
+        } catch (error) {
+          this.error(error.toString());
+        } finally {
+          this.initializing = false;
+          this._updateUI();
         }
       } else {
+        this.initializing = false;
+        this._updateUI();
         throw new Error("This plugin does not allow execution.");
       }
     }
