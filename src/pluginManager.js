@@ -2782,22 +2782,26 @@ export class PluginManager {
       return p.api;
     } else if (config.id && this.plugins[config.id]) {
       return this.plugins[config.id].api;
-    } else if (config.name && this.plugin_names[config.name]) {
-      return this.plugin_names[config.name].api;
-    } else if (this.internal_plugins[config.name]) {
-      const p = await this.reloadPluginRecursively(
-        {
-          uri: this.internal_plugins[config.name].uri,
-          tag: config.tag,
-          namespace: config.namespace,
-          hot_reloading: config.hot_reloading,
-          engine_mode: config.engine_mode,
-        },
-        null,
-        "eval is evil"
-      );
-      console.log(`${p.name} loaded.`);
-      return p.api;
+    } else if (config.name) {
+      if (this.plugin_names[config.name]) {
+        return this.plugin_names[config.name].api;
+      } else if (this.internal_plugins[config.name]) {
+        const p = await this.reloadPluginRecursively(
+          {
+            uri: this.internal_plugins[config.name].uri,
+            tag: config.tag,
+            namespace: config.namespace,
+            hot_reloading: config.hot_reloading,
+            engine_mode: config.engine_mode,
+          },
+          null,
+          "eval is evil"
+        );
+        console.log(`${p.name} loaded.`);
+        return p.api;
+      } else {
+        throw `Plugin not found: ${config.name}`;
+      }
     } else {
       throw `Unsupported plugin spec: ${config}`;
     }
