@@ -1447,6 +1447,8 @@ export class PluginManager {
             plugin.config.windows = template.windows;
             try {
               await plugin.hotReload();
+              if(plugin.api && plugin.api.setup)
+              await plugin.api.setup()
               if (template.type) {
                 this._register(plugin, template);
               }
