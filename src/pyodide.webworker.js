@@ -1,6 +1,6 @@
 // webworker for running imjoy plugin with pyodide
-self.languagePluginUrl = "https://cdn.jsdelivr.net/pyodide/v0.16.1/full/";
-importScripts("https://cdn.jsdelivr.net/pyodide/v0.16.1/full/pyodide.js");
+self.languagePluginUrl = "https://cdn.jsdelivr.net/pyodide/dev/full/";
+importScripts("https://cdn.jsdelivr.net/pyodide/dev/full/pyodide.js");
 
 const src = `
 from imjoy import api
@@ -22,7 +22,7 @@ def setup_imjoy(_):
     except Exception as e:
         js.__reject(traceback.format_exc())
 
-micropip.install(["imjoy-rpc>=0.2.71"]).then(setup_imjoy).catch(js.__reject)
+micropip.install(["imjoy-rpc>=0.2.72"]).then(setup_imjoy).catch(js.__reject)
 `;
 
 function installPackage() {

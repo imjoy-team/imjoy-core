@@ -1629,7 +1629,7 @@ Also notice that the content shown inside a `window` plugin do not have these re
 
 
 
-### API change log
+## API changelog
 
 #### api_version: 0.1.8
  * deprecate `api.register` and `api.unregister`, use `api.registerService` and `api.unregisterService` instead.
