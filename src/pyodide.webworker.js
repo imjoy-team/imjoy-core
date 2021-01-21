@@ -1,6 +1,6 @@
 // webworker for running imjoy plugin with pyodide
-self.languagePluginUrl = "https://cdn.jsdelivr.net/pyodide/0.16.1/full/";
-importScripts("https://cdn.jsdelivr.net/pyodide/0.16.1/full/pyodide.js");
+self.languagePluginUrl = "https://cdn.jsdelivr.net/pyodide/v0.16.1/full/";
+importScripts("https://cdn.jsdelivr.net/pyodide/v0.16.1/full/pyodide.js");
 
 const src = `
 from imjoy import api
