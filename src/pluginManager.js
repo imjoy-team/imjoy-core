@@ -1156,6 +1156,7 @@ export class PluginManager {
         reject("Please provide the source via the `src` key.");
         return;
       }
+      pconfig.src = pconfig.src || pconfig.uri;
       tag = tag || pconfig.tag;
 
       if (pconfig.src.includes("\n")) {
