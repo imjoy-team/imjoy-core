@@ -1,0 +1,28 @@
+<div>
+  <div
+    v-for="w in windows"
+    v-show="w === activeWindow"
+    :key="w.id"
+    style="position: relative; min-height: 100px; height: 100%;"
+    :style="windowStyle"
+  >
+    <div
+      v-if="showWindowTitle"
+      style="text-align: center;height:20px;margin-top: 5px; "
+    >
+      <span style="font-size:1rem;font-family: Arial, Helvetica, sans-serif;"
+        >{{ w.name }}</span
+      >
+    </div>
+    <div :id="w.window_id" class="imjoy-window-container"></div>
+  </div>
+  <div
+    v-if="showEmpty && (!activeWindow || windows.length <= 0)"
+    style="position: relative; min-height: 100px;"
+  >
+    <img
+      style="width:80px; position:absolute; left:50%; top: 50%; transform: translate(-50%, -50%);"
+      src="https://imjoy.io/static/img/imjoy-icon.svg"
+    />
+  </div>
+</div>

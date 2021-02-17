@@ -134,12 +134,12 @@ class DynamicPlugin {
     this._updateUI =
       (_interface && _interface.utils && _interface.utils.$forceUpdate) ||
       function() {};
+
+    this._bindInterface(_interface);
     if (is_proxy) {
       this._disconnected = false;
     } else {
       this._disconnected = true;
-      this._bindInterface(_interface);
-
       // use the plugin event functions if it doesn't exist (window plugins has their own event functions)
       if (!this._initialInterface.on) this._initialInterface.on = this.on;
       if (!this._initialInterface.off) this._initialInterface.off = this.off;
@@ -175,6 +175,13 @@ class DynamicPlugin {
       }
     }
     this._updateUI();
+  }
+
+  /**
+   * Get the bound interface of the plugin
+   */
+  getBoundInterface() {
+    return this._initialInterface;
   }
   /**
    * Bind the first argument of all the interface functions to this plugin

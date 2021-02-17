@@ -78,7 +78,15 @@ module.exports = {
                     fallback: false
                   }
                 }, ],
-              },
+            },
+            {
+                test: /\.template.html$/i,
+                use: 'raw-loader'
+            },
+            {
+                test: /\.template.css$/i,
+                use: 'raw-loader'
+            },
             {
                 test: /\.js$/,
                 exclude: [/node_modules/, /\.webworker\.js$/],
@@ -131,6 +139,10 @@ module.exports = {
             },{
                 from: path.join(__dirname, "src/core-example.html"),
                 to: path.join(__dirname, "dist/core-example.html"),
+                toType: "file"
+            },{
+                from: path.join(__dirname, "src/simple-app-example.html"),
+                to: path.join(__dirname, "dist/simple-app-example.html"),
                 toType: "file"
             },{
                 from: path.join(__dirname, "src/plugin-example.html"),

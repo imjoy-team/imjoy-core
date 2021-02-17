@@ -1,18 +1,5 @@
 import { dependencies } from "../package.json";
-
-function _injectScript(src) {
-  return new Promise((resolve, reject) => {
-    const script = document.createElement("script");
-    script.src = src;
-    script.addEventListener("load", resolve);
-    script.addEventListener("error", () => {
-      document.head.removeChild(script);
-      reject("Error loading script: " + src);
-    });
-    script.addEventListener("abort", () => reject("Script loading aborted."));
-    document.head.appendChild(script);
-  });
-}
+import { injectScript, loadImJoyBasicApp } from "./imjoyBasicApp.js";
 
 /**
  * Get the URL parameters
@@ -52,9 +39,9 @@ export function loadImJoyCore(config) {
       }
       delete window.imjoyCore;
       if (config.debug) {
-        await _injectScript(baseUrl + "imjoy-core.js");
+        await injectScript(baseUrl + "imjoy-core.js");
       } else {
-        await _injectScript(baseUrl + "imjoy-core.min.js");
+        await injectScript(baseUrl + "imjoy-core.min.js");
       }
       if (window.imjoyCore) {
         const imjoyCore = window.imjoyCore;
@@ -190,7 +177,7 @@ export function loadImJoyRPC(config) {
       _rpc_registry[imjoyRPC.VERSION] = imjoyRPC;
     }
     delete window.imjoyRPC;
-    _injectScript(rpc_url)
+    injectScript(rpc_url)
       .then(() => {
         if (window.imjoyRPC) {
           const imjoyRPC = window.imjoyRPC;
@@ -231,3 +218,4 @@ async function loadImJoyRPCByQueryString() {
 window.loadImJoyRPCByQueryString = loadImJoyRPCByQueryString;
 window.loadImJoyRPC = loadImJoyRPC;
 window.loadImJoyCore = loadImJoyCore;
+window.loadImJoyBasicApp = loadImJoyBasicApp;

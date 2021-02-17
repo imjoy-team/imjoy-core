@@ -166,13 +166,61 @@ else {
 }
 ```
 
+### Load ImJoy basic app
+If you want to setup a basic ImJoy app, you can use the `loadImJoyBasicApp` function.
+
+For example:
+```js
+loadImJoyBasicApp({
+    base_url: "/",
+    debug: true,
+    window_height: "100%",
+    process_url_query: true,
+    show_window_title: false,
+    show_progress_bar: true,
+    show_empty_window: true,
+    menu_style: { position: "absolute", right: 0, top: "2px" },
+    window_style: {width: '100%', height: '100%'},
+    menu_container: "menu-container",
+    window_manager_container: "window-container",
+}).then(async app => {
+    const api = app.imjoy.api;
+    app.addMenuItem({
+        label: "➕ Load Plugin",
+        callback() {
+        const uri = prompt(
+            `Please type a ImJoy plugin URL`,
+            "https://github.com/imjoy-team/imjoy-plugins/blob/master/repository/ImageAnnotator.imjoy.html"
+        );
+        if (uri) app.loadPlugin(uri);
+        },
+    });
+    const grid = await api.createWindow({
+        src: "https://grid.imjoy.io/#/app",
+        name: "Grid",
+    });
+    const viewer = await grid.createWindow({ src: "https://kaibu.org" });
+    await api.showSnackbar("This is a message", 5);
+    await api.showProgress(50);
+});
+```
+
 ### API options
-For the loader functions (`loadImJoyRPC`, `loadImJoyCore`), you can optinally pass a `config` object contains the following options:
+For the loader functions (`loadImJoyRPC`, `loadImJoyCore`, `loadImJoyBasicApp`), you can optinally pass a `config` object contains the following options:
  * `version`: specify the `imjoy-core` or `imjoy-rpc` library version
  * `api_version`: for `imjoy-rpc` only, to contrain the api version of the RPC
  * `debug`: load the full `imjoy-core` version instead of a minified version, useful for debugging
  * `base_url`: a custom url for loading the libraries
 
+ For `loadImJoyBasicApp`, there are several additional options:
+ * `process_url_query`: Boolean, whether the url query should be processed
+ * `show_window_title`: Boolean, whether the window title should be shown
+ * `show_progress_bar`: Boolean, whether the progress bar should be shown
+ * `show_empty_window`: Boolean, whether the empty window should be shown
+ * `menu_style`: Object, the menu style
+ * `window_style`: Object, the window style
+ * `menu_container`: String, the id of the menu container
+ * `window_manager_container`: the id of the window container
 ## Examples for using the ImJoy Core
 
 To get started, please take a look at:
