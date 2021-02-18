@@ -238,6 +238,7 @@ For the loader functions (`loadImJoyRPC`, `loadImJoyCore`, `loadImJoyBasicApp`),
  * `show_window_title`: Boolean, whether the window title should be shown
  * `show_progress_bar`: Boolean, whether the progress bar should be shown
  * `show_empty_window`: Boolean, whether the empty window should be shown
+ * `hide_about_imjoy`: Boolean, whether the about ImJoy menu item should be hidden
  * `menu_style`: Object, the menu style
  * `window_style`: Object, the window style
  * `main_container`: String, the id of the main container

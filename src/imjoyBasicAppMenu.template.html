@@ -10,18 +10,29 @@
       href="#"
       v-for="item in extraMenuItems"
       :key="item.label"
-      @click="item.callback()"
+      @click.prevent="item.callback()"
       >{{item.label}}</a
     >
     <hr
-      style="color: #80808073;"
+      style="margin: 0;border-style: solid;color: rgb(157 205 255 / 45%);"
       v-show="extraMenuItems.length>0 && loadedPlugins.length>0"
     />
-    <a href="#" v-for="p in loadedPlugins" :key="p.id" @click="p.api.run()"
+    <a
+      href="#"
+      v-for="p in loadedPlugins"
+      :key="p.id"
+      @click.prevent="p.api.run()"
       >🧩 {{p.name}}</a
     >
     <hr
-      style="color: #80808073;"
+      style="margin: 0;border-style: solid;color: rgb(157 205 255 / 45%);"
+      v-show="allWindows.length>0 && loadedPlugins.length>0"
+    />
+    <a href="#" v-if="showAboutImJoy" @click.prevent="showAboutImJoy()"
+      >ℹ️ About ImJoy</a
+    >
+    <hr
+      style="margin: 0;border-style: solid;color: rgb(157 205 255 / 45%);"
       v-show="allWindows.length>0 && loadedPlugins.length>0"
     />
     <a
@@ -29,10 +40,13 @@
       v-for="w in allWindows"
       :style="{'background-color': activeWindow===w?'#adcafb78':'', 'font-weight': activeWindow===w? 600:300}"
       :key="w.id"
-      @click="w.api.show()"
+      @click.prevent="w.api.show()"
       >🔳 {{w.name}}</a
     >
-    <a href="#" v-if="activeWindow" @click="closeWindow(activeWindow)"
+    <a
+      href="#"
+      v-if="activeWindow && closeWindow"
+      @click.prevent="closeWindow(activeWindow)"
       >❌ Close Window</a
     >
   </div>

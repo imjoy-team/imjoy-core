@@ -118,6 +118,7 @@ export async function loadImJoyBasicApp(config) {
         menuStyle: config.menu_style || {},
         activeWindow: null,
         closeWindow: null,
+        showAboutImJoy: null,
         extraMenuItems: [],
         loadedPlugins: [],
         allWindows: [],
@@ -165,6 +166,14 @@ export async function loadImJoyBasicApp(config) {
         menuManager.closeWindow = w => {
           this.closeWindow(w);
         };
+        if (!config.hide_about_imjoy) {
+          menuManager.showAboutImJoy = () => {
+            imjoy.api.showDialog({
+              src: "https://imjoy.io/docs/",
+              passive: true,
+            });
+          };
+        }
       }
     },
     computed: {
