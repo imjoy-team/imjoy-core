@@ -234,7 +234,7 @@ export async function loadImJoyBasicApp(config) {
           config = await imjoy.pm.imjoy_api.showDialog(plugin, plugin.config);
         }
         data = data || {};
-        await plugin.api.run({
+        return await plugin.api.run({
           config: config,
           data: data,
         });
