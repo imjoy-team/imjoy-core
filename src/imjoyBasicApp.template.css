@@ -199,3 +199,9 @@ body {
   width: 100%;
   height: 100%;
 }
+
+.imjoy-windows{
+  position: relative;
+  min-height: 100px;
+  height: calc(100% - 30px);
+}

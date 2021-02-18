@@ -18,7 +18,7 @@
         show_progress_bar: true,
         show_empty_window: true,
         menu_style: { position: "absolute", right: 0, top: "2px" },
-        window_style: { width: "100%", height: "100%" },
+        window_style: { width: "100%", height: "calc(100% - 30px)" },
         main_container: null,
         menu_container: "menu-container",
         window_manager_container: "window-container",
@@ -42,7 +42,7 @@
         await grid.createWindow({ src: "https://kaibu.org" });
         // await api.showSnackbar("This is a message", 5);
         // await api.showProgress(50);
-        const viewer = await api.showDialog({src: "https://hms-dbmi.github.io/vizarr/"})
+        const viewer = await grid.createWindow({src: "https://hms-dbmi.github.io/vizarr/"})
         await viewer.add_image({source: "https://s3.embassy.ebi.ac.uk/idr/zarr/v0.1/4495402.zarr"})
       });
     </script>

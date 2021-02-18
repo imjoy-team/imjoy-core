@@ -3,7 +3,7 @@
     v-for="w in windows"
     v-show="w === activeWindow"
     :key="w.id"
-    style="position: relative; min-height: 100px; height: 100%;"
+    class="imjoy-windows"
     :style="windowStyle"
   >
     <div
@@ -18,7 +18,8 @@
   </div>
   <div
     v-if="showEmpty && (!activeWindow || windows.length <= 0)"
-    style="position: relative; min-height: 100px;"
+    class="imjoy-windows"
+    :style="windowStyle"
   >
     <img
       style="width:80px; position:absolute; left:50%; top: 50%; transform: translate(-50%, -50%);"
