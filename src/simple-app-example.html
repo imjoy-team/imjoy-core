@@ -39,11 +39,12 @@
           src: "https://grid.imjoy.io/#/app",
           name: "Grid",
         });
-        await grid.createWindow({ src: "https://kaibu.org" });
+        const kaibu = await grid.createWindow({ src: "https://kaibu.org" });
+        await kaibu.view_image('https://images.proteinatlas.org/61448/1319_C10_2_blue_red_green.jpg')
         // await api.showSnackbar("This is a message", 5);
         // await api.showProgress(50);
-        const viewer = await grid.createWindow({src: "https://hms-dbmi.github.io/vizarr/"})
-        await viewer.add_image({source: "https://s3.embassy.ebi.ac.uk/idr/zarr/v0.1/4495402.zarr"})
+        const vizarr = await grid.createWindow({src: "https://hms-dbmi.github.io/vizarr/"})
+        await vizarr.add_image({source: "https://s3.embassy.ebi.ac.uk/idr/zarr/v0.1/4495402.zarr"})
       });
     </script>
   </body>
