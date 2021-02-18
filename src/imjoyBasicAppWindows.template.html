@@ -7,14 +7,18 @@
 >
   <div
     v-if="showWindowTitle"
-    style="text-align: center;height:20px;height:24px; background: #cacaca66;"
+    style="text-align: center;height:24px; background: #cacaca66;"
   >
     <span
       style="font-size:1rem;font-family: Arial, Helvetica, sans-serif;line-height: 24px;"
       >{{ w.name }}</span
     >
   </div>
-  <div :id="w.window_id" class="imjoy-window-container"></div>
+  <div
+    :id="w.window_id"
+    class="imjoy-window-container"
+    :style="{height: showWindowTitle?'calc(100% - 24px)': '100%'}"
+  ></div>
 </div>
 <div
   v-if="showEmpty && (!activeWindow || windows.length <= 0)"
