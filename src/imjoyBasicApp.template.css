@@ -200,7 +200,7 @@ body {
   height: 100%;
 }
 
-.imjoy-windows{
+.imjoy-windows {
   position: relative;
   min-height: 100px;
   height: calc(100% - 30px);
