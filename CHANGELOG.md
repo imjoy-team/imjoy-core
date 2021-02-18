@@ -1,6 +1,6 @@
 # Changelog
 
-**0.13.64**
+**0.13.65**
  - Fix window height when the title bar is shown in the imjoyBasicApp
 
 **0.13.64**
