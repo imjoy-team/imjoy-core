@@ -332,7 +332,6 @@ export async function loadImJoyBasicApp(config) {
         this.$modal.show("window-modal-dialog");
       },
       closeWindow(w) {
-        this.$modal.hide("window-modal-dialog");
         let idx = this.dialogWindows.indexOf(w);
         if (idx >= 0) this.dialogWindows.splice(idx, 1);
         idx = this.allWindows.indexOf(w);
@@ -340,6 +339,7 @@ export async function loadImJoyBasicApp(config) {
         if (w === this.selectedDialogWindow) {
           this.selectedDialogWindow = this.selectedWindowsStack.pop();
         }
+        if (!this.selectedDialogWindow) this.$modal.hide("window-modal-dialog");
         if (w === this.selectedRegularWindow) {
           if (this.regularWindows.length > 0)
             this.selectedRegularWindow =

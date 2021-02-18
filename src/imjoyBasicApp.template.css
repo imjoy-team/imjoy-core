@@ -34,7 +34,7 @@ body {
   margin: 0px;
 }
 .imjoy-dialog-control {
-  height: 19px;
+  height: 23px;
   border: 0px;
   font-size: 1rem;
   position: absolute;
@@ -107,13 +107,13 @@ body {
   background-color: #448aff;
   color: white;
   text-align: center;
-  height: 20px;
+  height: 24px;
 }
 
 .imjoy-window-title {
   text-align: center;
   font-family: Arial, Helvetica, sans-serif;
-  font-size: small;
+  font-size: 16px;
   line-height: 20px;
   margin: 0px;
 }

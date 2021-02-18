@@ -45,7 +45,7 @@
         );
         // await api.showSnackbar("This is a message", 5);
         // await api.showProgress(50);
-        const vizarr = await grid.createWindow({
+        const vizarr = await api.showDialog({
           src: "https://hms-dbmi.github.io/vizarr/",
         });
         await vizarr.add_image({
