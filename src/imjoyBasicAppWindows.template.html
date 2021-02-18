@@ -1,29 +1,27 @@
-<div>
+<div
+  v-for="w in windows"
+  v-show="w === activeWindow"
+  :key="w.id"
+  class="imjoy-windows"
+  :style="windowStyle"
+>
   <div
-    v-for="w in windows"
-    v-show="w === activeWindow"
-    :key="w.id"
-    class="imjoy-windows"
-    :style="windowStyle"
+    v-if="showWindowTitle"
+    style="text-align: center;height:20px;margin-top: 5px; "
   >
-    <div
-      v-if="showWindowTitle"
-      style="text-align: center;height:20px;margin-top: 5px; "
+    <span style="font-size:1rem;font-family: Arial, Helvetica, sans-serif;"
+      >{{ w.name }}</span
     >
-      <span style="font-size:1rem;font-family: Arial, Helvetica, sans-serif;"
-        >{{ w.name }}</span
-      >
-    </div>
-    <div :id="w.window_id" class="imjoy-window-container"></div>
   </div>
-  <div
-    v-if="showEmpty && (!activeWindow || windows.length <= 0)"
-    class="imjoy-windows"
-    :style="windowStyle"
-  >
-    <img
-      style="width:80px; position:absolute; left:50%; top: 50%; transform: translate(-50%, -50%);"
-      src="https://imjoy.io/static/img/imjoy-icon.svg"
-    />
-  </div>
+  <div :id="w.window_id" class="imjoy-window-container"></div>
+</div>
+<div
+  v-if="showEmpty && (!activeWindow || windows.length <= 0)"
+  class="imjoy-windows"
+  :style="windowStyle"
+>
+  <img
+    style="width:80px; position:absolute; left:50%; top: 50%; transform: translate(-50%, -50%);"
+    src="https://imjoy.io/static/img/imjoy-icon.svg"
+  />
 </div>

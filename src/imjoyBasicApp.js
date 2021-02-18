@@ -217,20 +217,27 @@ export async function loadImJoyBasicApp(config) {
           this.setupPluginEngine(engine, token);
         }
         if (p) {
-          this.loadPlugin(p).then(async plugin => {
-            let config = {};
-            if (plugin.config.ui && plugin.config.ui.indexOf("{") > -1) {
-              config = await imjoy.pm.imjoy_api.showDialog(
-                plugin,
-                plugin.config
-              );
-            }
-            await plugin.api.run({
-              config: config,
-              data: {},
-            });
+          this.loadPlugin(p).then(plugin => {
+            let config = {},
+              data = {},
+              tmp;
+            tmp = getUrlParameter("data");
+            if (tmp) data = JSON.parse(tmp);
+            tmp = getUrlParameter("config");
+            if (tmp) config = JSON.parse(tmp);
+            this.runPlugin(plugin, config, data);
           });
         }
+      },
+      async runPlugin(plugin, config, data) {
+        if (!config && plugin.config.ui && plugin.config.ui.indexOf("{") > -1) {
+          config = await imjoy.pm.imjoy_api.showDialog(plugin, plugin.config);
+        }
+        data = data || {};
+        await plugin.api.run({
+          config: config,
+          data: data,
+        });
       },
       async setupPluginEngine(engine, token) {
         try {
