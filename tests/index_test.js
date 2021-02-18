@@ -82,15 +82,15 @@ describe("ImJoy Core", async () => {
   //   plugin.api.run({})
   // }).timeout(30000)
 
-  it("should load the new web-python plugin", async () => {
-    const code = _.clone(WEB_PYTHON_PLUGIN_TEMPLATE);
-    const plugin = await pm.reloadPlugin({ code: code });
-    expect(plugin.name).to.equal("WebPythonPlugin1");
-    expect(plugin.type).to.equal("web-python");
-    expect(typeof plugin.api.run).to.equal("function");
-    expect(await plugin.api.run({})).to.equal(998);
-    plugin.terminate();
-  }).timeout(200000);
+  // it("should load the new web-python plugin", async () => {
+  //   const code = _.clone(WEB_PYTHON_PLUGIN_TEMPLATE);
+  //   const plugin = await pm.reloadPlugin({ code: code });
+  //   expect(plugin.name).to.equal("WebPythonPlugin1");
+  //   expect(plugin.type).to.equal("web-python");
+  //   expect(typeof plugin.api.run).to.equal("function");
+  //   expect(await plugin.api.run({})).to.equal(998);
+  //   plugin.terminate();
+  // }).timeout(200000);
 
   it("should get plugin config from github", async () => {
     const config1 = await pm.getPluginFromUrl(
