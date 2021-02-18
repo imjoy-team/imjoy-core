@@ -169,11 +169,22 @@ else {
 ### Load ImJoy basic app
 If you want to setup a basic ImJoy app, you can use the `loadImJoyBasicApp` function.
 
-For example:
+
+
+For example, if you want to build a basic ImJoy app or use it within your project websie, you will need to:
+
+1. Add the following script tag in your HTML:
+```html
+<script src="https://lib.imjoy.io/imjoy-loader.js"></script>
+```
+2. Optionally, add div tags for the displaying the ImJoy menu and windows. For example:
+```html
+    <div id="window-container"></div>
+    <div id="menu-container"></div>
+```
+3. To initialize the app, add the following javascript code to a script block or your script file:
 ```js
 loadImJoyBasicApp({
-    base_url: "/",
-    debug: true,
     window_height: "100%",
     process_url_query: true,
     show_window_title: false,
@@ -181,10 +192,14 @@ loadImJoyBasicApp({
     show_empty_window: true,
     menu_style: { position: "absolute", right: 0, top: "2px" },
     window_style: {width: '100%', height: '100%'},
+    main_container: null,
     menu_container: "menu-container",
     window_manager_container: "window-container",
+    imjoy_api: { } // override some imjoy API functions here
 }).then(async app => {
+    // get the api object from the root plugin
     const api = app.imjoy.api;
+    // if you want to let users to load new plugins, add a menu item
     app.addMenuItem({
         label: "➕ Load Plugin",
         callback() {
@@ -195,15 +210,22 @@ loadImJoyBasicApp({
         if (uri) app.loadPlugin(uri);
         },
     });
+
+    // if you want a windows displayed in a draggable rezisable grid layout
     const grid = await api.createWindow({
         src: "https://grid.imjoy.io/#/app",
         name: "Grid",
     });
+    // you can show windows in the grid
     const viewer = await grid.createWindow({ src: "https://kaibu.org" });
-    await api.showSnackbar("This is a message", 5);
+
+    // or display a message
+    await api.showMessage("This is a message");
+    // or progress
     await api.showProgress(50);
 });
 ```
+
 
 ### API options
 For the loader functions (`loadImJoyRPC`, `loadImJoyCore`, `loadImJoyBasicApp`), you can optinally pass a `config` object contains the following options:
@@ -219,8 +241,10 @@ For the loader functions (`loadImJoyRPC`, `loadImJoyCore`, `loadImJoyBasicApp`),
  * `show_empty_window`: Boolean, whether the empty window should be shown
  * `menu_style`: Object, the menu style
  * `window_style`: Object, the window style
+ * `main_container`: String, the id of the main container
  * `menu_container`: String, the id of the menu container
- * `window_manager_container`: the id of the window container
+ * `window_manager_container`: String, the id of the window container
+ * `imjoy_api`: Object, override the implementation of some ImJoy API functions
 ## Examples for using the ImJoy Core
 
 To get started, please take a look at:
