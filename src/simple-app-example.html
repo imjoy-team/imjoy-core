@@ -1,0 +1,57 @@
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>ImJoy Simple App Example</title>
+  </head>
+
+  <body>
+    <div id="window-container"></div>
+    <div id="menu-container"></div>
+    <script src="/imjoy-loader.js"></script>
+    <script>
+      loadImJoyBasicApp({
+        base_url: "/",
+        debug: true,
+        window_height: "100%",
+        process_url_query: true,
+        show_window_title: false,
+        show_progress_bar: true,
+        show_empty_window: true,
+        menu_style: { position: "absolute", right: 0, top: "2px" },
+        window_style: { width: "100%", height: "calc(100% - 30px)" },
+        main_container: null,
+        menu_container: "menu-container",
+        window_manager_container: "window-container",
+        imjoy_api: {},
+      }).then(async app => {
+        const api = app.imjoy.api;
+        app.addMenuItem({
+          label: "➕ Load Plugin",
+          callback() {
+            const uri = prompt(
+              `Please type a ImJoy plugin URL`,
+              "https://github.com/imjoy-team/imjoy-plugins/blob/master/repository/ImageAnnotator.imjoy.html"
+            );
+            if (uri) app.loadPlugin(uri);
+          },
+        });
+        const grid = await api.createWindow({
+          src: "https://grid.imjoy.io/#/app",
+          name: "Grid",
+        });
+        const kaibu = await grid.createWindow({ src: "https://kaibu.org" });
+        await kaibu.view_image(
+          "https://images.proteinatlas.org/61448/1319_C10_2_blue_red_green.jpg"
+        );
+        // await api.showSnackbar("This is a message", 5);
+        // await api.showProgress(50);
+        const vizarr = await grid.createWindow({
+          src: "https://hms-dbmi.github.io/vizarr/",
+        });
+        await vizarr.add_image({
+          source: "https://s3.embassy.ebi.ac.uk/idr/zarr/v0.1/4495402.zarr",
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,207 @@
+.vm--modal {
+  max-height: 100% !important;
+  max-width: 100% !important;
+}
+
+.imjoy-inline-window {
+  width: 100%;
+  height: 600px;
+}
+
+.imjoy-progress-border > div {
+  background-color: #448aff;
+  height: 3px;
+}
+
+.imjoy-progress-border {
+  top: 0;
+  left: 0;
+  position: absolute;
+  width: 100%;
+  height: 3px;
+}
+
+.imjoy-noselect {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+body {
+  margin: 0px;
+}
+.imjoy-dialog-control {
+  height: 19px;
+  border: 0px;
+  font-size: 1rem;
+  position: absolute;
+  color: white;
+  top: 1px;
+}
+
+.imjoy-dialog-control:focus {
+  outline: none;
+}
+
+.imjoy-loader {
+  position: fixed;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  transform: -webkit-translate(-50%, -50%);
+  transform: -moz-translate(-50%, -50%);
+  transform: -ms-translate(-50%, -50%);
+  border: 10px solid #f3f3f3;
+  /* Light grey */
+  border-top: 10px solid #448aff;
+  /* Blue */
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* The snackbar - position it at the bottom and in the middle of the screen */
+.imjoy-snackbar {
+  font-family: Arial, Helvetica, sans-serif;
+  visibility: hidden;
+  /* Hidden by default. Visible on click */
+  min-width: 250px;
+  /* Set a default minimum width */
+  background-color: #333333c2;
+  /* Black background color */
+  color: #fff;
+  /* White text color */
+  text-align: center;
+  /* Centered text */
+  border-radius: 5px;
+  /* Rounded borders */
+  padding: 16px;
+  /* Padding */
+  position: fixed;
+  /* Sit on top of the screen */
+  z-index: 9999;
+  /* Add a z-index if needed */
+  left: 50%;
+  /* Center the snackbar */
+  transform: translate(-50%, 0);
+  bottom: 20px;
+  /* 20px from the bottom */
+}
+
+.imjoy-window-title-bar {
+  cursor: move;
+  background-color: #448aff;
+  color: white;
+  text-align: center;
+  height: 20px;
+}
+
+.imjoy-window-title {
+  text-align: center;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: small;
+  line-height: 20px;
+  margin: 0px;
+}
+
+/* Show the snackbar when clicking on a button (class added with JavaScript) */
+.imjoy-snackbar.show-snackbar {
+  visibility: visible;
+  /* Show the snackbar */
+  /* Add animation: Take 0.5 seconds to fade in and out the snackbar.
+  However, delay the fade out process for 2.5 seconds */
+  -webkit-animation: imjoy-fadein 0.5s;
+  animation: imjoy-fadein 0.5s;
+}
+
+/* Animations to fade the snackbar in and out */
+@-webkit-keyframes imjoy-fadein {
+  from {
+    bottom: 0;
+    opacity: 0;
+  }
+
+  to {
+    bottom: 30px;
+    opacity: 1;
+  }
+}
+
+@keyframes imjoy-fadein {
+  from {
+    bottom: 0;
+    opacity: 0;
+  }
+
+  to {
+    bottom: 30px;
+    opacity: 1;
+  }
+}
+
+.dropdown-btn {
+  padding: 4px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+}
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  right: 0;
+  background-color: #f9f9f9;
+  min-width: 200px;
+  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+}
+
+.dropdown-content a {
+  font-family: Arial, Helvetica, sans-serif;
+  color: black;
+  padding: 6px 10px;
+  text-decoration: none;
+  display: block;
+}
+
+.dropdown-content a:hover {
+  background-color: #f1f1f1;
+}
+
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+.dropdown:hover .dropbtn {
+  background-color: #3e8e41;
+}
+
+.imjoy-window-container {
+  width: 100%;
+  height: 100%;
+}
+
+.imjoy-windows {
+  position: relative;
+  min-height: 100px;
+  height: calc(100% - 30px);
+}

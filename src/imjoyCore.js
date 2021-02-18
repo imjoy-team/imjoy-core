@@ -73,7 +73,8 @@ export class ImJoy {
   async init() {
     await this.fm.init();
     await this.pm.init();
-
+    this.root_plugin = this.pm.root_plugin;
+    if (this.root_plugin) this.api = this.pm.root_plugin.getBoundInterface();
     try {
       await this.pm.loadWorkspaceList();
     } catch (e) {

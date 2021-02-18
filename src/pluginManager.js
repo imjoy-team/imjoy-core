@@ -94,10 +94,6 @@ export class PluginManager {
       },
     ];
 
-    this.IMJOY_PLUGIN = {
-      _id: "IMJOY_APP",
-    };
-
     this.repository_list = [];
     this.repository_names = [];
     this.available_plugins = [];
@@ -239,8 +235,6 @@ export class PluginManager {
     this.imjoy_api.utils.$forceUpdate =
       this.imjoy_api.utils.$forceUpdate || function() {};
 
-    //expose api to window for debugging
-    window.api = this.imjoy_api;
     this.event_bus.on("engine_connected", async engine => {
       for (let k in this.plugins) {
         const plugin = this.plugins[k];
@@ -282,7 +276,7 @@ export class PluginManager {
     if (typeof config !== "object" || !config.path) {
       throw "You must pass an object contains keys named `path` and `engine`";
     }
-    _plugin = _plugin || this.IMJOY_PLUGIN;
+    _plugin = _plugin || this.root_plugin;
 
     if (config.engine) {
       console.warn(
@@ -315,7 +309,7 @@ export class PluginManager {
       throw "You must pass an object contains keys named `engine` and `path` (or `dir`, optionally `overwrite`)";
     }
 
-    _plugin = _plugin || this.IMJOY_PLUGIN;
+    _plugin = _plugin || this.root_plugin;
 
     if (config.engine) {
       console.warn(
@@ -387,7 +381,16 @@ export class PluginManager {
     }
 
     initializeJailed(config);
-
+    this.root_plugin = new DynamicPlugin(
+      {
+        id: "imjoy-root",
+        name: "ImJoy Root Plugin",
+        type: "iframe",
+      },
+      this.imjoy_api,
+      null,
+      true
+    );
     this.plugins = {};
     this.plugin_names = {};
     this.registered = {
@@ -1755,7 +1758,7 @@ export class PluginManager {
 
               return await this.imjoy_api.showDialog(null, c);
             } else {
-              return await this.createWindow(null, c);
+              return await this.imjoy_api.createWindow(null, c);
             }
           },
         };
@@ -2331,7 +2334,7 @@ export class PluginManager {
                 w.type = res.type || "imjoy/generic";
                 w.config = res.data || {};
                 w.data = res.target || {};
-                await this.createWindow(plugin, w);
+                await this.imjoy_api.createWindow(plugin, w);
               }
             }
           };
@@ -2474,6 +2477,7 @@ export class PluginManager {
   }
 
   async registerService(plugin, config) {
+    plugin = plugin || {};
     if (!config.type || !config.name) {
       throw new Error("you must specify the service `type` and `name`.");
     }
