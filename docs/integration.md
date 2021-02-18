@@ -185,7 +185,6 @@ For example, if you want to build a basic ImJoy app or use it within your projec
 3. To initialize the app, add the following javascript code to a script block or your script file:
 ```js
 loadImJoyBasicApp({
-    window_height: "100%",
     process_url_query: true,
     show_window_title: false,
     show_progress_bar: true,
