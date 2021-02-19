@@ -301,10 +301,12 @@ export async function loadImJoyBasicApp(config) {
         }, duration * 1000);
       },
       addWindow(w) {
-        if (document.getElementById(w.window_id)) {
+        const windowElm = document.getElementById(w.window_id);
+        if (windowElm) {
+          if (w.window_style) Object.assign(windowElm.style, w.window_style);
           w.inline = true;
           w.api.show = w.show = () => {
-            document.getElementById(w.window_id).scrollIntoView();
+            windowElm.scrollIntoView();
           };
           return;
         }

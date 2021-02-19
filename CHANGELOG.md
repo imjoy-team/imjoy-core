@@ -3,6 +3,7 @@
 **0.13.65**
  - fix(imjoyBasicApp): Fix window height when the title bar is shown
  - feat(imjoyBasicApp): Support inline window by defining its `window_id`
+ - feat(imjoyBasicApp): Allow passing `window_style` to customize the window style, only works when used with `window_id`
 
 **0.13.64**
  - fix(imjoyBasicApp): Improve menu item divider
