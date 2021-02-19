@@ -178,7 +178,9 @@ export async function loadImJoyBasicApp(config) {
     },
     computed: {
       regularWindows: function() {
-        return this.allWindows.filter(w => !this.dialogWindows.includes(w));
+        return this.allWindows.filter(
+          w => !this.dialogWindows.includes(w) && !w.inline
+        );
       },
     },
     watch: {
@@ -299,7 +301,15 @@ export async function loadImJoyBasicApp(config) {
         }, duration * 1000);
       },
       addWindow(w) {
-        if (document.getElementById(w.window_id)) return;
+        const windowElm = document.getElementById(w.window_id);
+        if (windowElm) {
+          if (w.window_style) Object.assign(windowElm.style, w.window_style);
+          w.inline = true;
+          w.api.show = w.show = () => {
+            windowElm.scrollIntoView();
+          };
+          return;
+        }
         if (!w.dialog) {
           this.selectedRegularWindow = w;
           w.api.show = w.show = () => {

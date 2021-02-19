@@ -211,7 +211,7 @@ describe("ImJoy Core", async () => {
       );
       await wm.windows[wm.windows.length - 1].close();
       expect(wm.windows.length).to.equal(count);
-    });
+    }).timeout(20000);
 
     it("should create window", async () => {
       const count = wm.windows.length;

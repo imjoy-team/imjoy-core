@@ -1,6 +1,11 @@
 # Changelog
 
+**0.13.65**
+ - fix(imjoyBasicApp): Fix window height when the title bar is shown
+ - feat(imjoyBasicApp): Support inline window by defining its `window_id`
+ - feat(imjoyBasicApp): Allow passing `window_style` to customize the window style, only works when used with `window_id`
+
 **0.13.64**
- - Improve menu item divider in the imjoyBasicApp
- - Prevent scrolling when clicking the menu item in the imjoyBasicApp
- - Add about ImJoy menu entry to the imjoyBasicApp
+ - fix(imjoyBasicApp): Improve menu item divider
+ - fix(imjoyBasicApp): Prevent scrolling when clicking the menu item
+ - feat(imjoyBasicApp): Add about ImJoy menu entry
