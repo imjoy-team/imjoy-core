@@ -1454,6 +1454,9 @@ Currently supported functions for **all plugins** are:
  * `api.utils.$forceUpdate()`: refreshes the GUI manually.
  * `api.utils.openUrl(url)`: opens an `url` in a new browser tab.
  * `api.utils.sleep(duration)`: sleeps for the indicated `duration` in seconds. Note for Python plugins, use `time.sleep` instead.)
+ * `api.utils.showOpenFilePicker`: only works in Chrome 86+, popup a dialog for opening a file with the [File System Access](https://web.dev/file-system-access/) API
+ * `api.utils.showSaveFilePicker`: only works in Chrome 86+, popup a dialog for saving a file with the [File System Access](https://web.dev/file-system-access/) API
+ * `api.utils.showDirectoryPicker`: only works in Chrome 86+, popup a dialog for choose a directory with the [File System Access](https://web.dev/file-system-access/) API
 
 ### api.config
 The configuration information consists of:
@@ -1654,6 +1657,7 @@ Also notice that the content shown inside a `window` plugin do not have these re
  * make the api more consistent for `api.createWindow` and `api.getPlugin`. Allowing passing a string to `api.createWindow` and accepting a `config` object for `api.getPlugin`
  * added `api.loadPlugin` which is currently directly mapped to `api.getPlugin` but will provide better semantic meaning. Overall, we have `api.getPlugin` and `api.getWindow` for obtain an existing plugin or window, and we have `api.createWindow` and `api.loadPlugin` for creating a new instance of window or plugin.
 
+ * Add supports for File System Access API (only for Chrome): `api.utils.showOpenFilePicker`, `api.utils.showSaveFilePicker`, `api.utils.showDirectoryPicker`.
 #### api_version: 0.1.7
  * `api.fs` has been deprecated, the browser file system is moved to a separate plugin `BrowserFS`, to use the file system, you can do `const bfs_plugin = await api.getPlugin('BrowserFS'); const bfs = bfs_plugin.fs;`, now `fs` will be equivalent to `api.fs`. Notice: the data saved with `api.fs` will not be accessible with the new API, to get access the old data, please change `api_version` in the plugin config to `0.1.6`.
  * added `_rpcEncode` and `_rpcDecode` to support custom encoding and decoding
