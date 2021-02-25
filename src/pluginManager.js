@@ -196,6 +196,7 @@ export class PluginManager {
       },
       utils: {},
     };
+
     // bind this to api functions
     for (let k in this.imjoy_api) {
       if (typeof this.imjoy_api[k] === "function") {
@@ -205,6 +206,22 @@ export class PluginManager {
           this.imjoy_api[k][u] = this.imjoy_api[k][u].bind(this);
         }
       }
+    }
+
+    if (window.showOpenFilePicker) {
+      imjoy_api.utils.showOpenFilePicker = async (plugin, ...args) => {
+        return await window.showOpenFilePicker(...args);
+      };
+    }
+    if (window.showSaveFilePicker) {
+      imjoy_api.utils.showSaveFilePicker = async (plugin, ...args) => {
+        return await window.showSaveFilePicker(...args);
+      };
+    }
+    if (window.showDirectoryPicker) {
+      imjoy_api.utils.showDirectoryPicker = async (plugin, ...args) => {
+        return await window.showDirectoryPicker(...args);
+      };
     }
     // merge imjoy api
     this.imjoy_api = _.assign({}, this.imjoy_api, imjoy_api);
