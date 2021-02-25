@@ -105,6 +105,7 @@ export class PluginManager {
     this.service_registry = {};
 
     this.db = null;
+    imjoy_api.utils = imjoy_api.utils || {};
     const api_utils_ = imjoy_api.utils;
     this.imjoy_api = {
       alert: (plugin, msg) => {
