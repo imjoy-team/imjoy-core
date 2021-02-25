@@ -208,21 +208,36 @@ export class PluginManager {
       }
     }
 
-    if (window.showOpenFilePicker) {
-      imjoy_api.utils.showOpenFilePicker = async (plugin, ...args) => {
+    imjoy_api.utils.showOpenFilePicker = async (plugin, ...args) => {
+      if (window.showOpenFilePicker) {
         return await window.showOpenFilePicker(...args);
-      };
-    }
-    if (window.showSaveFilePicker) {
-      imjoy_api.utils.showSaveFilePicker = async (plugin, ...args) => {
+      } else {
+        throw new Error(
+          "showOpenFilePicker is not available, please make sure you have Google Chrome 86+"
+        );
+      }
+    };
+
+    imjoy_api.utils.showSaveFilePicker = async (plugin, ...args) => {
+      if (window.showSaveFilePicker) {
         return await window.showSaveFilePicker(...args);
-      };
-    }
-    if (window.showDirectoryPicker) {
-      imjoy_api.utils.showDirectoryPicker = async (plugin, ...args) => {
+      } else {
+        throw new Error(
+          "showSaveFilePicker is not available, please make sure you have Google Chrome 86+"
+        );
+      }
+    };
+
+    imjoy_api.utils.showDirectoryPicker = async (plugin, ...args) => {
+      if (window.showDirectoryPicker) {
         return await window.showDirectoryPicker(...args);
-      };
-    }
+      } else {
+        throw new Error(
+          "showDirectoryPicker is not available, please make sure you have Google Chrome 86+"
+        );
+      }
+    };
+
     // merge imjoy api
     this.imjoy_api = _.assign({}, this.imjoy_api, imjoy_api);
     // copy api utils make sure it was not overwritten

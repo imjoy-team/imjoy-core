@@ -1454,9 +1454,9 @@ Currently supported functions for **all plugins** are:
  * `api.utils.$forceUpdate()`: refreshes the GUI manually.
  * `api.utils.openUrl(url)`: opens an `url` in a new browser tab.
  * `api.utils.sleep(duration)`: sleeps for the indicated `duration` in seconds. Note for Python plugins, use `time.sleep` instead.)
- * `api.utils.showOpenFilePicker`: only available in Chrome 86+, popup a dialog for opening a file with the [File System Access](https://web.dev/file-system-access/) API
- * `api.utils.showSaveFilePicker`: only available in Chrome 86+, popup a dialog for saving a file with the [File System Access](https://web.dev/file-system-access/) API
- * `api.utils.showDirectoryPicker`: only available in Chrome 86+, popup a dialog for choose a directory with the [File System Access](https://web.dev/file-system-access/) API
+ * `api.utils.showOpenFilePicker`: only works in Chrome 86+, popup a dialog for opening a file with the [File System Access](https://web.dev/file-system-access/) API
+ * `api.utils.showSaveFilePicker`: only works in Chrome 86+, popup a dialog for saving a file with the [File System Access](https://web.dev/file-system-access/) API
+ * `api.utils.showDirectoryPicker`: only works in Chrome 86+, popup a dialog for choose a directory with the [File System Access](https://web.dev/file-system-access/) API
 
 ### api.config
 The configuration information consists of:
