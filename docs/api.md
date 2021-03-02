@@ -1149,7 +1149,7 @@ You can use plugin services the following service types:
  * [...contribute your service type here...]
 
 #### Define a new plugin service type
-If both the built-in and contributed service types do not meet your requirements, you can define a new plugin service type. The easest way is to start by defining a type name starts with `_`, for example: `api.registerService({"type": "_my-awesome-service", ...})`. You can use this to develop and test your service. Once your service type definition is stable, you can submit your type to imjoy-core repo such that you can remove the leading `_` from the type name.
+If both the built-in and contributed service types do not meet your requirements, you can define a new plugin service type. The easest way is to start by defining a type name starts with `#`, for example: `api.registerService({"type": "#my-awesome-service", ...})`. You can use this to develop and test your service. Once your service type definition is stable, you can submit your type to imjoy-core repo such that you can remove the leading `#` from the type name.
 
 Here are the steps for submitting your type definition:
  1. fork the [imjoy-core repo](https://github.com/imjoy-team/imjoy-core)
@@ -1658,6 +1658,7 @@ Also notice that the content shown inside a `window` plugin do not have these re
  * added `api.loadPlugin` which is currently directly mapped to `api.getPlugin` but will provide better semantic meaning. Overall, we have `api.getPlugin` and `api.getWindow` for obtain an existing plugin or window, and we have `api.createWindow` and `api.loadPlugin` for creating a new instance of window or plugin.
 
  * Add supports for File System Access API (only for Chrome): `api.utils.showOpenFilePicker`, `api.utils.showSaveFilePicker`, `api.utils.showDirectoryPicker`.
+ * Change the prefix for registerService (from `_` to `#`)
 #### api_version: 0.1.7
  * `api.fs` has been deprecated, the browser file system is moved to a separate plugin `BrowserFS`, to use the file system, you can do `const bfs_plugin = await api.getPlugin('BrowserFS'); const bfs = bfs_plugin.fs;`, now `fs` will be equivalent to `api.fs`. Notice: the data saved with `api.fs` will not be accessible with the new API, to get access the old data, please change `api_version` in the plugin config to `0.1.6`.
  * added `_rpcEncode` and `_rpcDecode` to support custom encoding and decoding
