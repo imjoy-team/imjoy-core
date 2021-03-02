@@ -112,10 +112,10 @@
       return true
     }
 
-    async test_register_underscore_service() {
+    async test_register_hash_service() {
       try {
         const id = await api.registerService({
-          type: '_model123',
+          type: '#model123',
           name: "my model",
           predict: function () {}
         })

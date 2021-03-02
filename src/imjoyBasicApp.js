@@ -26,10 +26,18 @@ function getUrlParameter(name) {
     : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
 
+function loadCss(url) {
+  const fileref = document.createElement("link");
+  fileref.setAttribute("rel", "stylesheet");
+  fileref.setAttribute("type", "text/css");
+  fileref.setAttribute("href", url);
+  document.getElementsByTagName("head")[0].appendChild(fileref);
+}
+
 export async function loadImJoyBasicApp(config) {
   await injectScript("https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.min.js");
   await injectScript("https://imjoy-team.github.io/vue-js-modal/index.js");
-  await injectScript("https://imjoy-team.github.io/vue-js-modal/styles.css");
+  loadCss("https://imjoy-team.github.io/vue-js-modal/styles.css");
   config = config || {};
   let app;
   const imjoy_api = {

@@ -2521,9 +2521,9 @@ export class PluginManager {
         console.error("Failed to register service " + config.name || "", error);
         throw error;
       }
-    } else if (!config.type.startsWith("_")) {
+    } else if (!config.type.startsWith("#")) {
       throw new Error(
-        "Unregistered service type name should start with `_`, please consider submit your type definition to the imjoy-core repo, see https://imjoy.io/docs/#/api?id=apiregisterservice for more details"
+        "Unregistered service type name should start with `#`, please consider submit your type definition to the imjoy-core repo, see https://imjoy.io/docs/#/api?id=apiregisterservice for more details"
       );
     }
     return this._register(plugin, config);
