@@ -215,6 +215,8 @@ async function loadImJoyRPCByQueryString() {
   return await loadImJoyRPC(urlParams);
 }
 
+export { loadImJoyBasicApp };
+
 window.loadImJoyRPCByQueryString = loadImJoyRPCByQueryString;
 window.loadImJoyRPC = loadImJoyRPC;
 window.loadImJoyCore = loadImJoyCore;
