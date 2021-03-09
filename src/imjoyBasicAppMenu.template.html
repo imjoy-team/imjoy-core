@@ -5,7 +5,12 @@
       src="https://imjoy.io/static/img/imjoy-icon.svg"
     />
   </a>
-  <div class="dropdown-content" :style="{left: menuPos==='left'? 0: null}">
+  <div
+    class="dropdown-content"
+    v-if="showContent"
+    @click="menuClicked"
+    :style="{left: menuPos==='left'? 0: null}"
+  >
     <a
       href="#"
       v-for="item in extraMenuItems"
