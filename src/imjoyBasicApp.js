@@ -38,7 +38,9 @@ export async function loadImJoyBasicApp(config) {
   await injectScript("https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.min.js");
   await injectScript("https://imjoy-team.github.io/vue-js-modal/index.js");
   loadCss("https://imjoy-team.github.io/vue-js-modal/styles.css");
-  await injectScript("https://cdn.jsdelivr.net/npm/@oeway/vue-window@2.4.1-a/lib/index.js");
+  await injectScript(
+    "https://cdn.jsdelivr.net/npm/@oeway/vue-window@2.4.1-a/lib/index.js"
+  );
   config = config || {};
   let app;
   const imjoy_api = {
