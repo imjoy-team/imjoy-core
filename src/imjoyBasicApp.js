@@ -112,7 +112,7 @@ export async function loadImJoyBasicApp(config) {
         showEmpty: config.show_empty_window || false,
         showWindowTitle: config.show_window_title || false,
         windows: [],
-        activeWindow: null
+        activeWindow: null,
       },
       methods: {
         closeWindow(w) {
