@@ -38,7 +38,9 @@ export async function loadImJoyBasicApp(config) {
   await injectScript("https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.min.js");
   await injectScript("https://imjoy-team.github.io/vue-js-modal/index.js");
   loadCss("https://imjoy-team.github.io/vue-js-modal/styles.css");
-  const VueWindow = await import("@hscmap/vue-window");
+  await injectScript(
+    "https://cdn.jsdelivr.net/npm/@oeway/vue-window@2.4.1-a/lib/index.js"
+  );
   config = config || {};
   let app;
   const imjoy_api = {
@@ -80,7 +82,7 @@ export async function loadImJoyBasicApp(config) {
   await imjoy.start(config);
   console.log("ImJoy Core started successfully!");
   Vue.use(window["vue-js-modal"].default);
-  Vue.use(VueWindow);
+  Vue.use(window.VueWindow);
   let elem;
   if (config.main_container) {
     if (typeof config.main_container === "string")
