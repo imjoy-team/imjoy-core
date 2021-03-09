@@ -38,6 +38,7 @@ export async function loadImJoyBasicApp(config) {
   await injectScript("https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.min.js");
   await injectScript("https://imjoy-team.github.io/vue-js-modal/index.js");
   loadCss("https://imjoy-team.github.io/vue-js-modal/styles.css");
+  const VueWindow = await import('@hscmap/vue-window');
   config = config || {};
   let app;
   const imjoy_api = {
@@ -79,6 +80,7 @@ export async function loadImJoyBasicApp(config) {
   await imjoy.start(config);
   console.log("ImJoy Core started successfully!");
   Vue.use(window["vue-js-modal"].default);
+  Vue.use(VueWindow);
   let elem;
   if (config.main_container) {
     if (typeof config.main_container === "string")
@@ -102,12 +104,21 @@ export async function loadImJoyBasicApp(config) {
     windowManager = new Vue({
       el: windowsElem,
       data: {
+        type: config.window_manager_type || 'standard',
+        blockPointerEvents: false,
         windowStyle: config.window_style || {},
         showEmpty: config.show_empty_window || false,
         showWindowTitle: config.show_window_title || false,
         windows: [],
-        activeWindow: null,
+        activeWindow: null
       },
+      methods: {
+        closeWindow(w){
+          w.hidden = true;
+          this.$forceUpdate();
+          w.close();
+        }
+      }
     });
   }
 
@@ -203,7 +214,7 @@ export async function loadImJoyBasicApp(config) {
           windowManager.activeWindow = newVal;
           windowManager.$forceUpdate();
         }
-        if (menuManager) {
+        if (menuManager && config.window_manager_type === 'simple') {
           menuManager.activeWindow = newVal;
           menuManager.$forceUpdate();
         }
@@ -309,6 +320,7 @@ export async function loadImJoyBasicApp(config) {
         }, duration * 1000);
       },
       addWindow(w) {
+        w.api = w.api || {}
         const windowElm = document.getElementById(w.window_id);
         if (windowElm) {
           if (w.window_style) Object.assign(windowElm.style, w.window_style);
@@ -320,44 +332,56 @@ export async function loadImJoyBasicApp(config) {
         }
         if (!w.dialog) {
           this.selectedRegularWindow = w;
+          setTimeout(()=>{
+            if(w.fullscreen||w.standalone){
+              w.sizeState = 'maximized'
+            }
+            else{
+              w.sizeState = 'normal'
+            }
+            this.$forceUpdate()
+          }, 0)
+          const self = this;
           w.api.show = w.show = () => {
-            this.selectedRegularWindow = w;
-            this.$forceUpdate();
+            w.sizeState = 'restore'
+            self.selectedRegularWindow = w;
+            self.$forceUpdate();
             imjoy.wm.selectWindow(w);
             w.api.emit("show");
           };
-          return;
         }
-        this.dialogWindows.push(w);
-        if (this.selectedDialogWindow) {
-          this.selectedWindowsStack.push(this.selectedDialogWindow);
-        }
-        this.selectedDialogWindow = w;
-        if (w.fullscreen || w.standalone) this.fullscreen = true;
-        else this.fullscreen = false;
-        this.$modal.show("window-modal-dialog");
-        this.$forceUpdate();
-        w.api.show = w.show = () => {
+        else{
+          this.dialogWindows.push(w);
+          if (this.selectedDialogWindow) {
+            this.selectedWindowsStack.push(this.selectedDialogWindow);
+          }
           this.selectedDialogWindow = w;
+          if (w.fullscreen || w.standalone) this.fullscreen = true;
+          else this.fullscreen = false;
           this.$modal.show("window-modal-dialog");
-          imjoy.wm.selectWindow(w);
-          w.api.emit("show");
-        };
+          this.$forceUpdate();
+          w.api.show = w.show = () => {
+            this.selectedDialogWindow = w;
+            this.$modal.show("window-modal-dialog");
+            imjoy.wm.selectWindow(w);
+            w.api.emit("show");
+          };
 
-        w.api.hide = w.hide = () => {
-          if (this.selectedDialogWindow === w) {
-            this.$modal.hide("window-modal-dialog");
-          }
-          w.api.emit("hide");
-        };
+          w.api.hide = w.hide = () => {
+            if (this.selectedDialogWindow === w) {
+              this.$modal.hide("window-modal-dialog");
+            }
+            w.api.emit("hide");
+          };
 
-        setTimeout(() => {
-          try {
-            w.show();
-          } catch (e) {
-            console.error(e);
-          }
-        }, 500);
+          setTimeout(() => {
+            try {
+              w.show();
+            } catch (e) {
+              console.error(e);
+            }
+          }, 500);
+        }   
       },
       showWindow(w) {
         if (w.fullscreen || w.standalone) this.fullscreen = true;
