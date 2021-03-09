@@ -34,7 +34,6 @@
     "deploy": "npm run build && node deploy-site.js"
   },
   "dependencies": {
-    "@hscmap/vue-window": "github:oeway/vue-window",
     "ajv": "^6.9.1",
     "axios": "^0.21.1",
     "dompurify": "^2.0.8",
