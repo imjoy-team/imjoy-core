@@ -1,25 +1,58 @@
-<div
-  v-for="w in windows"
-  v-show="w === activeWindow"
-  :key="w.id"
-  class="imjoy-windows"
-  :style="windowStyle"
->
-  <div
-    v-if="showWindowTitle"
-    style="text-align: center;height:24px; background: #cacaca66;"
-  >
-    <span
-      style="font-size:1rem;font-family: Arial, Helvetica, sans-serif;line-height: 24px;"
-      >{{ w.name }}</span
+<template v-if="type==='standard'">
+  <hsc-window-style-material>
+    <hsc-window
+      v-for="w in windows"
+      :key="w.id"
+      v-show="!w.hidden"
+      :title="w.name"
+      :minimize-style="{display: 'none'}"
+      :close-button="!w.disable_close"
+      @close="closeWindow(w)"
+      :size-state.sync="w.sizeState"
+      :maximize-button="true"
+      :resizable="true"
+      :min-width="200"
+      :min-height="200"
+      :width="w.w*30"
+      :height="w.h*30"
+      :resizable="true"
+      @resize-start="blockPointerEvents = true"
+      @resize-end="blockPointerEvents = false"
+      @move-start="blockPointerEvents = true"
+      @move-end="blockPointerEvents = false"
     >
-  </div>
+      <div
+        :class="{ blockPointerEvents }"
+        :id="w.window_id"
+        class="imjoy-window-container"
+      ></div>
+    </hsc-window>
+  </hsc-window-style-material>
+</template>
+<template v-else>
   <div
-    :id="w.window_id"
-    class="imjoy-window-container"
-    :style="{height: showWindowTitle?'calc(100% - 24px)': '100%'}"
-  ></div>
-</div>
+    v-for="w in windows"
+    v-show="w === activeWindow"
+    :key="w.id"
+    class="imjoy-windows"
+    :style="windowStyle"
+  >
+    <div
+      v-if="showWindowTitle"
+      style="text-align: center;height:24px; background: #cacaca66;"
+    >
+      <span
+        style="font-size:1rem;font-family: Arial, Helvetica, sans-serif;line-height: 24px;"
+        >{{ w.name }}</span
+      >
+    </div>
+    <div
+      :id="w.window_id"
+      class="imjoy-window-container"
+      :style="{height: showWindowTitle?'calc(100% - 24px)': '100%'}"
+    ></div>
+  </div>
+</template>
 <div
   v-if="showEmpty && (!activeWindow || windows.length <= 0)"
   class="imjoy-windows"
