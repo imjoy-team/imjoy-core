@@ -136,17 +136,29 @@ export async function loadImJoyBasicApp(config) {
       el: menuElem,
       data: {
         menuPos: config.menu_pos || "right",
-        menuStyle: config.menu_style || {},
+        menuStyle: config.menu_style || { "z-index": 999 },
         activeWindow: null,
         closeWindow: null,
         showAboutImJoy: null,
         extraMenuItems: [],
         loadedPlugins: [],
         allWindows: [],
+        showContent: true,
       },
       mounted() {
         this.menuStyle = this.menuStyle || {};
         this.menuStyle.float = this.menuPos === "left" ? "left" : "right";
+      },
+      methods: {
+        menuClicked() {
+          // force closing the menu for touch screen devices
+          this.showContent = false;
+          this.$forceUpdate();
+          setTimeout(() => {
+            this.showContent = true;
+            this.$forceUpdate();
+          }, 0);
+        },
       },
     });
   }
