@@ -1,8 +1,11 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=2"
+    />
     <title>ImJoy Simple App Example</title>
   </head>
 
@@ -37,7 +40,10 @@
             if (uri) app.loadPlugin(uri);
           },
         });
-        const kaibu = await api.createWindow({ src: "https://kaibu.org", fullscreen: true});
+        const kaibu = await api.createWindow({
+          src: "https://kaibu.org",
+          fullscreen: true,
+        });
         await kaibu.view_image(
           "https://images.proteinatlas.org/61448/1319_C10_2_blue_red_green.jpg"
         );

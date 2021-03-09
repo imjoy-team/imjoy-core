@@ -38,7 +38,7 @@ export async function loadImJoyBasicApp(config) {
   await injectScript("https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.min.js");
   await injectScript("https://imjoy-team.github.io/vue-js-modal/index.js");
   loadCss("https://imjoy-team.github.io/vue-js-modal/styles.css");
-  const VueWindow = await import('@hscmap/vue-window');
+  const VueWindow = await import("@hscmap/vue-window");
   config = config || {};
   let app;
   const imjoy_api = {
@@ -104,21 +104,21 @@ export async function loadImJoyBasicApp(config) {
     windowManager = new Vue({
       el: windowsElem,
       data: {
-        type: config.window_manager_type || 'standard',
+        type: config.window_manager_type || "standard",
         blockPointerEvents: false,
         windowStyle: config.window_style || {},
         showEmpty: config.show_empty_window || false,
         showWindowTitle: config.show_window_title || false,
         windows: [],
-        activeWindow: null
+        activeWindow: null,
       },
       methods: {
-        closeWindow(w){
+        closeWindow(w) {
           w.hidden = true;
           this.$forceUpdate();
           w.close();
-        }
-      }
+        },
+      },
     });
   }
 
@@ -214,7 +214,7 @@ export async function loadImJoyBasicApp(config) {
           windowManager.activeWindow = newVal;
           windowManager.$forceUpdate();
         }
-        if (menuManager && config.window_manager_type === 'simple') {
+        if (menuManager && config.window_manager_type === "simple") {
           menuManager.activeWindow = newVal;
           menuManager.$forceUpdate();
         }
@@ -320,7 +320,7 @@ export async function loadImJoyBasicApp(config) {
         }, duration * 1000);
       },
       addWindow(w) {
-        w.api = w.api || {}
+        w.api = w.api || {};
         const windowElm = document.getElementById(w.window_id);
         if (windowElm) {
           if (w.window_style) Object.assign(windowElm.style, w.window_style);
@@ -332,25 +332,23 @@ export async function loadImJoyBasicApp(config) {
         }
         if (!w.dialog) {
           this.selectedRegularWindow = w;
-          setTimeout(()=>{
-            if(w.fullscreen||w.standalone){
-              w.sizeState = 'maximized'
+          setTimeout(() => {
+            if (w.fullscreen || w.standalone) {
+              w.sizeState = "maximized";
+            } else {
+              w.sizeState = "normal";
             }
-            else{
-              w.sizeState = 'normal'
-            }
-            this.$forceUpdate()
-          }, 0)
+            this.$forceUpdate();
+          }, 0);
           const self = this;
           w.api.show = w.show = () => {
-            w.sizeState = 'restore'
+            w.sizeState = "restore";
             self.selectedRegularWindow = w;
             self.$forceUpdate();
             imjoy.wm.selectWindow(w);
             w.api.emit("show");
           };
-        }
-        else{
+        } else {
           this.dialogWindows.push(w);
           if (this.selectedDialogWindow) {
             this.selectedWindowsStack.push(this.selectedDialogWindow);
@@ -381,7 +379,7 @@ export async function loadImJoyBasicApp(config) {
               console.error(e);
             }
           }, 500);
-        }   
+        }
       },
       showWindow(w) {
         if (w.fullscreen || w.standalone) this.fullscreen = true;

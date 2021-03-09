@@ -1,9 +1,9 @@
 <template v-if="type==='standard'">
   <hsc-window-style-material>
-    <hsc-window 
+    <hsc-window
       v-for="w in windows"
       :key="w.id"
-      v-show="!w.hidden" 
+      v-show="!w.hidden"
       :title="w.name"
       :minimize-style="{display: 'none'}"
       :close-button="!w.disable_close"
@@ -19,7 +19,8 @@
       @resize-start="blockPointerEvents = true"
       @resize-end="blockPointerEvents = false"
       @move-start="blockPointerEvents = true"
-      @move-end="blockPointerEvents = false">
+      @move-end="blockPointerEvents = false"
+    >
       <div
         :class="{ blockPointerEvents }"
         :id="w.window_id"
