@@ -2,6 +2,8 @@ import CSS_STYLE from "./imjoyBasicApp.template.css";
 import APP_TEMPLATE from "./imjoyBasicApp.template.html";
 import MENU_TEMPLATE from "./imjoyBasicAppMenu.template.html";
 import WINDOWS_TEMPLATE from "./imjoyBasicAppWindows.template.html";
+import { Contextual } from './contextual.js';
+import CONTEXTUAL_STYLE from "./contextual.template.css";
 
 export function injectScript(src) {
   return new Promise((resolve, reject) => {
@@ -39,7 +41,7 @@ export async function loadImJoyBasicApp(config) {
   await injectScript("https://imjoy-team.github.io/vue-js-modal/index.js");
   loadCss("https://imjoy-team.github.io/vue-js-modal/styles.css");
   await injectScript(
-    "https://cdn.jsdelivr.net/npm/@oeway/vue-window@2.4.1-a/lib/index.js"
+    "https://cdn.jsdelivr.net/npm/@oeway/vue-window@2.4.1-d/lib/index.js"
   );
   config = config || {};
   let app;
@@ -94,7 +96,7 @@ export async function loadImJoyBasicApp(config) {
   }
   elem.style.visibility = "hidden";
   elem.innerHTML = APP_TEMPLATE;
-  document.head.insertAdjacentHTML("beforeend", `<style>${CSS_STYLE}</style>`);
+  document.head.insertAdjacentHTML("beforeend", `<style>${CSS_STYLE}${CONTEXTUAL_STYLE}</style>`);
 
   let windowManager;
   if (config.window_manager_container) {
@@ -120,6 +122,36 @@ export async function loadImJoyBasicApp(config) {
           this.$forceUpdate();
           w.close();
         },
+        desktopItemDoubleClicked(){
+          alert('Running')
+        },
+        desktopItemRightClicked(event){
+          event.preventDefault();
+          new Contextual(event, {
+            isSticky: false,
+            width: '250px',
+            items: [
+              {type: 'multi', items: [
+                {label: 'Copy', onClick: () => {console.log('Copy!')}},
+                {label: 'Cut', onClick: () => {console.log('Cut!')}},
+                {label: 'Paste', onClick: () => {console.log('Paste!')}},
+              ]},
+              {label: 'Button', onClick: () => {console.log('Item 1 clicked')}, shortcut: 'Ctrl+A'},
+              {type: 'seperator'},
+              {type: 'submenu', label: 'Sub menu', items: [
+                {label: 'Subitem 1', onClick: () => {}},
+                {label: 'Subitem 2', onClick: () => {}},
+                {label: 'Subitem 3', onClick: () => {}},
+              ]},
+              {type: 'hovermenu', label: 'Hover menu', items: [
+                {label: 'Subitem 1', onClick: () => {}},
+                {label: 'Subitem 2', onClick: () => {}},
+                {label: 'Subitem 3', onClick: () => {}},
+              ]},
+              {label: 'Disabled button', onClick: () => {}, shortcut: 'Ctrl+B', enabled: false},
+            ]
+          });
+        }
       },
     });
   }

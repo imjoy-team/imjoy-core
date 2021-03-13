@@ -22,7 +22,7 @@
         show_progress_bar: true,
         show_empty_window: true,
         hide_about_imjoy: false,
-        menu_style: { position: "absolute", right: 0, top: 0, zIndex: 999 },
+        menu_style: { position: "absolute", right: 0, top: 0, zIndex: 9999 },
         window_style: { width: "100%", height: "calc(100% - 30px)" },
         main_container: null,
         menu_container: "menu-container",
@@ -42,19 +42,18 @@
         });
         const kaibu = await api.createWindow({
           src: "https://kaibu.org",
-          fullscreen: true,
         });
         await kaibu.view_image(
           "https://images.proteinatlas.org/61448/1319_C10_2_blue_red_green.jpg"
         );
-        // await api.showSnackbar("This is a message", 5);
-        // await api.showProgress(50);
-        const vizarr = await api.showDialog({
-          src: "https://hms-dbmi.github.io/vizarr/",
-        });
-        await vizarr.add_image({
-          source: "https://s3.embassy.ebi.ac.uk/idr/zarr/v0.1/4495402.zarr",
-        });
+        await api.showSnackbar("This is a message", 5);
+        await api.showProgress(60);
+        // const vizarr = await api.showDialog({
+        //   src: "https://hms-dbmi.github.io/vizarr/",
+        // });
+        // await vizarr.add_image({
+        //   source: "https://s3.embassy.ebi.ac.uk/idr/zarr/v0.1/4495402.zarr",
+        // });
       });
     </script>
   </body>
