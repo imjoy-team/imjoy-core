@@ -15,7 +15,7 @@
       href="#"
       v-for="item in extraMenuItems"
       :key="item.label"
-      @click.prevent="item.callback()"
+      @click.prevent="item.run()"
       >{{item.label}}</a
     >
     <hr

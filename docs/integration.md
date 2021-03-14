@@ -201,12 +201,12 @@ loadImJoyBasicApp({
     // if you want to let users to load new plugins, add a menu item
     app.addMenuItem({
         label: "➕ Load Plugin",
-        callback() {
-        const uri = prompt(
-            `Please type a ImJoy plugin URL`,
-            "https://github.com/imjoy-team/imjoy-plugins/blob/master/repository/ImageAnnotator.imjoy.html"
-        );
-        if (uri) app.loadPlugin(uri);
+        run() {
+            const uri = prompt(
+                `Please type a ImJoy plugin URL`,
+                "https://github.com/imjoy-team/imjoy-plugins/blob/master/repository/ImageAnnotator.imjoy.html"
+            );
+            if (uri) app.loadPlugin(uri);
         },
     });
 

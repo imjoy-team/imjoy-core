@@ -34,15 +34,39 @@
           name: "elFinder",
           icon:
             "https://raw.githubusercontent.com/imjoy-team/elFinder/master/img/imjoy-elfinder-icon.svg",
-          async callback() {
-            await api.createWindow({ src: "http://127.0.0.1:9876/" }); //"https://imjoy-team.github.io/elFinder/"})
+          async run() {
+            await api.createWindow({
+              src: "http://127.0.0.1:9876/",
+              w: 25,
+              h: 16,
+            }); //"https://imjoy-team.github.io/elFinder/"})
           },
         });
         app.addDesktopItem({
+          name: "ViZarr",
+          icon:
+            "https://raw.githubusercontent.com/hms-dbmi/vizarr/master/assets/logo.png",
+          async run() {
+            const vizarr = await api.showDialog({
+              src: "https://hms-dbmi.github.io/vizarr/",
+            });
+            await vizarr.add_image({
+              source: "https://s3.embassy.ebi.ac.uk/idr/zarr/v0.1/4495402.zarr",
+            });
+          },
+        });
+
+        app.addDesktopItem({
           name: "Kaibu",
           icon: "https://kaibu.org/static/img/kaibu-icon.svg",
-          async callback() {
-            await api.createWindow({ src: "https://kaibu.org" });
+          async run() {
+            const kaibu = await api.createWindow({
+              src: "https://kaibu.org",
+              fullscreen: true,
+            });
+            await kaibu.view_image(
+              "https://images.proteinatlas.org/61448/1319_C10_2_blue_red_green.jpg"
+            );
           },
           contextMenuItems: [
             {
@@ -104,7 +128,7 @@
         });
         app.addMenuItem({
           label: "➕ Load Plugin",
-          callback() {
+          run() {
             const uri = prompt(
               `Please type a ImJoy plugin URL`,
               "https://github.com/imjoy-team/imjoy-plugins/blob/master/repository/ImageAnnotator.imjoy.html"
@@ -112,20 +136,9 @@
             if (uri) app.loadPlugin(uri);
           },
         });
-        const kaibu = await api.createWindow({
-          src: "https://kaibu.org",
-        });
-        await kaibu.view_image(
-          "https://images.proteinatlas.org/61448/1319_C10_2_blue_red_green.jpg"
-        );
+
         await api.showSnackbar("This is a message", 5);
         await api.showProgress(60);
-        // const vizarr = await api.showDialog({
-        //   src: "https://hms-dbmi.github.io/vizarr/",
-        // });
-        // await vizarr.add_image({
-        //   source: "https://s3.embassy.ebi.ac.uk/idr/zarr/v0.1/4495402.zarr",
-        // });
 
         function urlToBase64(url) {
           return new Promise(async (resolve, reject) => {

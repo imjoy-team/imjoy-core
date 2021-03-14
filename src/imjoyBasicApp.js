@@ -127,7 +127,7 @@ export async function loadImJoyBasicApp(config) {
           w.close();
         },
         desktopItemDoubleClicked(item) {
-          item.callback();
+          item.run();
         },
         desktopItemRightClicked(item, event) {
           if (item.contextMenuItems) {
