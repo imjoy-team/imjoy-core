@@ -265,7 +265,7 @@ class ContextualItem {
       );
     }
   }
-  seperator(label, items) {
+  seperator() {
     this.element = contextualCore.CreateEl(
       `<li class='contextualJs contextualMenuSeperator'><span></span></li>`
     );
@@ -275,7 +275,6 @@ class ContextualItem {
 const contextualCore = {
   PositionMenu: (docked, el, menu) => {
     if (docked) {
-      debugger;
       menu.style.left =
         el.target.offsetLeft + menu.offsetWidth >= window.innerWidth
           ? el.target.offsetLeft -
