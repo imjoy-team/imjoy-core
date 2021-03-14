@@ -2,7 +2,7 @@ import CSS_STYLE from "./imjoyBasicApp.template.css";
 import APP_TEMPLATE from "./imjoyBasicApp.template.html";
 import MENU_TEMPLATE from "./imjoyBasicAppMenu.template.html";
 import WINDOWS_TEMPLATE from "./imjoyBasicAppWindows.template.html";
-import { Contextual } from './contextual.js';
+import { Contextual } from "./contextual.js";
 import CONTEXTUAL_STYLE from "./contextual.template.css";
 
 export function injectScript(src) {
@@ -96,7 +96,10 @@ export async function loadImJoyBasicApp(config) {
   }
   elem.style.visibility = "hidden";
   elem.innerHTML = APP_TEMPLATE;
-  document.head.insertAdjacentHTML("beforeend", `<style>${CSS_STYLE}${CONTEXTUAL_STYLE}</style>`);
+  document.head.insertAdjacentHTML(
+    "beforeend",
+    `<style>${CSS_STYLE}${CONTEXTUAL_STYLE}</style>`
+  );
 
   let windowManager;
   if (config.window_manager_container) {
@@ -115,6 +118,7 @@ export async function loadImJoyBasicApp(config) {
         showWindowTitle: config.show_window_title || false,
         windows: [],
         activeWindow: null,
+        desktopItems: [],
       },
       methods: {
         closeWindow(w) {
@@ -122,36 +126,19 @@ export async function loadImJoyBasicApp(config) {
           this.$forceUpdate();
           w.close();
         },
-        desktopItemDoubleClicked(){
-          alert('Running')
+        desktopItemDoubleClicked(item) {
+          item.callback();
         },
-        desktopItemRightClicked(event){
-          event.preventDefault();
-          new Contextual(event, {
-            isSticky: false,
-            width: '250px',
-            items: [
-              {type: 'multi', items: [
-                {label: 'Copy', onClick: () => {console.log('Copy!')}},
-                {label: 'Cut', onClick: () => {console.log('Cut!')}},
-                {label: 'Paste', onClick: () => {console.log('Paste!')}},
-              ]},
-              {label: 'Button', onClick: () => {console.log('Item 1 clicked')}, shortcut: 'Ctrl+A'},
-              {type: 'seperator'},
-              {type: 'submenu', label: 'Sub menu', items: [
-                {label: 'Subitem 1', onClick: () => {}},
-                {label: 'Subitem 2', onClick: () => {}},
-                {label: 'Subitem 3', onClick: () => {}},
-              ]},
-              {type: 'hovermenu', label: 'Hover menu', items: [
-                {label: 'Subitem 1', onClick: () => {}},
-                {label: 'Subitem 2', onClick: () => {}},
-                {label: 'Subitem 3', onClick: () => {}},
-              ]},
-              {label: 'Disabled button', onClick: () => {}, shortcut: 'Ctrl+B', enabled: false},
-            ]
-          });
-        }
+        desktopItemRightClicked(item, event) {
+          if (item.contextMenuItems) {
+            event.preventDefault();
+            new Contextual(event, {
+              isSticky: false,
+              width: "250px",
+              items: item.contextMenuItems,
+            });
+          }
+        },
       },
     });
   }
@@ -303,6 +290,19 @@ export async function loadImJoyBasicApp(config) {
             if (tmp) config = JSON.parse(tmp);
             this.runPlugin(plugin, config, data);
           });
+        }
+      },
+      addDesktopItem(item) {
+        windowManager.desktopItems.push(item);
+        windowManager.$forceUpdate();
+      },
+      removeDesktopItem(item) {
+        const index = windowManager.desktopItems.indexOf(item);
+        if (index >= 0) {
+          windowManager.desktopItems.splice(index, 1);
+          windowManager.$forceUpdate();
+        } else {
+          throw new Error("Item not found");
         }
       },
       async runPlugin(plugin, config, data) {

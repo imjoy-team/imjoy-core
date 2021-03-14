@@ -1,28 +1,11 @@
 <template v-if="type==='standard'">
 
   <div class="desktop-container desktop-background">
-    <div class="desktop-item" @dblclick="desktopItemDoubleClicked">
+    <div class="desktop-item" v-for="item in desktopItems" @dblclick="desktopItemDoubleClicked(item, $event)" @contextmenu="desktopItemRightClicked(item, $event)">
       <div class="desktop-icon">
-        <img src="https://raw.githubusercontent.com/imjoy-team/elFinder/master/img/imjoy-elfinder-icon.svg"></img>
+        <img v-if="item.icon.startsWith('http')" :src="item.icon"></img>
       </div>
-      <span>ImJoy elFinder </span>
-    </div>
-
-    <div class="desktop-item" @contextmenu="desktopItemRightClicked" @dblclick="desktopItemDoubleClicked">
-      <div class="desktop-icon">
-      </div>
-      <span>ITK/VTK Viewer</span>
-    </div>
-    <div class="desktop-item" @dblclick="desktopItemDoubleClicked">
-      <div class="desktop-icon">
-      </div>
-      <span>Jupyter Engine Manager</span>
-    </div>
-    <div class="desktop-item" @contextmenu="desktopItemRightClicked" @dblclick="desktopItemDoubleClicked">
-      <div class="desktop-icon" >
-        <img src="https://kaibu.org/static/img/kaibu-icon.svg"></img>
-      </div>
-      <span>Kaibu</span>
+      <span>{{item.name}}</span>
     </div>
   </div>
 

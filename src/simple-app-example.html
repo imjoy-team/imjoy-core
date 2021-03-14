@@ -30,6 +30,78 @@
         imjoy_api: {},
       }).then(async app => {
         const api = app.imjoy.api;
+        app.addDesktopItem({
+          name: "elFinder",
+          icon:
+            "https://raw.githubusercontent.com/imjoy-team/elFinder/master/img/imjoy-elfinder-icon.svg",
+          async callback() {
+            await api.createWindow({ src: "http://127.0.0.1:9876/" }); //"https://imjoy-team.github.io/elFinder/"})
+          },
+        });
+        app.addDesktopItem({
+          name: "Kaibu",
+          icon: "https://kaibu.org/static/img/kaibu-icon.svg",
+          async callback() {
+            await api.createWindow({ src: "https://kaibu.org" });
+          },
+          contextMenuItems: [
+            {
+              type: "multi",
+              items: [
+                {
+                  label: "Copy",
+                  onClick: () => {
+                    console.log("Copy!");
+                  },
+                },
+                {
+                  label: "Cut",
+                  onClick: () => {
+                    console.log("Cut!");
+                  },
+                },
+                {
+                  label: "Paste",
+                  onClick: () => {
+                    console.log("Paste!");
+                  },
+                },
+              ],
+            },
+            {
+              label: "Button",
+              onClick: () => {
+                console.log("Item 1 clicked");
+              },
+              shortcut: "Ctrl+A",
+            },
+            { type: "seperator" },
+            {
+              type: "submenu",
+              label: "Sub menu",
+              items: [
+                { label: "Subitem 1", onClick: () => {} },
+                { label: "Subitem 2", onClick: () => {} },
+                { label: "Subitem 3", onClick: () => {} },
+              ],
+            },
+            {
+              type: "hovermenu",
+              label: "Hover menu",
+              items: [
+                { label: "Subitem 1", onClick: () => {} },
+                { label: "Subitem 2", onClick: () => {} },
+                { label: "Subitem 3", onClick: () => {} },
+              ],
+            },
+            {
+              label: "Disabled button",
+              onClick: () => {},
+              shortcut: "Ctrl+B",
+              enabled: false,
+            },
+          ],
+        });
         app.addMenuItem({
           label: "➕ Load Plugin",
           callback() {
@@ -54,6 +126,69 @@
         // await vizarr.add_image({
         //   source: "https://s3.embassy.ebi.ac.uk/idr/zarr/v0.1/4495402.zarr",
         // });
+
+        function urlToBase64(url) {
+          return new Promise(async (resolve, reject) => {
+            const response = await fetch(url);
+            const blob = await response.blob();
+            const reader = new FileReader();
+            reader.onload = function() {
+              resolve(this.result);
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          });
+        }
+        await api.registerService({
+          type: "#file-loader",
+          name: "Kaibu",
+          icon: "https://kaibu.org/static/img/kaibu-icon.svg",
+          async check(fileObj) {
+            if (
+              fileObj.mime.startsWith("image/") ||
+              fileObj.mime === "directory"
+            ) {
+              return true;
+            }
+          },
+          async load({ source, type, window_id }) {
+            if (type === "file") {
+              const base64 = await urlToBase64(source.url);
+              const viewer = await api.createWindow({
+                src: "https://kaibu.org/",
+                window_id,
+                w: 10,
+                h: 10,
+              });
+              await viewer.view_image(base64, { name: source.name });
+              await viewer.add_shapes([], { name: "annotation" });
+            } else if (type === "directory") {
+              const viewer = await api.createWindow({
+                src: "https://kaibu.org/",
+                window_id,
+                w: 10,
+                h: 10,
+              });
+              source = source.filter(file => file.mime.startsWith("image/"));
+              const nodes = source.map(file => {
+                return { title: file.name, data: file, isLeaf: true };
+              });
+              await viewer.add_widget({
+                _rintf: true,
+                type: "tree",
+                name: "Files",
+                node_dbclick_callback: async node => {
+                  await viewer.clear_layers();
+                  const file = node.data;
+                  const base64 = await urlToBase64(file.url);
+                  await viewer.view_image(base64, { name: file.name });
+                },
+                nodes: nodes,
+              });
+              await viewer.add_shapes([], { name: "annotation" });
+            }
+          },
+        });
       });
     </script>
   </body>
