@@ -43,16 +43,30 @@
           },
         });
         app.addDesktopItem({
-          name: "ViZarr",
+          name: "Vizarr",
           icon:
             "https://raw.githubusercontent.com/hms-dbmi/vizarr/master/assets/logo.png",
           async run() {
-            const vizarr = await api.showDialog({
+            const vizarr = await api.createWindow({
               src: "https://hms-dbmi.github.io/vizarr/",
             });
             await vizarr.add_image({
               source: "https://s3.embassy.ebi.ac.uk/idr/zarr/v0.1/4495402.zarr",
             });
+          },
+        });
+
+        app.addDesktopItem({
+          name: "ITK/VTK Viewer",
+          icon:
+            "https://kitware.github.io/itk-vtk-viewer/icon/favicon-160x160.png",
+          async run() {
+            const viewer = await api.createWindow({
+              src: "https://kitware.github.io/itk-vtk-viewer/app/",
+              w: 20,
+              h: 15,
+            });
+            await viewer.setImage("https://openimaging.github.io/demos/multi-scale-chunked-compressed/build/data/medium.zarr");
           },
         });
 
@@ -137,8 +151,8 @@
           },
         });
 
-        await api.showSnackbar("This is a message", 5);
-        await api.showProgress(60);
+        await api.showSnackbar("ImJoyBasicApp started successfully!", 5);
+        await api.showProgress(100);
 
         function urlToBase64(url) {
           return new Promise(async (resolve, reject) => {
