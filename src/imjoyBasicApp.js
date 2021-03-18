@@ -173,6 +173,7 @@ export async function loadImJoyBasicApp(config) {
       fullscreen: false,
       loading: false,
       snackBarContent: false,
+      snackBarTimer: null,
       progress: 0,
       loadedPlugins: [],
       allWindows: [],
@@ -325,11 +326,13 @@ export async function loadImJoyBasicApp(config) {
         if (idx >= 0) this.extraMenuItems.splice(idx, 1);
       },
       showSnackbar(msg, duration) {
+        if (this.snackBarTimer) clearTimeout(this.snackBarTimer);
         duration = duration || 3;
         this.snackBarContent = msg;
         this.$forceUpdate();
-        setTimeout(() => {
+        this.snackBarTimer = setTimeout(() => {
           this.snackBarContent = null;
+          this.snackBarTimer = null;
           this.$forceUpdate();
         }, duration * 1000);
       },
