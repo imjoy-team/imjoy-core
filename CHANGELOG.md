@@ -1,4 +1,6 @@
 # Changelog
+**0.13.72**
+ - fix(imjoyCore): Fix hot-reloading error handling
 
 **0.13.65**
  - fix(imjoyBasicApp): Fix window height when the title bar is shown
