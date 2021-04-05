@@ -517,7 +517,7 @@ class DynamicPlugin {
       this.config.hot_reloading = true;
       await this._setupViaEngine();
     } else {
-      if (!this._rpc)
+      if (!this._rpc || this._disconnected)
         throw new Error("There is no RPC connection to the plugin.");
       this.initializing = true;
       this._updateUI();
@@ -529,6 +529,7 @@ class DynamicPlugin {
           }
         } catch (error) {
           this.error(error.toString());
+          throw error
         } finally {
           this.initializing = false;
           this._updateUI();
