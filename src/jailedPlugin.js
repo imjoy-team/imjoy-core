@@ -529,7 +529,7 @@ class DynamicPlugin {
           }
         } catch (error) {
           this.error(error.toString());
-          throw error
+          throw error;
         } finally {
           this.initializing = false;
           this._updateUI();
@@ -547,8 +547,14 @@ class DynamicPlugin {
    * DynamicPlugin)
    */
   async _executePlugin(hot_reloading) {
-    // if (hot_reloading)
-    //   await this._connection.execute({ type: "start_hot_reloading" });
+    if (hot_reloading && this.config.type === "window")
+      //clear the page
+      await this._connection.execute({
+        type: "script",
+        content: `document.querySelectorAll('style,link[rel="stylesheet"]').forEach(item => item.remove());document.body.innerHTML = '';`,
+        attrs: { type: "application/javascript" },
+        lang: "javascript",
+      });
     if (this.config.requirements) {
       const requirement = {
         type: "requirements",
