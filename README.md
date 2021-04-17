@@ -25,7 +25,7 @@ See [imjoy-core api](https://github.com/imjoy-team/imjoy-core/blob/master/docs/a
 
 ## Development
 
-```
+```shell
 git clone https://github.com/imjoy-team/imjoy-core.git
 cd imjoy-core
 npm run install
@@ -50,6 +50,16 @@ This repo only accept PR, please post issue to the ImJoy repo: https://github.co
 Please cite our paper on Nature Methods ([https://www.nature.com/articles/s41592-019-0627-0](https://www.nature.com/articles/s41592-019-0627-0), free access: https://rdcu.be/bYbGO ):
 
 `Ouyang, W., Mueller, F., Hjelmare, M. et al. ImJoy: an open-source computational platform for the deep learning era. Nat Methods (2019) doi:10.1038/s41592-019-0627-0`
+
+```bibtex
+@article{ouyang2019imjoy,
+  title={ImJoy: an open-source computational platform for the deep learning era},
+  author={Ouyang, W. and Mueller, F. and Hjelmare, M. and others},
+  journal={Nat Methods},
+  year={2019},
+  doi={10.1038/s41592-019-0627-0}, 
+}
+```
 
 ## Code of Conduct
 
