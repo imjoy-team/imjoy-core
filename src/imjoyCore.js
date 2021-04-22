@@ -6,7 +6,7 @@ import { EngineManager } from "./engineManager.js";
 import { FileManager } from "./fileManager.js";
 import { DynamicPlugin } from "./jailedPlugin.js";
 import PouchDB from "pouchdb-browser";
-import * as imjoyRPC from "imjoy-rpc";
+import { imjoyRPC } from "imjoy-rpc";
 import { randId } from "./utils.js";
 
 import Minibus from "minibus";
@@ -138,7 +138,7 @@ export class ImJoy {
         }
       }
       wrapped_api.setup = function() {
-        api.showMessage("ImJoy App loaded successfully.");
+        api.log("ImJoy App loaded successfully.");
       };
 
       // Note: we need to overwrite this run function here, otherwise, api.run function will be called

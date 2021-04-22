@@ -1,5 +1,5 @@
 // webworker for running imjoy plugin with pyodide
-importScripts("https://cdn.jsdelivr.net/pyodide/dev/full/pyodide.js")
+importScripts("https://cdn.jsdelivr.net/pyodide/v0.17.0/full/pyodide.js");
 
 const src = `
 from imjoy import api
@@ -19,7 +19,7 @@ async def run():
         # map imjoy_rpc to imjoy
         import imjoy_rpc
         sys.modules["imjoy"] = imjoy_rpc
-        js.__resolve(_)
+        js.__resolve()
     except Exception as e:
         js.__reject(traceback.format_exc())
   
@@ -36,7 +36,9 @@ function installPackage() {
   });
 }
 
-loadPyodide({indexURL: "https://cdn.jsdelivr.net/pyodide/dev/full/"}).then(() => {
+loadPyodide({
+  indexURL: "https://cdn.jsdelivr.net/pyodide/v0.17.0/full/",
+}).then(() => {
   self.pyodide.loadPackage(["micropip"]).then(async () => {
     await installPackage();
     self.pyodide.runPython(src);

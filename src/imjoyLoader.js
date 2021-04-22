@@ -210,6 +210,65 @@ export function loadImJoyRPC(config) {
   });
 }
 
+export function loadImJoyRPCSocketIO(config) {
+  config = config || {};
+  return new Promise((resolve, reject) => {
+    var baseUrl = config.base_url;
+    let version = config.version;
+    if (!baseUrl) {
+      if (config.version) {
+        baseUrl = `https://cdn.jsdelivr.net/npm/imjoy-rpc-socketio@${
+          config.version
+        }/dist/`;
+      } else {
+        if (config.api_version) {
+          // find the latest version for this api_version
+          version = findRPCVersionByAPIVersion(config.api_version, true);
+          if (version) {
+            baseUrl = `https://cdn.jsdelivr.net/npm/imjoy-rpc-socketio@${version}/dist/`;
+          } else {
+            reject(
+              Error(
+                `Cannot find a version of imjoy-rpc-socketio that supports api v${
+                  config.api_version
+                }`
+              )
+            );
+            return;
+          }
+        } else {
+          baseUrl = `https://cdn.jsdelivr.net/npm/imjoy-rpc-socketio@latest/dist/`;
+          version = "latest";
+          console.info(`Using imjoy-rpc-socketio library from ${baseUrl}.`);
+        }
+      }
+    }
+
+    let rpc_url = baseUrl + "imjoy-rpc-socketio.min.js";
+    if (config.debug) {
+      rpc_url = baseUrl + "imjoy-rpc-socketio.js";
+    }
+    delete window.imjoyRPCSocketIO;
+    injectScript(rpc_url)
+      .then(() => {
+        if (window.imjoyRPCSocketIO) {
+          const imjoyRPCSocketIO = window.imjoyRPCSocketIO;
+          delete window.imjoyRPCSocketIO;
+          resolve(imjoyRPCSocketIO);
+        } else if (
+          typeof define === "function" &&
+          // eslint-disable-next-line no-undef
+          define.amd
+        )
+          eval("require")(["imjoyRPCSocketIO"], resolve);
+        else {
+          reject("Failed to import imjoy-rpc-socketio.");
+        }
+      })
+      .catch(reject);
+  });
+}
+
 async function loadImJoyRPCByQueryString() {
   const urlParams = _getParams(window.location);
   return await loadImJoyRPC(urlParams);
@@ -219,5 +278,6 @@ export { loadImJoyBasicApp };
 
 window.loadImJoyRPCByQueryString = loadImJoyRPCByQueryString;
 window.loadImJoyRPC = loadImJoyRPC;
+window.loadImJoyRPCSocketIO = loadImJoyRPCSocketIO;
 window.loadImJoyCore = loadImJoyCore;
 window.loadImJoyBasicApp = loadImJoyBasicApp;
