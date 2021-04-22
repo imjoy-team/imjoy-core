@@ -170,8 +170,8 @@ export class PluginManager {
       getWindow: this.getWindow,
       run: this.runPlugin,
       call: this.callPlugin,
-      connectToWorkspace(_plugin, config) {
-        return imjoyRPCSocketIO.setupRPC(config);
+      connectToServer(_plugin, config) {
+        return imjoyRPCSocketIO.connectToServer(config);
       },
       installPlugin: (_plugin, config) => {
         const tag = config.tag;
@@ -1125,6 +1125,7 @@ export class PluginManager {
           }
           config.origin = pconfig.origin || uri;
           config.namespace = pconfig.namespace;
+          config.workspace = pconfig.workspace;
           if (!config) {
             console.error(`Failed to fetch the plugin from "${uri}".`);
             reject(`Failed to fetch the plugin from "${uri}".`);

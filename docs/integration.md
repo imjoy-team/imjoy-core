@@ -130,10 +130,10 @@ Similarly to the standard ImJoy RPC library, If you want to connect to a remote 
 <script src="https://lib.imjoy.io/imjoy-loader.js"></script>
 
 <script>
-loadImJoyRPCSocketIO().then(async (imjoyRPC)=>{
-    const api = await imjoyRPC.setupRPCSocketIO({
+loadImJoyRPCSocketIO().then(async (imjoyRPCSocketIO)=>{
+    const api = await imjoyRPCSocketIO.connectToServer({
         name: 'My Awesome App',
-        namespace: "my-shared-namespace",
+        workspace: "my-shared-workspace",
         server_url: "https://api.imjoy.io",
         token: "1sf3s32..."
     });
@@ -155,9 +155,9 @@ If you prefer npm, you can first install imjoy-rpc via `npm install imjoy-rpc`, 
 ```js
 import { imjoyRPCSocketIO } from "imjoy-rpc";
 
-const api = await imjoyRPC.setupRPCSocketIO({
+const api = await imjoyRPCSocketIO.connectToServer({
     name: 'My Awesome App',
-    namespace: "my-shared-namespace",
+    workspace: "my-shared-workspace",
     server_url: "https://api.imjoy.io",
     token: "1sf3s32..."
 });

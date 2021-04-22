@@ -36,6 +36,6 @@ describe("imjoy-loader", async () => {
     expect(typeof imjoyRPCSocketIO).to.equal("object");
     expect(imjoyRPCSocketIO.VERSION).to.equal(latest_rpc_version);
     expect(typeof imjoyRPCSocketIO.API_VERSION).to.equal("string");
-    expect(typeof imjoyRPCSocketIO.setupRPC).to.equal("function");
+    expect(typeof imjoyRPCSocketIO.connectToServer).to.equal("function");
   }).timeout(20000);
 });
