@@ -1,6 +1,5 @@
 // webworker for running imjoy plugin with pyodide
-self.languagePluginUrl = "https://cdn.jsdelivr.net/pyodide/v0.16.1/full/";
-importScripts("https://cdn.jsdelivr.net/pyodide/v0.16.1/full/pyodide.js");
+importScripts("https://cdn.jsdelivr.net/pyodide/v0.17.0/full/pyodide.js");
 
 const src = `
 from imjoy import api
@@ -12,17 +11,21 @@ import js
 import micropip
 import sys
 import traceback
+import asyncio
 
-def setup_imjoy(_):
+async def run():
     try:
+        await micropip.install(["werkzeug", "imjoy-rpc"])
         # map imjoy_rpc to imjoy
         import imjoy_rpc
         sys.modules["imjoy"] = imjoy_rpc
-        js.__resolve(_)
+        js.__resolve()
     except Exception as e:
         js.__reject(traceback.format_exc())
-
-micropip.install(["imjoy-rpc>=0.2.72"]).then(setup_imjoy).catch(js.__reject)
+  
+loop = asyncio.get_event_loop()
+asyncio.create_task(run())
+loop.run_forever()
 `;
 
 function installPackage() {
@@ -33,7 +36,9 @@ function installPackage() {
   });
 }
 
-languagePluginLoader.then(() => {
+loadPyodide({
+  indexURL: "https://cdn.jsdelivr.net/pyodide/v0.17.0/full/",
+}).then(() => {
   self.pyodide.loadPackage(["micropip"]).then(async () => {
     await installPackage();
     self.pyodide.runPython(src);

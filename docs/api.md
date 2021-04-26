@@ -490,6 +490,7 @@ ret = await api.echo('hi')
 console.log(ret) // should get 'hi'
 ```
 
+
 ### api.registerCodec
 
 ```javascript
@@ -553,27 +554,6 @@ api.export(new Plugin())
 ```
 
 
-### api.echo
-
-```javascript
-api.echo(obj)
-```
-
-An echo function that returns the same object as passed in, used for testing purposes.
-
-This is useful for testing the encoding / decoding object.
-
-
-**Arguments**
-
-* **obj**: Any.
-
-**Examples**
-
-```javascript
-ret = await api.echo('hi')
-console.log(ret) // should get 'hi'
-```
 
 ### api.disposeObject
 

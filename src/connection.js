@@ -171,7 +171,7 @@ export class WebWorkerConnection extends BasicConnection {
       }
       data.access_token = this._access_token;
     }
-    data.peer_id = this._peer_id;
+    data.peer_id = this._peer_id || data.peer_id;
     this._worker.postMessage(data, transferables);
   }
 }

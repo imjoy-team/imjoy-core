@@ -1,6 +1,5 @@
 import { randId, assert } from "./utils.js";
 import { evil_engine } from "./evilEngine.js";
-import { makeSocketIOEngine } from "./socketioEngine.js";
 import { ENGINE_SCHEMA, ENGINE_FACTORY_SCHEMA } from "./api.js";
 
 export class EngineManager {
@@ -21,22 +20,6 @@ export class EngineManager {
 
   async init() {
     this.register(evil_engine);
-    this.registerFactory({
-      type: "engine-factory",
-      name: "SocketIOEngine",
-      addEngine: () => {
-        const engine_url = prompt("Engine URL", "http://127.0.0.1:9527");
-        if (engine_url) {
-          this.register({
-            url: engine_url,
-            name: "SIO-" + randId(),
-            factory: "SocketIOEngine",
-            connection_type: "socketio",
-          });
-        }
-      },
-      removeEngine: () => {},
-    });
 
     this.event_bus.on("register", async ({ plugin, config }) => {
       try {
@@ -138,9 +121,6 @@ export class EngineManager {
   }
 
   async register(engine_) {
-    if (engine_.connection_type === "socketio") {
-      engine_ = makeSocketIOEngine(this.pm, engine_);
-    }
     const engine = Object.assign({}, engine_);
     // backup the engine api
     engine.api = engine_;

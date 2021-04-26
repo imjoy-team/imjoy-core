@@ -6,6 +6,7 @@ import axios from "axios";
 import yaml from "js-yaml";
 import { Joy } from "./joy.js";
 import { saveAs } from "file-saver";
+import { imjoyRPCSocketIO } from "imjoy-rpc";
 import { getExternalPluginConfig } from "./jailedPlugin.js";
 import { getBackendByType, ajv } from "./api.js";
 import { serviceSpec } from "./serviceSpec.js";
@@ -169,6 +170,9 @@ export class PluginManager {
       getWindow: this.getWindow,
       run: this.runPlugin,
       call: this.callPlugin,
+      connectToServer(_plugin, config) {
+        return imjoyRPCSocketIO.connectToServer(config);
+      },
       installPlugin: (_plugin, config) => {
         const tag = config.tag;
         const do_not_load = config.do_not_load;
@@ -1121,6 +1125,7 @@ export class PluginManager {
           }
           config.origin = pconfig.origin || uri;
           config.namespace = pconfig.namespace;
+          config.workspace = pconfig.workspace;
           if (!config) {
             console.error(`Failed to fetch the plugin from "${uri}".`);
             reject(`Failed to fetch the plugin from "${uri}".`);
@@ -2466,6 +2471,7 @@ export class PluginManager {
         outputs: config.outputs,
         run: config.run,
         provider: plugin.name,
+        providerId: plugin.id,
       };
       this.event_bus.emit("register", { config, plugin });
       return config.name;
@@ -2473,6 +2479,7 @@ export class PluginManager {
 
     config.id = config.id || randId();
     config.provider = plugin.name;
+    config.providerId = plugin.id;
     this.service_registry[config.id] = config;
     this.event_bus.emit("register", { config, plugin });
     return config.id;
@@ -2481,7 +2488,7 @@ export class PluginManager {
   _unregister(plugin, config) {
     if (!config || typeof config === "string" || config.type === "operator") {
       if (!config) {
-        const services = this.getServices(plugin, { provider: plugin.name });
+        const services = this.getServices(plugin, { providerId: plugin.id });
         for (let s of services) {
           this._unregister(plugin, s);
         }

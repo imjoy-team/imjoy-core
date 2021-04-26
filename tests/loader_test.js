@@ -3,6 +3,7 @@ import {
   loadImJoyCore,
   loadImJoyRPC,
   latest_rpc_version,
+  loadImJoyRPCSocketIO,
 } from "../src/imjoyLoader.js";
 
 describe("imjoy-loader", async () => {
@@ -28,5 +29,13 @@ describe("imjoy-loader", async () => {
     expect(typeof imjoyRPC.RPC).to.equal("function");
     expect(typeof imjoyRPC.setupRPC).to.equal("function");
     expect(typeof imjoyRPC.waitForInitialization).to.equal("function");
+  }).timeout(20000);
+
+  it("should load imjoy rpc socketio", async () => {
+    const imjoyRPCSocketIO = await loadImJoyRPCSocketIO({ base_url: "/" });
+    expect(typeof imjoyRPCSocketIO).to.equal("object");
+    expect(imjoyRPCSocketIO.VERSION).to.equal(latest_rpc_version);
+    expect(typeof imjoyRPCSocketIO.API_VERSION).to.equal("string");
+    expect(typeof imjoyRPCSocketIO.connectToServer).to.equal("function");
   }).timeout(20000);
 });
