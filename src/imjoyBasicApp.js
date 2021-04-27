@@ -254,19 +254,19 @@ export async function loadImJoyBasicApp(config) {
       },
     },
     methods: {
-      processURLQuery() {
+      async processURLQuery() {
         const engine = getUrlParameter("engine");
         const p = getUrlParameter("plugin") || getUrlParameter("p");
         const binder = getUrlParameter("binder");
         if (engine) {
           const token = getUrlParameter("token");
           const name = getUrlParameter("name");
-          this.setupPluginEngine(engine, token, name);
+          await this.setupPluginEngine(engine, token, name);
         }
         if (binder) {
           const name = getUrlParameter("name");
           const spec = getUrlParameter("spec");
-          this.setupBinderEngine(binder, spec, name);
+          await this.setupBinderEngine(binder, spec, name);
         }
 
         if (p) {
