@@ -255,12 +255,20 @@ export async function loadImJoyBasicApp(config) {
     },
     methods: {
       processURLQuery() {
-        const token = getUrlParameter("token") || getUrlParameter("t");
-        const engine = getUrlParameter("engine") || getUrlParameter("e");
+        const engine = getUrlParameter("engine");
         const p = getUrlParameter("plugin") || getUrlParameter("p");
+        const binder = getUrlParameter("binder");
         if (engine) {
-          this.setupPluginEngine(engine, token);
+          const token = getUrlParameter("token");
+          const name = getUrlParameter("name");
+          this.setupPluginEngine(engine, token, name);
         }
+        if (binder) {
+          const name = getUrlParameter("name");
+          const spec = getUrlParameter("spec");
+          this.setupBinderEngine(binder, spec, name);
+        }
+
         if (p) {
           this.loadPlugin(p).then(plugin => {
             let config = {},
@@ -284,20 +292,49 @@ export async function loadImJoyBasicApp(config) {
           data: data,
         });
       },
-      async setupPluginEngine(engine, token) {
+      async setupPluginEngine(engine, token, name) {
         try {
           console.log("Loading Jupyter-Engine-Manager from Gist...");
-          await imjoy.pm.reloadPluginRecursively({
-            uri:
-              "https://imjoy-team.github.io/jupyter-engine-manager/Jupyter-Engine-Manager.imjoy.html",
-          });
-          console.log("Jupyter-Engine-Manager loaded.");
+          if (!imjoy.em.getFactory("Jupyter-Engine")) {
+            await imjoy.pm.reloadPluginRecursively({
+              uri:
+                "https://imjoy-team.github.io/jupyter-engine-manager/Jupyter-Engine-Manager.imjoy.html",
+            });
+            console.log("Jupyter-Engine-Manager loaded.");
+            await imjoy.em.unregister("https://mybinder.org");
+          }
           const factory = imjoy.em.getFactory("Jupyter-Engine");
+
           await factory.addEngine({
+            name: name,
             url: engine,
-            token: token,
+            nbUrl: engine + "?token=" + token,
           });
           console.log("plugin engine added:", engine);
+        } catch (e) {
+          console.error(e);
+          alert(`Failed to connect to the engine: ${e}`);
+        }
+      },
+      async setupBinderEngine(url, spec, name) {
+        try {
+          console.log("Loading Jupyter-Engine-Manager from Gist...");
+          if (!imjoy.em.getFactory("MyBinder-Engine")) {
+            await imjoy.pm.reloadPluginRecursively({
+              uri:
+                "https://imjoy-team.github.io/jupyter-engine-manager/Jupyter-Engine-Manager.imjoy.html",
+            });
+            console.log("Jupyter-Engine-Manager loaded.");
+            await imjoy.em.unregister("https://mybinder.org");
+          }
+
+          const factory = imjoy.em.getFactory("MyBinder-Engine");
+          await factory.addEngine({
+            name,
+            spec,
+            url,
+          });
+          console.log("Binder engine added:", url);
         } catch (e) {
           console.error(e);
           alert(`Failed to connect to the engine: ${e}`);
