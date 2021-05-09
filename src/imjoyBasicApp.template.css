@@ -207,6 +207,6 @@ body {
   height: calc(100% - 30px);
 }
 
-.blockPointerEvents {
+.block-pointer-events {
   pointer-events: none;
 }

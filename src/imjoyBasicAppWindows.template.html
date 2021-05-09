@@ -14,13 +14,13 @@
       :width="w.w*30"
       :height="w.h*30"
       :resizable="true"
-      @resize-start="blockPointerEvents = true"
-      @resize-end="blockPointerEvents = false"
-      @move-start="blockPointerEvents = true"
-      @move-end="blockPointerEvents = false"
+      @resize-start="windowSizePosChanging = true"
+      @resize-end="windowSizePosChanging = false"
+      @move-start="windowSizePosChanging = true"
+      @move-end="windowSizePosChanging = false"
     >
       <div
-        :class="{ blockPointerEvents }"
+        :class="{'block-pointer-events': windowSizePosChanging }"
         :id="w.window_id"
         class="imjoy-window-container"
       ></div>

@@ -107,15 +107,21 @@ export async function loadImJoyBasicApp(config) {
       el: windowsElem,
       data: {
         type: config.window_manager_type || "standard",
-        blockPointerEvents: false,
+        windowSizePosChanging: false,
         windowStyle: config.window_style || {},
         showEmpty: config.show_empty_window || false,
         showWindowTitle: config.show_window_title || false,
         windows: [],
         activeWindow: null,
       },
+      watch: {
+        windowSizePosChanging: function(newVal) {
+          app.$emit("window-size-pos-changing", newVal);
+        },
+      },
       methods: {
         closeWindow(w) {
+          this.windowSizePosChanging = false;
           w.hidden = true;
           this.$forceUpdate();
           w.close();
