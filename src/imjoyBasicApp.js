@@ -379,7 +379,7 @@ export async function loadImJoyBasicApp(config) {
           this.$forceUpdate();
         }, duration * 1000);
       },
-      showLoader(loading){
+      showLoader(loading) {
         this.loading = loading;
         this.$forceUpdate();
       },
