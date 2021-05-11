@@ -379,6 +379,10 @@ export async function loadImJoyBasicApp(config) {
           this.$forceUpdate();
         }, duration * 1000);
       },
+      showLoader(loading){
+        this.loading = loading;
+        this.$forceUpdate();
+      },
       addWindow(w) {
         w.api = w.api || {};
         const windowElm = document.getElementById(w.window_id);
