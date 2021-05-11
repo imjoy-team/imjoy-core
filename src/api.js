@@ -342,7 +342,7 @@ export const CONFIG_SCHEMA = ajv.compile({
     inputs: { type: ["object", "array"] },
     labels: { type: "array", maxLength: 32 },
     lang: { type: "string", maxLength: 32 },
-    name: { type: "string", maxLength: 32 },
+    name: { type: "string", maxLength: 48 },
     outputs: { type: ["object", "array"] },
     tags: { type: "array", maxLength: 32 },
     type: { type: "string", enum: Object.keys(_backends) },
