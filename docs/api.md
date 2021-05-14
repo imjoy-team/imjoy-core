@@ -857,10 +857,10 @@ Gets a list of plugin services (registered with `api.registerService()`) by spec
 
 **Example**
 
-Get all the plugin services registered with `type="model"`:
+Get all the plugin services registered with `type="@model"`:
 
 ```javascript
-const models = await api.getServices({type: "model"})
+const models = await api.getServices({type: "@model"})
 
 console.log(models)
 ```
@@ -1119,17 +1119,17 @@ await api.registerService({
 #### Contributed plugin services
 
 You can use plugin services the following service types:
- * type=`transformation`: [scikit-learn compatible dataset transformations](https://scikit-learn.org/stable/data_transforms.html)
+ * type=`@transformation`: [scikit-learn compatible dataset transformations](https://scikit-learn.org/stable/data_transforms.html)
    - `transform(data)`: applies this transformation model to unseen data
    - `fit(data)`: learns model parameters from data
    - `fit_transform(data)`: modelling and transforming the training data simultaneously
- * type=`model`: keras compatible model service
+ * type=`@model`: keras compatible model service
    - `predict(data)`: make predictions on data (see [here](https://keras.io/api/models/model_training_apis/#predict-method))
    - `fit(data)`: train model on data (see [here](https://keras.io/api/models/model_training_apis/#fit-method))
  * [...contribute your service type here...]
 
 #### Define a new plugin service type
-If both the built-in and contributed service types do not meet your requirements, you can define a new plugin service type. The easest way is to start by defining a type name starts with `#`, for example: `api.registerService({"type": "#my-awesome-service", ...})`. You can use this to develop and test your service. Once your service type definition is stable, you can submit your type to imjoy-core repo such that you can remove the leading `#` from the type name.
+If both the built-in and contributed service types do not meet your requirements, you can define a new plugin service type. The easiest way is to start by defining a custom type, for example: `api.registerService({"type": "my-awesome-service", ...})`. You can use this to develop and test your service. Once your service type definition is stable, you can adding a `@` to the service type name and submit your type to imjoy-core repo.
 
 Here are the steps for submitting your type definition:
  1. fork the [imjoy-core repo](https://github.com/imjoy-team/imjoy-core)
