@@ -78,6 +78,7 @@ export async function loadImJoyBasicApp(config) {
   const imjoyCore = await loadImJoyCore(config);
   const imjoy = new imjoyCore.ImJoy({
     imjoy_api,
+    expose_api: config.expose_api,
   });
   await imjoy.start(config);
   console.log("ImJoy Core started successfully!");
