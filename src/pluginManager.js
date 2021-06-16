@@ -1006,9 +1006,10 @@ export class PluginManager {
     let external = false;
     let selected_tag;
     scoped_plugins = scoped_plugins || this.available_plugins;
+    const _uri = uri.split("?")[0];
     if (
-      (uri.includes("github.com") && uri.includes("/blob/")) ||
-      uri.includes("gist.github.com")
+      (_uri.includes("github.com") && _uri.includes("/blob/")) ||
+      _uri.includes("gist.github.com")
     ) {
       uri = await githubUrlRaw(uri);
     }
@@ -1055,7 +1056,7 @@ export class PluginManager {
         uri = ps[0].uri;
       }
     } else {
-      if (!uri.split("?")[0].endsWith(".imjoy.html")) {
+      if (!_uri.endsWith(".imjoy.html")) {
         external = true;
       }
       selected_tag = uri.split(".imjoy.html@")[1];
