@@ -226,6 +226,7 @@ class DynamicPlugin {
       tag: this.config.tag,
       engine_mode: this.config.engine_mode,
       engine: this.engine.url,
+      flags: this.config.flags,
     };
     if (this.window_id) {
       this.api.config.window_id = this.config.window_id;
@@ -428,6 +429,7 @@ class DynamicPlugin {
         type: this.config.type,
         namespace: this.config.namespace,
         tag: this.config.tag,
+        flags: this.config.flags,
       };
       if (this.window_id) {
         this.api.config.window_id = this.config.window_id;

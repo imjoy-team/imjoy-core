@@ -165,6 +165,8 @@ export class ImJoy {
     if (config.workspace) {
       await this.pm.loadWorkspace(config.workspace);
       await this.pm.reloadPlugins();
+    } else {
+      this.pm.reloadInternalPlugins(true);
     }
   }
 

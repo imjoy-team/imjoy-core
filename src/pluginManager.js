@@ -982,7 +982,8 @@ export class PluginManager {
 
   async reloadInternalPlugins(skip_exist) {
     for (let pn in this.internal_plugins) {
-      if (this.internal_plugins[pn].startup) {
+      const config = this.internal_plugins[pn];
+      if (config.startup) {
         if (skip_exist && this.plugin_names[pn]) {
           continue;
         }
@@ -990,7 +991,7 @@ export class PluginManager {
         try {
           await this.reloadPluginRecursively(
             {
-              uri: this.internal_plugins[pn].uri,
+              uri: config.uri,
             },
             null,
             "eval is evil"
@@ -999,6 +1000,14 @@ export class PluginManager {
         } catch (e) {
           console.error(e);
         }
+      } else if (config.is_engine) {
+        await this.registerService(null, {
+          name: pn,
+          type: "engine",
+          lazy: true,
+          pluginType: config.plugin_type,
+          src: config.src,
+        });
       }
     }
   }
@@ -1817,8 +1826,9 @@ export class PluginManager {
   loadPlugin(template, rplugin, allow_evil, connection) {
     template = _clone(template);
     this.validatePluginConfig(template);
-    //generate a random id for the plugin
-    return new Promise((resolve, reject) => {
+    // Generate a random id for the plugin
+    // eslint-disable-next-line no-async-promise-executor
+    return new Promise(async (resolve, reject) => {
       const config = {};
       if (!rplugin) {
         config.id = template.name.trim().replace(/ /g, "_") + "_" + randId();
@@ -1831,11 +1841,10 @@ export class PluginManager {
 
       let engine = null;
       if (!getBackendByType(template.type)) {
-        engine = this.em.findEngine(template);
+        engine = await this.em.findEngine(template);
         if (!engine || !engine.connected) {
-          console.error(
-            `Plugin engine not found for plugin type=${template.type}.`
-          );
+          reject(`Plugin engine not found for plugin type=${template.type}.`);
+          return;
         } else {
           this.showMessage(`Running plugin with plugin engine: ${engine.name}`);
         }
@@ -2846,7 +2855,7 @@ export class PluginManager {
       } else if (this.internal_plugins[config.name]) {
         const p = await this.reloadPluginRecursively(
           {
-            uri: this.internal_plugins[config.name].uri,
+            uri: this.internal_plugins[config.name].src,
             tag: config.tag,
             namespace: config.namespace,
             hot_reloading: config.hot_reloading,

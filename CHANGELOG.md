@@ -1,5 +1,8 @@
 # Changelog
 **0.13.76**
+ - feat(imjoyCore): Support lazy loading of plugin engine
+
+**0.13.76**
  - feat(imjoyRPC): Support esModules in ImJoy Plugins (web-worker in FireFox is not supported yet).
 
 **0.13.72**
