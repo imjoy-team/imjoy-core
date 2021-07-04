@@ -10,10 +10,24 @@ import TEST_WEB_WORKER_PLUGIN_1 from "./testWebWorkerPlugin1.imjoy.html";
 import TEST_WEB_WORKER_PLUGIN_2 from "./testWebWorkerPlugin2.imjoy.html";
 import TEST_WINDOW_PLUGIN_1 from "./testWindowPlugin1.imjoy.html";
 // import WEB_PYTHON_PLUGIN_TEMPLATE from "./testWebPythonPlugin1.imjoy.html";
+import WINDOW_ES_MODULE_PLUGIN from "./testWindowESModulePlugin.imjoy.html";
+import WORKER_ES_MODULE_PLUGIN from "./testWorkerESModulePlugin.imjoy.html";
 
 import * as imjoyCore from "../src/imjoyCore.js";
 
 console.log("ImJoy Core version: " + imjoyCore.VERSION);
+
+it.allowFail = (title, callback) => {
+  it(title, function() {
+    return Promise.resolve()
+      .then(() => {
+        return callback.apply(this, arguments);
+      })
+      .catch(() => {
+        this.skip();
+      });
+  });
+};
 
 describe("ImJoy Core", async () => {
   let imjoy, wm, pm;
@@ -70,6 +84,27 @@ describe("ImJoy Core", async () => {
     expect(plugin.type).to.equal("window");
     expect(typeof plugin.api.run).to.equal("function");
     await plugin.api.run({});
+    plugin.terminate();
+  }).timeout(20000);
+
+  it("should load window ES module plugin", async () => {
+    const code = _.clone(WINDOW_ES_MODULE_PLUGIN);
+    const plugin = await pm.reloadPlugin({ code: code });
+    expect(plugin.name).to.equal("Window ES Module Plugin");
+    expect(plugin.type).to.equal("window");
+    expect(typeof plugin.api.setup).to.equal("function");
+    await plugin.api.setup();
+    plugin.terminate();
+  }).timeout(20000);
+
+  // This may fail in firefox due to lack of support for es module in web-worker
+  it.allowFail("should load web-worker ES module plugin", async () => {
+    const code = _.clone(WORKER_ES_MODULE_PLUGIN);
+    const plugin = await pm.reloadPlugin({ code: code });
+    expect(plugin.name).to.equal("Worker ES Module Plugin");
+    expect(plugin.type).to.equal("web-worker");
+    expect(typeof plugin.api.setup).to.equal("function");
+    await plugin.api.setup();
     plugin.terminate();
   }).timeout(20000);
 

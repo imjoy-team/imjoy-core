@@ -1833,9 +1833,11 @@ export class PluginManager {
       if (!getBackendByType(template.type)) {
         engine = this.em.findEngine(template);
         if (!engine || !engine.connected) {
-          console.error("Please connect to the Plugin Engine 🚀");
+          console.error(
+            `Plugin engine not found for plugin type=${template.type}.`
+          );
         } else {
-          this.showMessage(`Connected to 🚀 ${engine.name}`);
+          this.showMessage(`Running plugin with plugin engine: ${engine.name}`);
         }
       }
 
