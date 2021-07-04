@@ -149,7 +149,7 @@ export const serviceSpec = {
       },
     },
   },
-  transformation: {
+  "@transformation": {
     properties: {
       name: {
         type: "string",
@@ -169,7 +169,7 @@ export const serviceSpec = {
     },
     required: ["name", "type", "transform"],
   },
-  model: {
+  "@model": {
     properties: {
       name: {
         type: "string",

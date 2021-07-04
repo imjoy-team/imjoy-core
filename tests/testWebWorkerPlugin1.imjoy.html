@@ -112,10 +112,10 @@
       return true
     }
 
-    async test_register_hash_service() {
+    async test_register_custom_service() {
       try {
         const id = await api.registerService({
-          type: '#model123',
+          type: 'model123',
           name: "my model",
           predict: function () {}
         })
@@ -132,7 +132,7 @@
       try {
         // this should throw an error
         const id = await api.registerService({
-          type: 'model123',
+          type: '@model123',
           name: "my model",
           predict: function () {}
         })

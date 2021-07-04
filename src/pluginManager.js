@@ -42,7 +42,8 @@ import {
 const compiledServiceSpec = {};
 for (let k of Object.keys(serviceSpec)) {
   try {
-    compiledServiceSpec[k] = ajv.compile(serviceSpec[k]);
+    const key = k.startsWith("@") ? k : "@" + k;
+    compiledServiceSpec[key] = ajv.compile(serviceSpec[k]);
   } catch (e) {
     console.error(e);
     throw new Error(`Failed to compile service spec for ${k}, error: ${e}`);
@@ -2463,11 +2464,11 @@ export class PluginManager {
 
   async _register(plugin, config) {
     // config._id means this is a plugin config
-    if (!config.type || config._id || config.type === "operator") {
+    if (!config.type || config._id || config.type === "@operator") {
       this.registerOp(plugin, config);
       this.service_registry[config.name] = {
         id: config.name,
-        type: "operator",
+        type: "@operator",
         name: config.name,
         ui: config.ui,
         inputs: config.inputs,
@@ -2489,7 +2490,7 @@ export class PluginManager {
   }
 
   _unregister(plugin, config) {
-    if (!config || typeof config === "string" || config.type === "operator") {
+    if (!config || typeof config === "string" || config.type === "@operator") {
       if (!config) {
         const services = this.getServices(plugin, { providerId: plugin.id });
         for (let s of services) {
@@ -2523,19 +2524,27 @@ export class PluginManager {
     plugin = plugin || {};
     if (!config.type || !config.name) {
       throw new Error("you must specify the service `type` and `name`.");
-    }
-    if (compiledServiceSpec[config.type]) {
-      const schema = compiledServiceSpec[config.type];
-      if (!schema(config)) {
-        const error = schema.errors;
-        console.error("Failed to register service " + config.name || "", error);
-        throw error;
+    } else if (config.type.startsWith("@")) {
+      // registered service types
+      if (compiledServiceSpec[config.type]) {
+        const schema = compiledServiceSpec[config.type];
+        if (!schema(config)) {
+          const error = schema.errors;
+          console.error(
+            "Failed to register service " + config.name || "",
+            error
+          );
+          throw error;
+        }
+      } else {
+        throw new Error(
+          `Registered service type "${
+            config.type
+          }" not found, please consider submit your type definition to the imjoy-core repo, see https://imjoy.io/docs/#/api?id=apiregisterservice for more details`
+        );
       }
-    } else if (!config.type.startsWith("#")) {
-      throw new Error(
-        "Unregistered service type name should start with `#`, please consider submit your type definition to the imjoy-core repo, see https://imjoy.io/docs/#/api?id=apiregisterservice for more details"
-      );
     }
+
     return this._register(plugin, config);
   }
 
