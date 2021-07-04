@@ -106,7 +106,7 @@ export class BasicConnection extends MessageEmitter {
       }
       data.access_token = this._access_token;
     }
-    data.peer_id = this._peer_id;
+    data.peer_id = this._peer_id || data.peer_id;
     this._frame.contentWindow &&
       this._frame.contentWindow.postMessage(
         data,

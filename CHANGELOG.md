@@ -1,4 +1,7 @@
 # Changelog
+**0.13.75**
+ - feat(imjoyRPC): Support esModules in ImJoy Plugins (web-worker in FireFox is not supported yet).
+
 **0.13.72**
  - fix(imjoyCore): Fix hot-reloading error handling
 
