@@ -1,5 +1,5 @@
 # Changelog
-**0.13.75**
+**0.13.76**
  - feat(imjoyRPC): Support esModules in ImJoy Plugins (web-worker in FireFox is not supported yet).
 
 **0.13.72**
