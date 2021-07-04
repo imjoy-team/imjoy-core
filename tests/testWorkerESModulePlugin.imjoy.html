@@ -1,0 +1,36 @@
+<docs lang="markdown">
+  [TODO: write documentation for this plugin.]
+  </docs>
+  
+  <config lang="json">
+  {
+    "name": "Worker ES Module Plugin",
+    "type": "web-worker",
+    "tags": [],
+    "ui": "",
+    "version": "0.1.0",
+    "api_version": "0.1.7",
+    "description": "[TODO: describe this plugin with one sentence.]",
+    "icon": "extension",
+    "inputs": null,
+    "outputs": null,
+    "env": "",
+    "requirements": ["cache:https://cdn.jsdelivr.net/npm/@material/mwc-button@0.21.0/mwc-button.js/+esm"],
+    "dependencies": [],
+    "defaults": {"w": 7, "h": 7}
+  }
+  </config>
+  
+  <script type="module" lang="javascript">
+  import Button from "https://cdn.jsdelivr.net/npm/@material/mwc-button@0.21.0/mwc-button.js/+esm"
+
+  class ImJoyPlugin {
+    async setup() {
+      if(!Button.finalized || !Button.styles){
+        throw new Error("Failed to load es module")
+      }
+    }
+  }
+  
+  api.export(new ImJoyPlugin())
+  </script>
