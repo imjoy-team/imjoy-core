@@ -233,12 +233,6 @@ const _backends = {
     name: "Window",
     lang: "javascript",
   },
-  "web-python": {
-    type: "internal",
-    name: "Web Python",
-    lang: "web-python",
-    icon: "🐍",
-  },
   "rpc-window": {
     type: "external",
     name: "RPC Window",

@@ -9,9 +9,9 @@ import WINDOW_PLUGIN_TEMPLATE from "../src/plugins/windowTemplate.imjoy.html";
 import TEST_WEB_WORKER_PLUGIN_1 from "./testWebWorkerPlugin1.imjoy.html";
 import TEST_WEB_WORKER_PLUGIN_2 from "./testWebWorkerPlugin2.imjoy.html";
 import TEST_WINDOW_PLUGIN_1 from "./testWindowPlugin1.imjoy.html";
-// import WEB_PYTHON_PLUGIN_TEMPLATE from "./testWebPythonPlugin1.imjoy.html";
+import WEB_PYTHON_PLUGIN_TEMPLATE from "./testWebPythonPlugin1.imjoy.html";
 import WINDOW_ES_MODULE_PLUGIN from "./testWindowESModulePlugin.imjoy.html";
-import WORKER_ES_MODULE_PLUGIN from "./testWorkerESModulePlugin.imjoy.html";
+// import WORKER_ES_MODULE_PLUGIN from "./testWorkerESModulePlugin.imjoy.html";
 
 import * as imjoyCore from "../src/imjoyCore.js";
 
@@ -97,17 +97,6 @@ describe("ImJoy Core", async () => {
     plugin.terminate();
   }).timeout(20000);
 
-  // This may fail in firefox due to lack of support for es module in web-worker
-  it.allowFail("should load web-worker ES module plugin", async () => {
-    const code = _.clone(WORKER_ES_MODULE_PLUGIN);
-    const plugin = await pm.reloadPlugin({ code: code });
-    expect(plugin.name).to.equal("Worker ES Module Plugin");
-    expect(plugin.type).to.equal("web-worker");
-    expect(typeof plugin.api.setup).to.equal("function");
-    await plugin.api.setup();
-    plugin.terminate();
-  }).timeout(20000);
-
   // it('should load the new native-python plugin', async () => {
   //   const code = _.clone(NATIVE_PYTHON_PLUGIN_TEMPLATE)
   //   const plugin = await imjoy.pm.reloadPlugin({code: code})
@@ -117,15 +106,15 @@ describe("ImJoy Core", async () => {
   //   plugin.api.run({})
   // }).timeout(30000)
 
-  // it("should load the new web-python plugin", async () => {
-  //   const code = _.clone(WEB_PYTHON_PLUGIN_TEMPLATE);
-  //   const plugin = await pm.reloadPlugin({ code: code });
-  //   expect(plugin.name).to.equal("WebPythonPlugin1");
-  //   expect(plugin.type).to.equal("web-python");
-  //   expect(typeof plugin.api.run).to.equal("function");
-  //   expect(await plugin.api.run({})).to.equal(998);
-  //   plugin.terminate();
-  // }).timeout(200000);
+  it("should load the new web-python plugin", async () => {
+    const code = _.clone(WEB_PYTHON_PLUGIN_TEMPLATE);
+    const plugin = await pm.reloadPlugin({ code: code });
+    expect(plugin.name).to.equal("WebPythonPlugin1");
+    expect(plugin.type).to.equal("web-python");
+    expect(typeof plugin.api.run).to.equal("function");
+    expect(await plugin.api.run({})).to.equal(998);
+    plugin.terminate();
+  }).timeout(200000);
 
   it("should get plugin config from github", async () => {
     const config1 = await pm.getPluginFromUrl(
@@ -142,6 +131,17 @@ describe("ImJoy Core", async () => {
     expect(config2.name).to.equal("My Awesome App");
     expect(config2.type).to.equal("rpc-window");
   }).timeout(10000);
+
+  // This may fail in firefox due to lack of support for es module in web-worker
+  // it.allowFail("should load web-worker ES module plugin", async () => {
+  //   const code = _.clone(WORKER_ES_MODULE_PLUGIN);
+  //   const plugin = await pm.reloadPlugin({ code: code });
+  //   expect(plugin.name).to.equal("Worker ES Module Plugin");
+  //   expect(plugin.type).to.equal("web-worker");
+  //   expect(typeof plugin.api.setup).to.equal("function");
+  //   await plugin.api.setup();
+  //   plugin.terminate();
+  // }).timeout(20000);
 
   describe("ImJoy API", async () => {
     let plugin1;

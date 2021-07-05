@@ -12,7 +12,6 @@ import { randId } from "./utils.js";
 import { getBackendByType, CONFIG_SCHEMA } from "./api.js";
 import { BasicConnection, WebWorkerConnection } from "./connection.js";
 import { Whenable } from "./utils.js";
-import PyodideWorker from "./pyodide.webworker.js";
 
 import DOMPurify from "dompurify";
 import { loadImJoyRPC, latest_rpc_version } from "./imjoyLoader.js";
@@ -164,10 +163,7 @@ class DynamicPlugin {
       } else {
         if (!this.backend) {
           this._setupViaEngine();
-        } else if (
-          this.type === "web-python" ||
-          (this.type === "web-worker" && this.config.base_worker)
-        ) {
+        } else if (this.type === "web-worker" && this.config.base_worker) {
           this._setupViaWebWorker();
         } else {
           this._setupViaIframe();
@@ -226,6 +222,7 @@ class DynamicPlugin {
       tag: this.config.tag,
       engine_mode: this.config.engine_mode,
       engine: this.engine.url,
+      flags: this.config.flags,
     };
     if (this.window_id) {
       this.api.config.window_id = this.config.window_id;
@@ -316,11 +313,7 @@ class DynamicPlugin {
       throw `Unsupported backend type (${this.type})`;
     }
     let webworker;
-    if (this.type === "web-python") {
-      webworker = new PyodideWorker({ name: this.id });
-    } else {
-      webworker = new Worker(this.config.base_worker, { name: this.id });
-    }
+    webworker = new Worker(this.config.base_worker, { name: this.id });
     this.webworker = webworker;
     const connection = new WebWorkerConnection(webworker);
     this._setupConnection(connection);
@@ -428,6 +421,7 @@ class DynamicPlugin {
         type: this.config.type,
         namespace: this.config.namespace,
         tag: this.config.tag,
+        flags: this.config.flags,
       };
       if (this.window_id) {
         this.api.config.window_id = this.config.window_id;
