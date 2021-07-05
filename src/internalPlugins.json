@@ -12,7 +12,7 @@
   "WebPythonWorker": {
     "src": "https://gist.githubusercontent.com/oeway/76f853a8e547e223a177bb549603393b/raw/WebPythonWorker.imjoy.html",
     "is_engine": true,
-    "plugin_type": "web-python-worker",
+    "plugin_type": "web-python",
     "startup": false
   }
 }

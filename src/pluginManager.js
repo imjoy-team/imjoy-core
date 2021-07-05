@@ -2473,7 +2473,12 @@ export class PluginManager {
 
   async _register(plugin, config) {
     // config._id means this is a plugin config
-    if (!config.type || config._id || config.type === "@operator") {
+    if (
+      !config.type ||
+      config._id ||
+      config.type === "@operator" ||
+      config.type === "operator"
+    ) {
       this.registerOp(plugin, config);
       this.service_registry[config.name] = {
         id: config.name,
@@ -2499,7 +2504,12 @@ export class PluginManager {
   }
 
   _unregister(plugin, config) {
-    if (!config || typeof config === "string" || config.type === "@operator") {
+    if (
+      !config ||
+      typeof config === "string" ||
+      config.type === "@operator" ||
+      config.type === "operator"
+    ) {
       if (!config) {
         const services = this.getServices(plugin, { providerId: plugin.id });
         for (let s of services) {
