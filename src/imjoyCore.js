@@ -97,7 +97,13 @@ export class ImJoy {
     }
     // inside an iframe
     if (this.expose_api && window.self !== window.top) {
-      const api = await imjoyRPC.setupRPC({ name: "ImJoy" });
+      // here we don't add await so we won't stop the loading of ImJoy
+      this.exportAPI()
+    }
+  }
+
+  async exportAPI(){
+    const api = await imjoyRPC.setupRPC({ name: "ImJoy" });
       const root_plugin_config = {
         _id: "root",
         name: "ImJoy",
@@ -156,7 +162,6 @@ export class ImJoy {
         );
       };
       api.export(wrapped_api);
-    }
   }
 
   async start(config) {
