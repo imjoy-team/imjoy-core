@@ -967,8 +967,9 @@ export class PluginManager {
                     }
                   }
                 }
-                this.reloadInternalPlugins(true);
-                resolve();
+                this.reloadInternalPlugins(true)
+                  .then(resolve)
+                  .catch(reject);
               })
               .catch(err => {
                 console.error(err);
