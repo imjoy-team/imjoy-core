@@ -991,7 +991,7 @@ export class PluginManager {
         try {
           await this.reloadPluginRecursively(
             {
-              uri: config.uri,
+              uri: config.src,
             },
             null,
             "eval is evil"

@@ -3,7 +3,12 @@ import { evil_engine } from "./evilEngine.js";
 import { ENGINE_SCHEMA, ENGINE_FACTORY_SCHEMA } from "./api.js";
 
 export class EngineManager {
-  constructor({ event_bus = null, config_db = null, client_id = null }) {
+  constructor({
+    event_bus = null,
+    config_db = null,
+    client_id = null,
+    engine_selector = null,
+  }) {
     this.event_bus = event_bus;
     this.config_db = config_db;
     assert(this.event_bus);
@@ -12,7 +17,7 @@ export class EngineManager {
     this.engines = [];
     this.engine_factories = [];
     this.pm = null;
-    this.lazyEngines = {};
+    this.engine_selector = engine_selector;
   }
 
   setPluginManager(pm) {
@@ -25,12 +30,11 @@ export class EngineManager {
     this.event_bus.on("register", async ({ plugin, config }) => {
       try {
         if (config.type === "engine-factory") {
-          if (plugin && plugin.config)
-            assert(
-              plugin.config.flags &&
-                plugin.config.flags.indexOf("engine-factory") >= 0,
-              "Please add `engine-factory` to `config.flags` before registering an engine factory."
-            );
+          assert(
+            plugin.config.flags &&
+              plugin.config.flags.indexOf("engine-factory") >= 0,
+            "Please add `engine-factory` to `config.flags` before registering an engine factory."
+          );
           if (!ENGINE_FACTORY_SCHEMA(config)) {
             const error = ENGINE_FACTORY_SCHEMA.errors;
             console.error(
@@ -41,26 +45,23 @@ export class EngineManager {
             throw error;
           }
           this.registerFactory(config);
-          if (plugin && plugin.on)
-            plugin.on("close", () => {
-              this.unregisterFactory(config);
-            });
+          plugin.on("close", () => {
+            this.unregisterFactory(config);
+          });
         } else if (config.type === "engine") {
-          if (plugin && plugin.config)
-            assert(
-              plugin.config.flags && plugin.config.flags.indexOf("engine") >= 0,
-              "Please add `engine` to `config.flags` before registering an engine."
-            );
+          assert(
+            plugin.config.flags && plugin.config.flags.indexOf("engine") >= 0,
+            "Please add `engine` to `config.flags` before registering an engine."
+          );
           if (!ENGINE_SCHEMA(config)) {
             const error = ENGINE_SCHEMA.errors;
             console.error("Error occured registering engine ", config, error);
             throw error;
           }
           await this.register(config);
-          if (plugin && plugin.on)
-            plugin.on("close", () => {
-              this.unregister(config);
-            });
+          plugin.on("close", () => {
+            this.unregister(config);
+          });
         }
       } catch (e) {
         this.pm.unregister(plugin, config);
@@ -83,22 +84,14 @@ export class EngineManager {
     });
   }
 
-  async findEngine(plugin_config, skipLazy) {
+  async findEngine(plugin_config) {
+    if (this.engine_selector)
+      return await this.engine_selector(plugin_config, this.engines);
     const egs = this.engines.filter(engine => {
       return plugin_config.type && engine.pluginType === plugin_config.type;
     });
 
     if (!egs || egs.length <= 0) {
-      if (skipLazy) return null;
-      const lazyEngine = this.lazyEngines[plugin_config.type];
-      if (lazyEngine) {
-        // try to load the lazy plugins
-        this.pm.showMessage("Loading plugin engine...");
-        const plugin = await this.pm.getPlugin(null, { src: lazyEngine.src });
-        assert(plugin.config.flags.includes("engine"));
-        this.pm.showMessage("Plugin engine loaded, starting plugin...");
-        return await this.findEngine(plugin_config, true);
-      }
       return null;
     }
 
@@ -107,31 +100,23 @@ export class EngineManager {
         return eg.connected;
       });
       if (matched.length <= 0) {
+        // let's try to connect the first one
+        try {
+          const engine = egs[0];
+          await engine.connect();
+          engine.connected = true;
+          return engine;
+        } catch (e) {
+          console.error("Failed to connect", e);
+        }
         return null;
       }
       return matched[matched.length - 1];
     }
 
-    const matchedEngine = egs.filter(eg => {
+    return egs.filter(eg => {
       return eg.name === plugin_config.engine_mode;
     })[0];
-
-    if (
-      matchedEngine &&
-      !matchedEngine.connected &&
-      matchedEngine.lazy_connection
-    ) {
-      try {
-        await matchedEngine._start_connection();
-      } catch (e) {
-        console.error(e);
-        this.pm.showMessage(
-          `Failed to connect to engine: ${matchedEngine.name}`
-        );
-        return;
-      }
-    }
-    return matchedEngine;
   }
 
   getEngineByUrl(url) {
@@ -154,15 +139,6 @@ export class EngineManager {
 
   async register(engine_) {
     const engine = Object.assign({}, engine_);
-    if (engine.lazy) {
-      if (!engine.pluginType || !engine.src)
-        throw new Error(
-          "Lazy Engine config must contain `pluginType` and `src`"
-        );
-
-      this.lazyEngines[engine.pluginType] = engine;
-      return;
-    }
     // backup the engine api
     engine.api = engine_;
     if (engine_ && engine_ === evil_engine) {
@@ -235,29 +211,18 @@ export class EngineManager {
       engine._plugins.push(p);
     };
     this.engines.push(engine);
-    engine._connect = async () => {
-      try {
-        await engine.connect();
-        engine.connected = true;
-      } catch (e) {
-        console.error(e);
-        engine.connected = false;
-      }
 
-      if (engine.getEngineConfig) {
-        Promise.resolve(engine.getEngineConfig()).then(engine_config => {
-          engine.engine_config = engine_config;
-        });
-      }
-      update_connectivity();
-      if (engine.connected) {
-        if (engine.heartbeat) {
-          await check_connectivity();
-          engine.heartbeat_timer = setInterval(check_connectivity, 5000);
-        }
-      }
-    };
-    if (!engine.lazy_connection) await engine._connect();
+    if (!engine.lazy_connection) {
+      await engine.connect();
+      engine.connected = true;
+    }
+
+    update_connectivity();
+
+    if (engine.heartbeat) {
+      await check_connectivity();
+      engine.heartbeat_timer = setInterval(check_connectivity, 5000);
+    }
   }
 
   async unregister(engine) {

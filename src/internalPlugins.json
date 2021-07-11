@@ -5,14 +5,10 @@
   },
   "Jupyter-Engine-Manager": {
     "src": "https://imjoy-team.github.io/jupyter-engine-manager/Jupyter-Engine-Manager.imjoy.html?32334z",
-    "is_engine": true,
-    "plugin_type": "native-python",
-    "startup": false
+    "startup": true
   },
   "WebPythonWorker": {
     "src": "https://gist.githubusercontent.com/oeway/76f853a8e547e223a177bb549603393b/raw/WebPythonWorker.imjoy.html",
-    "is_engine": true,
-    "plugin_type": "web-python",
-    "startup": false
+    "startup": true
   }
 }

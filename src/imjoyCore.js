@@ -30,6 +30,7 @@ export class ImJoy {
     expose_api = false,
     debug = false,
     flags = [],
+    engine_selector = null,
   }) {
     this.config_db =
       config_db ||
@@ -41,11 +42,13 @@ export class ImJoy {
     this.event_bus = event_bus || Minibus.create();
     this.client_id = client_id || "imjoy_web_" + randId();
     this.imjoy_api = imjoy_api || {};
+    this.engine_selector = engine_selector;
     this.flags = flags;
     this.em = new EngineManager({
       event_bus: this.event_bus,
       config_db: this.config_db,
       client_id: this.client_id,
+      engine_selector: this.engine_selector,
     });
 
     this.wm = new WindowManager({
