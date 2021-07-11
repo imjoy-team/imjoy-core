@@ -169,7 +169,7 @@ export class ImJoy {
       await this.pm.loadWorkspace(config.workspace);
       await this.pm.reloadPlugins();
     } else {
-      this.pm.reloadInternalPlugins(true);
+      await this.pm.reloadInternalPlugins(true);
     }
   }
 

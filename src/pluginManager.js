@@ -1001,14 +1001,6 @@ export class PluginManager {
         } catch (e) {
           console.error(e);
         }
-      } else if (config.is_engine) {
-        await this.registerService(null, {
-          name: pn,
-          type: "engine",
-          lazy: true,
-          pluginType: config.plugin_type,
-          src: config.src,
-        });
       }
     }
   }
