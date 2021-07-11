@@ -24,7 +24,6 @@ module.exports = function (config) {
             'node_modules/imjoy-rpc/dist/imjoy-rpc-socketio.js',
             'node_modules/imjoy-rpc/dist/imjoy-rpc-socketio.min.js',
             'src/*.html',
-            'src/plugin-service-worker.js',
             'dist/imjoy-loader.js'
         ],
 
@@ -35,7 +34,6 @@ module.exports = function (config) {
             "/imjoy-rpc-socketio.js": '/base/node_modules/imjoy-rpc/dist/imjoy-rpc-socketio.js',
             "/imjoy-rpc.min.js": '/base/node_modules/imjoy-rpc/dist/imjoy-rpc.min.js',
             "/imjoy-rpc-socketio.min.js": '/base/node_modules/imjoy-rpc/dist/imjoy-rpc-socketio.min.js',
-            "/plugin-service-worker.js": "/base/src/plugin-service-worker.js"
         },
 
 
