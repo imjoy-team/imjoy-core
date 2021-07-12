@@ -1,6 +1,6 @@
 <script
   type="text/javascript"
-  onload="loadImJoyRPCByQueryString().then((imjoyRPC)=>{imjoyRPC.waitForInitialization({target_origin: '*'})})"
+  onload="loadImJoyRPCByQueryString().then((imjoyRPC)=>{imjoyRPC.waitForInitialization({target_origin: '*', enable_service_worker: true})})"
   src="/imjoy-loader.js"
 ></script>
 <style>
