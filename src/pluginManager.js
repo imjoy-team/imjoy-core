@@ -967,8 +967,9 @@ export class PluginManager {
                     }
                   }
                 }
-                this.reloadInternalPlugins(true);
-                resolve();
+                this.reloadInternalPlugins(true)
+                  .then(resolve)
+                  .catch(reject);
               })
               .catch(err => {
                 console.error(err);
@@ -991,7 +992,7 @@ export class PluginManager {
         try {
           await this.reloadPluginRecursively(
             {
-              uri: config.uri,
+              uri: config.src,
             },
             null,
             "eval is evil"
@@ -1000,14 +1001,6 @@ export class PluginManager {
         } catch (e) {
           console.error(e);
         }
-      } else if (config.is_engine) {
-        await this.registerService(null, {
-          name: pn,
-          type: "engine",
-          lazy: true,
-          pluginType: config.plugin_type,
-          src: config.src,
-        });
       }
     }
   }
