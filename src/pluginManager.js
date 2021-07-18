@@ -1836,7 +1836,9 @@ export class PluginManager {
       if (!getBackendByType(template.type)) {
         engine = await this.em.findEngine(template);
         if (!engine) {
-          console.error(`Plugin engine not found for plugin type=${template.type}.`);
+          console.error(
+            `Plugin engine not found for plugin type=${template.type}.`
+          );
         } else {
           this.showMessage(`Running plugin with plugin engine: ${engine.name}`);
         }
