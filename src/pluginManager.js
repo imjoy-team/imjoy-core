@@ -1,5 +1,5 @@
 /*eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_plugin$" }]*/
-import PouchDB from "pouchdb-browser";
+import * as localForage from "localforage";
 import SparkMD5 from "spark-md5";
 import axios from "axios";
 import { Joy } from "./joy.js";
@@ -444,9 +444,9 @@ export class PluginManager {
   loadRepositoryList() {
     return new Promise((resolve, reject) => {
       this.config_db
-        .get("repository_list")
-        .then(doc => {
-          this.repository_list = doc.list;
+        .getItem("repository_list")
+        .then(list => {
+          this.repository_list = list;
           for (let drep of this.default_repository_list) {
             let found = false;
             for (let repo of this.repository_list) {
@@ -477,13 +477,7 @@ export class PluginManager {
             this.repository_names.push(r.name);
           }
           this.config_db
-            .put(
-              {
-                _id: "repository_list",
-                list: this.repository_list,
-              },
-              { force: true }
-            )
+            .setItem("repository_list", this.repository_list)
             .then(() => {
               resolve(this.repository_list);
             })
@@ -501,37 +495,19 @@ export class PluginManager {
         });
     });
   }
-  saveRepositoryList() {
-    return new Promise((resolve, reject) => {
-      let _rev = null;
-      this.config_db
-        .get("repository_list")
-        .then(doc => {
-          _rev = doc._rev;
-        })
-        .finally(() => {
-          this.config_db
-            .put(
-              {
-                _id: "repository_list",
-                _rev: _rev || undefined,
-                list: this.repository_list,
-              },
-              { force: true }
-            )
-            .then(() => {
-              resolve(this.repository_list);
-            })
-            .catch(err => {
-              this.showMessage(
-                "Failed to save repository, database Error:" + err.toString()
-              );
-              reject(
-                "Failed to save repository, database Error:" + err.toString()
-              );
-            });
-        });
-    });
+  async saveRepositoryList() {
+    try {
+      await this.config_db.setItem("repository_list", this.repository_list);
+
+      return this.repository_list;
+    } catch (err) {
+      this.showMessage(
+        "Failed to save repository, database Error:" + err.toString()
+      );
+      throw new Error(
+        "Failed to save repository, database Error:" + err.toString()
+      );
+    }
   }
 
   addRepository(repo) {
@@ -658,37 +634,19 @@ export class PluginManager {
     });
   }
 
-  loadWorkspaceList() {
-    return new Promise((resolve, reject) => {
-      this.config_db
-        .get("workspace_list")
-        .then(doc => {
-          this.workspace_list = doc.list;
-          this.selected_workspace = this.workspace_list[0];
-          resolve(this.workspace_list);
-        })
-        .catch(err => {
-          if (err.name != "not_found") {
-            console.error("Database Error", err);
-          }
-          this.workspace_list = ["default"];
-          this.config_db
-            .put({
-              _id: "workspace_list",
-              list: this.workspace_list,
-            })
-            .then(() => {
-              this.selected_workspace = this.workspace_list[0];
-              resolve(this.workspace_list);
-            })
-            .catch(() => {
-              reject(
-                "Failed to load Plugin Engine list, database Error:" +
-                  err.toString()
-              );
-            });
-        });
-    });
+  async loadWorkspaceList() {
+    try {
+      this.workspace_list = await this.config_db.getItem("workspace_list");
+
+      this.selected_workspace = this.workspace_list[0];
+      return this.workspace_list;
+    } catch (err) {
+      this.workspace_list = ["default"];
+      await this.config_db.setItem("workspace_list", this.workspace_list);
+
+      this.selected_workspace = this.workspace_list[0];
+      return this.workspace_list;
+    }
   }
 
   loadWorkspace(selected_workspace) {
@@ -697,9 +655,8 @@ export class PluginManager {
       const load_ = () => {
         try {
           this.event_bus.emit("workspace_list_updated", this.workspace_list);
-          this.db = new PouchDB(selected_workspace + "_workspace", {
-            revs_limit: 2,
-            auto_compaction: true,
+          this.db = localForage.createInstance({
+            name: selected_workspace + "_workspace",
           });
           this.selected_workspace = selected_workspace;
           resolve();
@@ -722,51 +679,22 @@ export class PluginManager {
     });
   }
 
-  saveWorkspaceList() {
-    return new Promise((resolve, reject) => {
-      this.config_db
-        .get("workspace_list")
-        .then(doc => {
-          this.config_db
-            .put({
-              _id: doc._id,
-              _rev: doc._rev,
-              list: this.workspace_list,
-              default: "default",
-            })
-            .then(resolve)
-            .catch(e => {
-              reject(
-                `Failed to save workspace, database Error: ${e.toString()}`
-              );
-            });
-        })
-        .catch(err => {
-          reject(
-            `Failed to save workspaces, database Error: ${err.toString()}`
-          );
-        });
-    });
+  async saveWorkspaceList() {
+    await this.config_db.setItem("workspace_list", this.workspace_list);
   }
 
-  removeWorkspace(w) {
-    return new Promise((resolve, reject) => {
-      if (this.workspace_list.includes(w)) {
-        const index = this.workspace_list.indexOf(w);
-        this.workspace_list.splice(index, 1);
-        this.saveWorkspaceList()
-          .then(() => {
-            resolve();
-            if (this.selected_workspace === w.name) {
-              this.selected_workspace = null;
-            }
-          })
-          .catch(reject);
+  async removeWorkspace(w) {
+    if (this.workspace_list.includes(w)) {
+      const index = this.workspace_list.indexOf(w);
+      this.workspace_list.splice(index, 1);
+      await this.saveWorkspaceList();
+      if (this.selected_workspace === w.name) {
+        this.selected_workspace = null;
       }
-    });
+    }
   }
 
-  saveWorkflow(joy) {
+  async saveWorkflow(joy) {
     // remove if exists
     const name = prompt("Please enter a name for the workflow", "default");
     if (!name) {
@@ -777,29 +705,14 @@ export class PluginManager {
     data._id = name + "_workflow";
     // delete data._references
     data.workflow = JSON.stringify(joy.top.data);
-    this.db
-      .get(data._id)
-      .then(doc => {
-        data._rev = doc._rev;
-      })
-      .finally(() => {
-        this.db
-          .put(data)
-          .then(() => {
-            this.workflow_list.push(data);
-            this.showMessage(`Workflow "${name}" has been successfully saved.`);
-          })
-          .catch(err => {
-            this.showMessage("Failed to save the workflow.");
-            console.error(err);
-          });
-      });
+    await this.db.setItem(data._id, data);
+    this.workflow_list.push(data);
+    this.showMessage(`Workflow "${name}" has been successfully saved.`);
   }
 
   async removeWorkflow(w) {
     try {
-      const doc = await this.db.get(w._id);
-      await this.db.remove(doc);
+      await this.db.removeItem(w._id);
       var index = this.workflow_list.indexOf(w);
       if (index > -1) {
         this.workflow_list.splice(index, 1);
@@ -812,96 +725,69 @@ export class PluginManager {
     }
   }
 
-  reloadDB() {
-    return new Promise((resolve, reject) => {
-      try {
-        if (this.db) {
-          try {
-            this.db.close().finally(() => {
-              this.db = new PouchDB(this.selected_workspace + "_workspace", {
-                revs_limit: 2,
-                auto_compaction: true,
-              });
-              if (this.db) {
-                if (this.selected_workspace === "sandbox") {
-                  console.warn(
-                    "All data in the sandbox stored workspace is going to be destroyed."
-                  );
-                  if (!this.flags.includes("quiet")) debugger;
-                  this.db
-                    .destroy()
-                    .then(() => {
-                      this.db = new PouchDB(
-                        this.selected_workspace + "_workspace",
-                        {
-                          revs_limit: 2,
-                          auto_compaction: true,
-                        }
-                      );
-                      resolve();
-                    })
-                    .catch(e => {
-                      console.error(e);
-                      reject(e);
-                    });
-                } else {
-                  resolve();
-                }
-              } else {
-                reject("Failed to reload database.");
-              }
-            });
-          } catch (e) {
-            console.error("Failed to reload database: ", e);
-            this.db = new PouchDB(this.selected_workspace + "_workspace", {
-              revs_limit: 2,
-              auto_compaction: true,
-            });
-            if (this.db) {
-              if (this.selected_workspace === "sandbox") {
-                console.warn(
-                  "All data in the sandbox stored workspace is going to be destroyed."
-                );
-                if (!this.flags.includes("quiet")) debugger;
-                this.db
-                  .destroy()
-                  .then(() => {
-                    this.db = new PouchDB(
-                      this.selected_workspace + "_workspace",
-                      {
-                        revs_limit: 2,
-                        auto_compaction: true,
-                      }
-                    );
-                    resolve();
-                  })
-                  .catch(e => {
-                    console.error(e);
-                    reject(e);
-                  });
-              } else {
-                resolve();
-              }
-            } else {
-              reject("Failed to reload database.");
-            }
-          }
-        } else {
-          this.db = new PouchDB(this.selected_workspace + "_workspace", {
-            revs_limit: 2,
-            auto_compaction: true,
+  async reloadDB() {
+    try {
+      if (this.db) {
+        try {
+          this.db = localForage.createInstance({
+            name: this.selected_workspace + "_workspace",
           });
           if (this.db) {
-            resolve();
+            if (this.selected_workspace === "sandbox") {
+              console.warn(
+                "All data in the sandbox stored workspace is going to be destroyed."
+              );
+              if (!this.flags.includes("quiet")) debugger;
+              await this.db.clear();
+
+              this.db = localForage.createInstance({
+                name: this.selected_workspace + "_workspace",
+              });
+              return;
+            } else {
+              return;
+            }
           } else {
-            reject("Failed to reload database.");
+            throw new Error("Failed to reload database.");
+          }
+        } catch (e) {
+          console.error("Failed to reload database: ", e);
+          this.db = localForage.createInstance({
+            name: this.selected_workspace + "_workspace",
+          });
+          if (this.db) {
+            if (this.selected_workspace === "sandbox") {
+              console.warn(
+                "All data in the sandbox stored workspace is going to be destroyed."
+              );
+              if (!this.flags.includes("quiet")) debugger;
+              await this.db.clear();
+
+              this.db = localForage.createInstance({
+                name: this.selected_workspace + "_workspace",
+              });
+              return;
+            } else {
+              return;
+            }
+          } else {
+            throw new Error("Failed to reload database.");
           }
         }
-      } catch (e) {
-        console.error("Failed to reload database.");
-        reject("Failed to reload database.");
+      } else {
+        this.db = localForage.createInstance({
+          name: this.selected_workspace + "_workspace",
+        });
+        if (this.db) {
+          return;
+        } else {
+          throw new Error("Failed to reload database.");
+        }
       }
-    });
+    } catch (e) {
+      console.error("Failed to reload database.", e);
+      throw new Error("Failed to reload database.");
+    }
   }
 
   setInputLoaders(input_loaders) {
@@ -932,16 +818,12 @@ export class PluginManager {
         .then(() => {
           this.reloadDB().then(() => {
             this.db
-              .allDocs({
-                include_docs: true,
-                attachments: true,
-                sort: "name",
-              })
-              .then(result => {
+              .keys()
+              .then(async keys => {
                 this.workflow_list = [];
                 this.installed_plugins = [];
-                for (let i = 0; i < result.total_rows; i++) {
-                  const config = result.rows[i].doc;
+                for (let i = 0; i < keys.length; i++) {
+                  const config = await this.db.getItem(keys[i]);
                   if (config.workflow) {
                     this.workflow_list.push(config);
                   } else {
@@ -1304,69 +1186,46 @@ export class PluginManager {
     }
   }
 
-  removePlugin(plugin_config) {
+  async removePlugin(plugin_config) {
     // TODO: support removing by namespace
-    return new Promise((resolve, reject) => {
-      plugin_config._id =
-        plugin_config._id || plugin_config.name.replace(/ /g, "_");
+
+    plugin_config._id =
+      plugin_config._id || plugin_config.name.replace(/ /g, "_");
+    try {
       // remove if exists
-      this.db
-        .get(plugin_config._id)
-        .then(doc => {
-          this.db
-            .remove(doc)
-            .then(() => {
-              for (let i = 0; i < this.installed_plugins.length; i++) {
-                if (this.installed_plugins[i].name === plugin_config.name) {
-                  this.installed_plugins.splice(i, 1);
-                }
-              }
-              for (let p of this.available_plugins) {
-                if (p.name === plugin_config.name) {
-                  p.installed = false;
-                  p.tag = null;
-                }
-              }
-              resolve();
-              this.showMessage(`"${plugin_config.name}" has been removed.`);
-              this.unloadPlugin(plugin_config, true);
-            })
-            .catch(err => {
-              this.showMessage(err.toString());
-              console.error("Failed to remove plugin: ", plugin_config, err);
-              reject(err);
-            });
-        })
-        .catch(err => {
-          this.unloadPlugin(plugin_config, true);
-          this.showMessage(`"${plugin_config.name}" has been unloaded.`);
-          console.log(
-            "Plugin does not exist in the database",
-            plugin_config,
-            err
-          );
-          resolve(err);
-        });
-    });
+      await this.db.removeItem(plugin_config._id);
+
+      for (let i = 0; i < this.installed_plugins.length; i++) {
+        if (this.installed_plugins[i].name === plugin_config.name) {
+          this.installed_plugins.splice(i, 1);
+        }
+      }
+      for (let p of this.available_plugins) {
+        if (p.name === plugin_config.name) {
+          p.installed = false;
+          p.tag = null;
+        }
+      }
+
+      this.showMessage(`"${plugin_config.name}" has been removed.`);
+      this.unloadPlugin(plugin_config, true);
+      return;
+    } catch (err) {
+      this.unloadPlugin(plugin_config, true);
+      this.showMessage(`"${plugin_config.name}" has been unloaded.`);
+      console.log("Plugin does not exist in the database", plugin_config, err);
+      return err;
+    }
   }
 
   async getPluginDocs(plugin_id) {
-    const doc = await this.db.get(plugin_id);
+    const doc = await this.db.getItem(plugin_id);
     const config = await this.parsePluginCode(doc.code);
     return config.docs;
   }
 
-  getPluginSource(plugin_id) {
-    return new Promise((resolve, reject) => {
-      this.db
-        .get(plugin_id)
-        .then(doc => {
-          resolve(doc.code);
-        })
-        .catch(err => {
-          reject(err);
-        });
-    });
+  async getPluginSource(plugin_id) {
+    return (await this.db.getItem(plugin_id)).code;
   }
 
   unloadPlugin(_plugin, temp_remove) {
@@ -1558,7 +1417,7 @@ export class PluginManager {
       template.hash = SparkMD5.hash(template.code);
       const addPlugin = async template => {
         try {
-          await this.db.put(template);
+          await this.db.setItem(template._id, template);
           for (let i = 0; i < this.installed_plugins.length; i++) {
             if (this.installed_plugins[i].name === template.name) {
               this.installed_plugins.splice(i, 1);
@@ -1576,7 +1435,7 @@ export class PluginManager {
       };
       // remove if exists
       try {
-        const doc = await this.db.get(template._id);
+        const doc = await this.db.getItem(template._id);
         template._rev = doc._rev;
         return await addPlugin(template);
       } catch (e) {
