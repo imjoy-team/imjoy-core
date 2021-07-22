@@ -1,9 +1,7 @@
 /*eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_plugin$" }]*/
 import PouchDB from "pouchdb-browser";
 import SparkMD5 from "spark-md5";
-import _ from "lodash";
 import axios from "axios";
-import yaml from "js-yaml";
 import { Joy } from "./joy.js";
 import { saveAs } from "file-saver";
 import { imjoyRPCSocketIO } from "imjoy-rpc";
@@ -245,7 +243,7 @@ export class PluginManager {
     };
 
     // merge imjoy api
-    this.imjoy_api = _.assign({}, this.imjoy_api, imjoy_api);
+    this.imjoy_api = Object.assign({}, this.imjoy_api, imjoy_api);
     // copy api utils make sure it was not overwritten
     if (api_utils_) {
       for (let k in api_utils_) {
@@ -1092,7 +1090,7 @@ export class PluginManager {
       throw "failed to get code.";
     }
     const code = response.data;
-    let config = this.parsePluginCode(code, {
+    let config = await this.parsePluginCode(code, {
       tag: selected_tag,
       origin: uri,
       uri: uri,
@@ -1190,139 +1188,120 @@ export class PluginManager {
     });
   }
 
-  installPlugin(pconfig, tag, do_not_load) {
-    return new Promise((resolve, reject) => {
-      let scoped_plugins = this.available_plugins;
-      if (pconfig.scoped_plugins) {
-        scoped_plugins = pconfig.scoped_plugins;
-        delete pconfig.scoped_plugins;
-      }
-      if (!pconfig.src && !pconfig.uri) {
-        reject("Please provide the source via the `src` key.");
-        return;
-      }
-      pconfig.src = pconfig.src || pconfig.uri;
-      tag = tag || pconfig.tag;
+  async installPlugin(pconfig, tag, do_not_load) {
+    let scoped_plugins = this.available_plugins;
+    if (pconfig.scoped_plugins) {
+      scoped_plugins = pconfig.scoped_plugins;
+      delete pconfig.scoped_plugins;
+    }
+    if (!pconfig.src && !pconfig.uri) {
+      reject("Please provide the source via the `src` key.");
+      return;
+    }
+    pconfig.src = pconfig.src || pconfig.uri;
+    tag = tag || pconfig.tag;
 
-      if (pconfig.src.includes("\n")) {
-        const config = this.parsePluginCode(pconfig.src);
-        const ps = [];
-        config.dependencies = config.dependencies || [];
-        for (let i = 0; i < config.dependencies.length; i++) {
-          ps.push(
-            this.installPlugin(
-              {
-                src: config.dependencies[i],
-                namespace: config.namespace,
-                scoped_plugins: config.scoped_plugins || scoped_plugins,
-              },
-              null,
-              do_not_load
-            )
-          );
+    if (pconfig.src.includes("\n")) {
+      const config = await this.parsePluginCode(pconfig.src);
+      const ps = [];
+      config.dependencies = config.dependencies || [];
+      for (let i = 0; i < config.dependencies.length; i++) {
+        ps.push(
+          this.installPlugin(
+            {
+              src: config.dependencies[i],
+              namespace: config.namespace,
+              scoped_plugins: config.scoped_plugins || scoped_plugins,
+            },
+            null,
+            do_not_load
+          )
+        );
+      }
+      pconfig.code = pconfig.src;
+      await Promise.all(ps);
+      const template = await this.savePlugin(pconfig);
+
+      this.showMessage(
+        `Plugin "${template.name}" has been successfully installed.`
+      );
+      this.event_bus.emit("plugin_installed", template);
+      if (!do_not_load) this.reloadPlugin(template);
+      return template;
+    }
+    if (
+      // plugin URI
+      (!/(http(s?)):\/\//i.test(pconfig.src) &&
+        pconfig.src.includes("/") &&
+        pconfig.src.includes(":")) ||
+      // plugin source url or rpc window
+      /(http(s?)):\/\//i.test(pconfig.src)
+    ) {
+      let uri = pconfig.src;
+      const config = await this.getPluginFromUrl(uri, scoped_plugins);
+
+      if (config.engine_mode) {
+        const old_plugin = this.plugin_names[config.name];
+        if (old_plugin) {
+          config.engine_mode = old_plugin.config.engine_mode;
         }
-        pconfig.code = pconfig.src;
-        Promise.all(ps)
-          .then(() => {
-            this.savePlugin(pconfig)
-              .then(async template => {
-                this.showMessage(
-                  `Plugin "${template.name}" has been successfully installed.`
-                );
-                this.event_bus.emit("plugin_installed", template);
-                resolve(template);
-                if (!do_not_load) this.reloadPlugin(template);
-              })
-              .catch(reject);
-          })
-          .catch(reject);
-        return;
       }
-      if (
-        // plugin URI
-        (!/(http(s?)):\/\//i.test(pconfig.src) &&
-          pconfig.src.includes("/") &&
-          pconfig.src.includes(":")) ||
-        // plugin source url or rpc window
-        /(http(s?)):\/\//i.test(pconfig.src)
-      ) {
-        let uri = pconfig.src;
-        this.getPluginFromUrl(uri, scoped_plugins)
-          .then(async config => {
-            if (config.engine_mode) {
-              const old_plugin = this.plugin_names[config.name];
-              if (old_plugin) {
-                config.engine_mode = old_plugin.config.engine_mode;
-              }
-            }
-            config.origin = pconfig.origin || uri;
-            if (!config) {
-              console.error(`Failed to fetch the plugin from "${uri}".`);
-              reject(`Failed to fetch the plugin from "${uri}".`);
-              return;
-            }
-            if (!getBackendByType(config.type)) {
-              console.warn(
-                `Installed plugin ${
-                  config.name
-                } with unsupported plugin type: ${config.type}`
-              );
-            }
-            config.tag =
-              tag ||
-              (this.plugin_names[config.name] &&
-                this.plugin_names[config.name].config.tag) ||
-              config.tag;
-            if (config.tag) {
-              // remove existing tag
-              const sp = config.origin.split(":");
-              if (sp[1]) {
-                if (sp[1].split("@")[1])
-                  config.origin = sp[0] + ":" + sp[1].split("@")[0];
-              }
-              // add a new tag
-              // config.origin = config.origin + "@" + config.tag;
-            }
-            config._id =
-              (config.name && config.name.replace(/ /g, "_")) || randId();
-            config.dependencies = config.dependencies || [];
-            try {
-              for (let i = 0; i < config.dependencies.length; i++) {
-                await this.installPlugin(
-                  {
-                    src: config.dependencies[i],
-                    namespace: config.namespace,
-                    scoped_plugins: config.scoped_plugins || scoped_plugins,
-                  },
-                  null,
-                  do_not_load
-                );
-              }
-              const template = await this.savePlugin(config);
-              for (let p of this.available_plugins) {
-                if (p.name === template.name && !p.installed) {
-                  p.installed = true;
-                  p.tag = tag;
-                }
-              }
-              this.showMessage(
-                `Plugin "${template.name}" has been successfully installed.`
-              );
-              this.event_bus.emit("plugin_installed", template);
-              resolve(template);
-              if (!do_not_load) this.reloadPlugin(template);
-            } catch (error) {
-              reject(
-                `Failed to install dependencies for ${config.name}: ${error}`
-              );
-            }
-          })
-          .catch(e => {
-            console.error(e);
-            reject(e);
-          });
+      config.origin = pconfig.origin || uri;
+      if (!config) {
+        console.error(`Failed to fetch the plugin from "${uri}".`);
+        throw new Error(`Failed to fetch the plugin from "${uri}".`);
       }
-    });
+      if (!getBackendByType(config.type)) {
+        console.warn(
+          `Installed plugin ${config.name} with unsupported plugin type: ${
+            config.type
+          }`
+        );
+      }
+      config.tag =
+        tag ||
+        (this.plugin_names[config.name] &&
+          this.plugin_names[config.name].config.tag) ||
+        config.tag;
+      if (config.tag) {
+        // remove existing tag
+        const sp = config.origin.split(":");
+        if (sp[1]) {
+          if (sp[1].split("@")[1])
+            config.origin = sp[0] + ":" + sp[1].split("@")[0];
+        }
+        // add a new tag
+        // config.origin = config.origin + "@" + config.tag;
+      }
+      config._id = (config.name && config.name.replace(/ /g, "_")) || randId();
+      config.dependencies = config.dependencies || [];
+
+      for (let i = 0; i < config.dependencies.length; i++) {
+        await this.installPlugin(
+          {
+            src: config.dependencies[i],
+            namespace: config.namespace,
+            scoped_plugins: config.scoped_plugins || scoped_plugins,
+          },
+          null,
+          do_not_load
+        );
+      }
+      const template = await this.savePlugin(config);
+      for (let p of this.available_plugins) {
+        if (p.name === template.name && !p.installed) {
+          p.installed = true;
+          p.tag = tag;
+        }
+      }
+      this.showMessage(
+        `Plugin "${template.name}" has been successfully installed.`
+      );
+      this.event_bus.emit("plugin_installed", template);
+
+      if (!do_not_load) this.reloadPlugin(template);
+      return template;
+    }
   }
 
   removePlugin(plugin_config) {
@@ -1371,19 +1350,10 @@ export class PluginManager {
     });
   }
 
-  getPluginDocs(plugin_id) {
-    return new Promise((resolve, reject) => {
-      this.db
-        .get(plugin_id)
-        .then(doc => {
-          const config = this.parsePluginCode(doc.code);
-          const docs = config.docs;
-          resolve(docs);
-        })
-        .catch(err => {
-          reject(err);
-        });
-    });
+  async getPluginDocs(plugin_id) {
+    const doc = await this.db.get(plugin_id);
+    const config = await this.parsePluginCode(doc.code);
+    return config.docs;
   }
 
   getPluginSource(plugin_id) {
@@ -1462,7 +1432,7 @@ export class PluginManager {
           }
         }
 
-        const template = this.parsePluginCode(pconfig.code, {
+        const template = await this.parsePluginCode(pconfig.code, {
           tag: pconfig.tag,
           _id: pconfig._id,
           origin: pconfig.origin,
@@ -1510,7 +1480,7 @@ export class PluginManager {
         pconfig = pconfig.config;
       }
       this.unloadPlugin(pconfig, true);
-      const template = this.parsePluginCode(pconfig.code, {
+      const template = await this.parsePluginCode(pconfig.code, {
         tag: pconfig.tag,
         _id: pconfig._id,
         origin: pconfig.origin,
@@ -1574,54 +1544,48 @@ export class PluginManager {
     }
   }
 
-  savePlugin(pconfig) {
-    return new Promise((resolve, reject) => {
-      const code = pconfig.code;
+  async savePlugin(pconfig) {
+    const code = pconfig.code;
+    try {
+      const template = await this.parsePluginCode(code, {
+        tag: pconfig.tag,
+        origin: pconfig.origin,
+        engine_mode: pconfig.engine_mode,
+        namespace: pconfig.namespace,
+      });
+      template.code = code;
+      template._id = template.name.replace(/ /g, "_");
+      template.hash = SparkMD5.hash(template.code);
+      const addPlugin = async template => {
+        try {
+          await this.db.put(template);
+          for (let i = 0; i < this.installed_plugins.length; i++) {
+            if (this.installed_plugins[i].name === template.name) {
+              this.installed_plugins.splice(i, 1);
+            }
+          }
+          template.installed = true;
+          this.installed_plugins.push(template);
+          this.showMessage(`${template.name} has been successfully saved.`);
+          return template;
+        } catch (err) {
+          this.showMessage("Failed to save the plugin.");
+          console.error(err);
+          throw err;
+        }
+      };
+      // remove if exists
       try {
-        const template = this.parsePluginCode(code, {
-          tag: pconfig.tag,
-          origin: pconfig.origin,
-          engine_mode: pconfig.engine_mode,
-          namespace: pconfig.namespace,
-        });
-        template.code = code;
-        template._id = template.name.replace(/ /g, "_");
-        template.hash = SparkMD5.hash(template.code);
-        const addPlugin = template => {
-          this.db
-            .put(template)
-            .then(() => {
-              for (let i = 0; i < this.installed_plugins.length; i++) {
-                if (this.installed_plugins[i].name === template.name) {
-                  this.installed_plugins.splice(i, 1);
-                }
-              }
-              template.installed = true;
-              this.installed_plugins.push(template);
-              resolve(template);
-              this.showMessage(`${template.name} has been successfully saved.`);
-            })
-            .catch(err => {
-              this.showMessage("Failed to save the plugin.");
-              console.error(err);
-              reject("failed to save");
-            });
-        };
-        // remove if exists
-        this.db
-          .get(template._id)
-          .then(doc => {
-            template._rev = doc._rev;
-            addPlugin(template);
-          })
-          .catch(() => {
-            addPlugin(template);
-          });
+        const doc = await this.db.get(template._id);
+        template._rev = doc._rev;
+        return await addPlugin(template);
       } catch (e) {
-        this.showMessage(e || "Error.");
-        reject(e);
+        return await addPlugin(template);
       }
-    });
+    } catch (e) {
+      this.showMessage(e || "Error.");
+      throw e;
+    }
   }
   getBadges(p) {
     const backend = getBackendByType(p.type);
@@ -1631,12 +1595,17 @@ export class PluginManager {
       return "🚀";
     }
   }
-  parsePluginCode(code, overwrite_config) {
+  async parsePluginCode(code, overwrite_config) {
     overwrite_config = overwrite_config || {};
     try {
       const pluginComp = parseComponent(code);
       let config;
       if (pluginComp.config[0].attrs.lang === "yaml") {
+        console.log("Loading YAML library...");
+        const yaml = await import(
+          /* webpackIgnore: true */ "https://cdn.jsdelivr.net/npm/js-yaml/dist/js-yaml.mjs"
+        );
+        console.log("YAML library loaded successfully");
         config = yaml.load(pluginComp.config[0].content);
       } else if (pluginComp.config[0].attrs.lang === "json") {
         config = JSON.parse(pluginComp.config[0].content);
@@ -1764,10 +1733,10 @@ export class PluginManager {
         config.id = rplugin.id;
         config.initialized = true;
       }
-      const tconfig = _.assign({}, template, config);
+      const tconfig = Object.assign({}, template, config);
       tconfig.workspace = this.selected_workspace;
       // TODO: deprecate TAG and WORKSPACE, use `config.tag` and `config.workspace` instead
-      const _interface = _.assign(
+      const _interface = Object.assign(
         {
           TAG: tconfig.tag,
           WORKSPACE: this.selected_workspace,
@@ -1844,9 +1813,9 @@ export class PluginManager {
         }
       }
 
-      const tconfig = _.assign({}, template, config);
+      const tconfig = Object.assign({}, template, config);
       tconfig.workspace = this.selected_workspace;
-      const _interface = _.assign(
+      const _interface = Object.assign(
         {
           TAG: tconfig.tag,
           WORKSPACE: this.selected_workspace,
@@ -1986,9 +1955,9 @@ export class PluginManager {
 
   renderWindow(pconfig) {
     return new Promise((resolve, reject) => {
-      const tconfig = _.assign({}, pconfig.plugin, pconfig);
+      const tconfig = Object.assign({}, pconfig.plugin, pconfig);
       tconfig.workspace = this.selected_workspace;
-      const imjoy_api = _.assign({}, this.imjoy_api);
+      const imjoy_api = Object.assign({}, this.imjoy_api);
 
       // copy window api functions to the plugin instance
       for (let k in pconfig.api) {
@@ -1999,7 +1968,7 @@ export class PluginManager {
           };
         }
       }
-      const _interface = _.assign(
+      const _interface = Object.assign(
         {
           TAG: tconfig.tag,
           WORKSPACE: this.selected_workspace,
@@ -2191,7 +2160,7 @@ export class PluginManager {
             if (!/(http(s?)):\/\//i.test(manifest.uri_root)) {
               manifest.uri_root = repository_url.replace(
                 new RegExp("manifest.imjoy.json$"),
-                _.trim(manifest.uri_root, "/")
+                manifest.uri_root.replace(/^\/|\/$/g, "")
               );
             }
             for (let i = 0; i < manifest.plugins.length; i++) {
