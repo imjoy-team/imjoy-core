@@ -726,66 +726,18 @@ export class PluginManager {
   }
 
   async reloadDB() {
-    try {
-      if (this.db) {
-        try {
-          this.db = localForage.createInstance({
-            name: this.selected_workspace + "_workspace",
-          });
-          if (this.db) {
-            if (this.selected_workspace === "sandbox") {
-              console.warn(
-                "All data in the sandbox stored workspace is going to be destroyed."
-              );
-              if (!this.flags.includes("quiet")) debugger;
-              await this.db.clear();
-
-              this.db = localForage.createInstance({
-                name: this.selected_workspace + "_workspace",
-              });
-              return;
-            } else {
-              return;
-            }
-          } else {
-            throw new Error("Failed to reload database.");
-          }
-        } catch (e) {
-          console.error("Failed to reload database: ", e);
-          this.db = localForage.createInstance({
-            name: this.selected_workspace + "_workspace",
-          });
-          if (this.db) {
-            if (this.selected_workspace === "sandbox") {
-              console.warn(
-                "All data in the sandbox stored workspace is going to be destroyed."
-              );
-              if (!this.flags.includes("quiet")) debugger;
-              await this.db.clear();
-
-              this.db = localForage.createInstance({
-                name: this.selected_workspace + "_workspace",
-              });
-              return;
-            } else {
-              return;
-            }
-          } else {
-            throw new Error("Failed to reload database.");
-          }
-        }
-      } else {
-        this.db = localForage.createInstance({
-          name: this.selected_workspace + "_workspace",
-        });
-        if (this.db) {
-          return;
-        } else {
-          throw new Error("Failed to reload database.");
-        }
+    this.db = localForage.createInstance({
+      name: this.selected_workspace + "_workspace",
+    });
+    if (this.db) {
+      if (this.selected_workspace === "sandbox") {
+        console.warn(
+          "All data in the sandbox stored workspace is going to be destroyed."
+        );
+        if (!this.flags.includes("quiet")) debugger;
+        await this.db.clear();
       }
-    } catch (e) {
-      console.error("Failed to reload database.", e);
+    } else {
       throw new Error("Failed to reload database.");
     }
   }
