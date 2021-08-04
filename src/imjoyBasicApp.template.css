@@ -156,19 +156,19 @@ body {
   }
 }
 
-.dropdown-btn {
+.imjoy-dropdown-btn {
   padding: 4px;
   font-size: 16px;
   border: none;
   cursor: pointer;
 }
 
-.dropdown {
+.imjoy-dropdown {
   position: relative;
   display: inline-block;
 }
 
-.dropdown-content {
+.imjoy-dropdown-content {
   display: none;
   position: absolute;
   right: 0;
@@ -178,7 +178,7 @@ body {
   z-index: 1;
 }
 
-.dropdown-content a {
+.imjoy-dropdown-content a {
   font-family: Arial, Helvetica, sans-serif;
   color: black;
   padding: 6px 10px;
@@ -186,16 +186,12 @@ body {
   display: block;
 }
 
-.dropdown-content a:hover {
+.imjoy-dropdown-content a:hover {
   background-color: #f1f1f1;
 }
 
-.dropdown:hover .dropdown-content {
+.imjoy-dropdown:hover .imjoy-dropdown-content {
   display: block;
-}
-
-.dropdown:hover .dropbtn {
-  background-color: #3e8e41;
 }
 
 .imjoy-window-container {
