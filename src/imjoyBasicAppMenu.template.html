@@ -1,12 +1,12 @@
-<div class="dropdown" :style="menuStyle">
-  <a class="dropdown-btn"
+<div class="imjoy-dropdown" :style="menuStyle">
+  <a class="imjoy-dropdown-btn"
     ><img
       style="width:24px;"
       src="https://imjoy.io/static/img/imjoy-icon.svg"
     />
   </a>
   <div
-    class="dropdown-content"
+    class="imjoy-dropdown-content"
     v-if="showContent"
     @click="menuClicked"
     :style="{left: menuPos==='left'? 0: null}"
