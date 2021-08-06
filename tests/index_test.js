@@ -11,6 +11,7 @@ import TEST_WEB_WORKER_PLUGIN_2 from "./testWebWorkerPlugin2.imjoy.html";
 import TEST_WINDOW_PLUGIN_1 from "./testWindowPlugin1.imjoy.html";
 import WEB_PYTHON_PLUGIN_TEMPLATE from "./testWebPythonPlugin1.imjoy.html";
 import WINDOW_ES_MODULE_PLUGIN from "./testWindowESModulePlugin.imjoy.html";
+import YAML_CONFIG_PLUGIN from "./testYAMLConfigPlugin.imjoy.html";
 // import WORKER_ES_MODULE_PLUGIN from "./testWorkerESModulePlugin.imjoy.html";
 
 import * as imjoyCore from "../src/imjoyCore.js";
@@ -130,7 +131,19 @@ describe("ImJoy Core", async () => {
     );
     expect(config2.name).to.equal("My Awesome App");
     expect(config2.type).to.equal("rpc-window");
-  }).timeout(10000);
+  }).timeout(30000);
+
+  // Note: currently we only test it with iframe plugin
+  // it may fail in web-worker in firefox
+  it("should load plugin with yaml config", async () => {
+    const code = _.clone(YAML_CONFIG_PLUGIN);
+    const plugin = await pm.reloadPlugin({ code: code });
+    expect(plugin.name).to.equal("YAML Config Plugin");
+    expect(plugin.type).to.equal("web-worker");
+    expect(typeof plugin.api.setup).to.equal("function");
+    await plugin.api.setup();
+    plugin.terminate();
+  }).timeout(20000);
 
   // This may fail in firefox due to lack of support for es module in web-worker
   // it.allowFail("should load web-worker ES module plugin", async () => {

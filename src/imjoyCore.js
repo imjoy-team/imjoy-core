@@ -5,10 +5,9 @@ import { EngineManager } from "./engineManager.js";
 
 import { FileManager } from "./fileManager.js";
 import { DynamicPlugin } from "./jailedPlugin.js";
-import PouchDB from "pouchdb-browser";
 import { imjoyRPC } from "imjoy-rpc";
 import { randId } from "./utils.js";
-
+import * as localForage from "localforage";
 import Minibus from "minibus";
 
 export { Joy } from "./joy";
@@ -34,9 +33,8 @@ export class ImJoy {
   }) {
     this.config_db =
       config_db ||
-      new PouchDB("imjoy_config", {
-        revs_limit: 2,
-        auto_compaction: true,
+      localForage.createInstance({
+        name: "imjoy_config",
       });
     this.expose_api = expose_api;
     this.event_bus = event_bus || Minibus.create();
