@@ -53,12 +53,12 @@ imjoy.start({workspace: 'default'}).then(async ()=>{
 ### Display window plugins
 
 To support the display of window plugins, you will need to listen to the `add_window` event and then create div with a generated window id, for example:
-```
+```js
 imjoy.event_bus.on("add_window", w => {
       const container = document.createElement('div');
       container.id = w.window_id; // <--- this is important
       container.style.backgroundColor = '#ececec';
-      container.style.height = "100%";
+      container.style.height = "300px";
       container.style.width = "100%";
       // Here we simply add to the body
       // but in reality, you can embed it into your UI
