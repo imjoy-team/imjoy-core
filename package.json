@@ -1,6 +1,6 @@
 {
   "name": "imjoy-core",
-  "version": "0.13.83",
+  "version": "0.14.0",
   "private": false,
   "description": "The core library for ImJoy -- a sandboxed plugin framework for computational web applications.",
   "author": "imjoy-team <imjoy.team@gmail.com>",
@@ -31,7 +31,8 @@
     "check": "eslint \"{src,tests}/**/**\" && prettier --check \"{src,tests}/**/**\"",
     "test": "karma start --single-run --browsers ChromeHeadless,FirefoxHeadless karma.conf.js",
     "test-watch": "karma start --auto-watch --browsers Chrome,FirefoxHeadless karma.conf.js --debug",
-    "deploy": "npm run build && node deploy-site.js"
+    "deploy": "npm run build && node deploy-site.js",
+    "publish-npm": "npm install && npm run build && npm publish"
   },
   "dependencies": {
     "ajv": "^6.9.1",
