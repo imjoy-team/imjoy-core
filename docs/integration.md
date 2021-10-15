@@ -50,6 +50,24 @@ imjoy.start({workspace: 'default'}).then(async ()=>{
 
 ```
 
+### Display window plugins
+
+To support the display of window plugins, you will need to listen to the `add_window` event and then create div with a generated window id, for example:
+```
+imjoy.event_bus.on("add_window", w => {
+      const container = document.createElement('div');
+      container.id = w.window_id; // <--- this is important
+      container.style.backgroundColor = '#ececec';
+      container.style.height = "100%";
+      container.style.width = "100%";
+      // Here we simply add to the body
+      // but in reality, you can embed it into your UI
+      document.body.appendChild(container)
+})
+```
+Now, if you call `imjoy.api.createWindow` (or within another plugin call `api.createWindow`), ImJoy will first emit `add_window` event, and then it will try to render an iframe under the container defined by `id=w.window_id`.
+
+
 ### Use your web application inside ImJoy
 
 If you want to support loading your web app as an ImJoy `window` plugin, and that will allow users use your web app from within ImJoy and being able to make a workflow out of it. For example, if you have a web app for visualizing data which made to be used as a standalone app, it is easy make it work as an ImJoy window plugin. 
