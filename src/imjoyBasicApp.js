@@ -185,7 +185,7 @@ export async function loadImJoyBasicApp(config) {
       allWindows: [],
       extraMenuItems: [],
       showProgressBar: config.show_progress_bar,
-      showLoader: config.show_loader,
+      showLoaderCallback: config.show_loader,
       showWindows: config.show_windows,
     },
     mounted() {
@@ -380,7 +380,12 @@ export async function loadImJoyBasicApp(config) {
         }, duration * 1000);
       },
       showLoader(loading) {
-        this.loading = loading;
+        if(this.showLoaderCallback){
+          this.showLoaderCallback(loading);
+        }
+        else{
+          this.loading = loading;
+        }
         this.$forceUpdate();
       },
       addWindow(w) {
