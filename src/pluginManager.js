@@ -172,6 +172,7 @@ export class PluginManager {
       run: this.runPlugin,
       call: this.callPlugin,
       connectToServer(_plugin, config) {
+        console.warn("api.connectToServer is deprecated.");
         return imjoyRPCSocketIO.connectToServer(config);
       },
       installPlugin: (_plugin, config) => {
