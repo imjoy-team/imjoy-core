@@ -380,10 +380,9 @@ export async function loadImJoyBasicApp(config) {
         }, duration * 1000);
       },
       showLoader(loading) {
-        if(this.showLoaderCallback){
+        if (this.showLoaderCallback) {
           this.showLoaderCallback(loading);
-        }
-        else{
+        } else {
           this.loading = loading;
         }
         this.$forceUpdate();
