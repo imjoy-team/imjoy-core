@@ -35,12 +35,12 @@ jobs:
       - run: npm run test
       - name: download elFinder
         run: |
-        wget https://github.com/imjoy-team/elFinder/archive/refs/heads/gh-pages.zip
-        unzip gh-pages.zip 
-        rm gh-pages.zip 
-        rm -rf dist/elFinder
-        mv elFinder-gh-pages/ dist/elFinder
-        cp dist/elFinder/service-worker.js dist # make sure we have service worker for all domains
+          wget https://github.com/imjoy-team/elFinder/archive/refs/heads/gh-pages.zip
+          unzip gh-pages.zip 
+          rm gh-pages.zip 
+          rm -rf dist/elFinder
+          mv elFinder-gh-pages/ dist/elFinder
+          cp dist/elFinder/service-worker.js dist # make sure we have service worker for all domains
       - name: Save build output
         uses: actions/upload-artifact@v1
         with:
