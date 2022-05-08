@@ -850,7 +850,7 @@ function initializeIfNeeded(connection, default_config) {
         name: default_config.name,
         type: default_config.type,
         allow_execution: true,
-        enable_service_worker: true,
+        enable_service_worker: false,
         forwarding_functions: forwarding_functions,
         expose_api_globally: true,
         credential: credential,
