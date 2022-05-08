@@ -23,7 +23,10 @@
           );
         })
         .catch(function(error) {
-          console.error("Service worker (core) registration failed, error:", error);
+          console.error(
+            "Service worker (core) registration failed, error:",
+            error
+          );
         });
     } else {
       console.log("Service worker (core) was activated.");
