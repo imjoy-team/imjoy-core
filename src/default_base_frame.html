@@ -1,8 +1,40 @@
 <script
   type="text/javascript"
-  onload="loadImJoyRPCByQueryString().then((imjoyRPC)=>{imjoyRPC.waitForInitialization({target_origin: '*', enable_service_worker: true})})"
+  onload="loadImJoyRPCByQueryString().then((imjoyRPC)=>{imjoyRPC.waitForInitialization({target_origin: '*', enable_service_worker: false})})"
   src="/imjoy-loader.js"
 ></script>
+<script>
+  if ("serviceWorker" in navigator) {
+    // Register the worker and show the list of quotations.
+    if (!navigator.serviceWorker.controller) {
+      navigator.serviceWorker.oncontrollerchange = function() {
+        this.controller.onstatechange = function() {
+          if (this.state === "activated") {
+            console.log("Service worker (core) successfully activated.");
+          }
+        };
+      };
+      navigator.serviceWorker
+        .register("/service-worker.js")
+        .then(function(registration) {
+          console.log(
+            "Service worker (core) successfully registered, scope is:",
+            registration.scope
+          );
+        })
+        .catch(function(error) {
+          console.error(
+            "Service worker (core) registration failed, error:",
+            error
+          );
+        });
+    } else {
+      console.log("Service worker (core) was activated.");
+    }
+  } else {
+    console.log("Service workers are not supported.");
+  }
+</script>
 <style>
   body {
     overscroll-behavior: contain;
