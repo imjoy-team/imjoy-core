@@ -140,56 +140,6 @@ const win = await api.showDialog({
 // further interaction can be performed via `win` object
 ```
 
-### Connecting to imjoy engine server
- **This is an experimental feature**
-
-Similarly to the standard ImJoy RPC library, If you want to connect to a remote imjoy engine server with ImJoy RPC , you can call `loadImJoyRPCSocketIO()` from the imjoy loader:
-```js
-<script src="https://lib.imjoy.io/imjoy-loader.js"></script>
-
-<script>
-loadImJoyRPCSocketIO().then(async (imjoyRPCSocketIO)=>{
-    const api = await imjoyRPCSocketIO.connectToServer({
-        name: 'My Awesome App',
-        workspace: "my-shared-workspace",
-        server_url: "https://api.imjoy.io",
-        token: "1sf3s32..."
-    });
-
-    function setup(){
-        api.alert('ImJoy RPC initialized.')
-    }
-    // define your api which can be called by other plugins in ImJoy
-    function my_api_func(){
-
-    }
-    // Importantly, you need to call `api.export(...)` in order to expose the api for your web application
-    api.export({'setup': setup, 'my_api_func': my_api_func});
-})
-</script>
-```
-
-If you prefer npm, you can first install imjoy-rpc via `npm install imjoy-rpc`, then use it by importing `imjoyRPCSocketIO`:
-```js
-import { imjoyRPCSocketIO } from "imjoy-rpc";
-
-const api = await imjoyRPCSocketIO.connectToServer({
-    name: 'My Awesome App',
-    workspace: "my-shared-workspace",
-    server_url: "https://api.imjoy.io",
-    token: "1sf3s32..."
-});
-
-function setup(){
-    api.alert('ImJoy RPC initialized.')
-}
-// define your api which can be called by other plugins in ImJoy
-function my_api_func(){
-
-}
-// Importantly, you need to call `api.export(...)` in order to expose the api for your web application
-api.export({'setup': setup, 'my_api_func': my_api_func});
-```
 ### Using with RequireJS (and jQuery)
 
 You can also use the libraries with RequireJS, this is typically used with, for example jQuery.
