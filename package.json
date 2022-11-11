@@ -76,7 +76,7 @@
     "karma-spec-reporter": "0.0.32",
     "karma-webpack": "^4.0.2",
     "lint-staged": "^10.0.8",
-    "mocha": "^7.1.0",
+    "mocha": "^10.1.0",
     "postcss-import": "^11.0.0",
     "postcss-loader": "^2.0.8",
     "postcss-url": "^7.2.1",
