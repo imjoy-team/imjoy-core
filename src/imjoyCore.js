@@ -21,6 +21,7 @@ export { version as VERSION } from "../package.json";
 
 export class ImJoy {
   constructor({
+    name = "ImJoy",
     imjoy_api = null,
     event_bus = null,
     client_id = null,
@@ -32,6 +33,7 @@ export class ImJoy {
     flags = [],
     engine_selector = null,
   }) {
+    this.name = name;
     this.config_db =
       config_db ||
       new PouchDB("imjoy_config", {
@@ -100,10 +102,10 @@ export class ImJoy {
     }
     // inside an iframe
     if (this.expose_api && window.self !== window.top) {
-      const api = await imjoyRPC.setupRPC({ name: "ImJoy" });
+      const api = await imjoyRPC.setupRPC({ name: this.name || "ImJoy" });
       const root_plugin_config = {
         _id: "root",
-        name: "ImJoy",
+        name: this.name || "ImJoy",
         type: "window",
         ui: null,
         tag: null,

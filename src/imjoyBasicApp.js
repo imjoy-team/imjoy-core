@@ -78,6 +78,13 @@ export async function loadImJoyBasicApp(config) {
   const imjoyCore = await loadImJoyCore(config);
   const imjoy = new imjoyCore.ImJoy({
     imjoy_api,
+    expose_api: config.expose_api,
+    client_id: config.client_id,
+    default_base_frame: config.default_base_frame,
+    default_rpc_base_url: config.default_rpc_base_url,
+    debug: config.debug,
+    flags: config.flags || [],
+    engine_selector: config.engine_selector,
   });
   await imjoy.start(config);
   console.log("ImJoy Core started successfully!");
